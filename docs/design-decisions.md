@@ -307,3 +307,8 @@ Status: Living decision log. Product-independent visual design system.
 - User prefers a subtle repeating side-to-side light/render sweep across the reserved image area during loading, rather than a one-time blur-to-sharp effect as the primary loading indicator.
 - Sweep reverses horizontally at the edges and continues while the resource is loading. On completion, stop the sweep and reveal the actual image without changing container size or aspect ratio. Respect reduced-motion with a static placeholder.
 - Prototype is a visual simulation; it does not demonstrate real network image loading. Final motion intensity, speed and overall Loading System approval await user validation.
+
+## Loading System 03.22 — central media-type icon proposal (IN REVIEW)
+- User likes the repeating horizontal bidirectional loading sweep but suggests adding a centered multimedia icon.
+- Proposed refinement: a small, subtle, semi-transparent centered icon identifying image, video, audio or document, kept static while the sweep moves behind it. Avoid excessive visual emphasis or using the Zenit logo for every media placeholder.
+- Preserve reserved media dimensions, accessibility, reduced-motion support and the previously requested sweep. This icon treatment is proposed, not yet approved; the latest illustrative chat mockup did not animate the sweep.
