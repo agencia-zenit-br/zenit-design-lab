@@ -584,3 +584,10 @@ Status: Living decision log. Product-independent visual design system.
 - Maintain per-lot accounting (purchase time, quantity, amount consumed, expiration and ledger events) and show the customer a combined balance plus an understandable expiration breakdown.
 - The duration of a top-up's validity has NOT been decided and must not be treated as fixed. Consuming the earliest-expiring Tokens first is a proposed operational policy, NOT yet approved.
 - The overall 03.48 laboratory remains in review; no production implementation is implied.
+
+## Zenit Platform 03.48 — EARLIEST EXPIRY CONSUMPTION AND CONFIGURABLE TOP-UP OFFERS (APPROVED)
+- User approved automatically consuming the Tokens with the nearest expiration first, regardless of whether they originate from the current plan allotment or an additional purchased top-up. The ledger must select eligible lots by expiration and preserve per-lot reservations, settlements and auditability.
+- Before selling a top-up offer, authorized Zenit administrators can configure its Token quantity, monetary price, currency, validity duration measured from purchase, and promotional discounts. The validity period is not a fixed global constant; it is defined per offer before sale.
+- Snapshot the exact offered commercial terms at purchase, including price, discount, purchased quantity, purchase timestamp, expiration calculation, currency, tax treatment and offer/version reference. Later catalog edits must not retroactively change previously purchased lots.
+- Apply existing worst-case provider cost, markup, margin-floor and applicable tax safeguards to promotional pricing. Discounting must not bypass cost coverage. Display price, discount and expiry transparently before purchase; do not infer or approve any specific default duration or rate from illustrative UI values.
+- These are approved rules within the still-in-review 03.48 operations and instance billing laboratory. No production implementation is implied.
