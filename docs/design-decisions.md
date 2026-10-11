@@ -258,3 +258,9 @@ Status: Living decision log. Product-independent visual design system.
 - User reports the 'Save changes' sample looked like a strange button. Separate the real action control from its contextual tooltip; do not present tooltip content as an apparent standalone action.
 - User reports slight container expansion persists despite min-height reservations. min-height is insufficient for strict layout stability; floating tooltips should use an overlay layer outside normal layout flow (e.g. absolute positioning/portal), with collision avoidance and no parent reflow. Inline messages requiring reservation must use a measured/stable allocated slot, not an expanding minimum height.
 - Demonstrate the revised interaction and confirm zero card-size changes before approval. Maintain compact wrapping, inner padding, and omission of terminal periods.
+
+## Tooltip 03.17 — Single-line preference and viewport width cap (USER-APPROVED REQUIREMENT)
+- Prefer a single line whenever the tooltip text fits within one third of the viewport width. Do not impose arbitrary narrow fixed widths that force premature wrapping.
+- Limit tooltip inline size to approximately 33.33vw, additionally constrained by safe viewport-edge margins. Wrap naturally only when the text exceeds that available width. Handle unusually long unbroken tokens without overflow.
+- Preserve collision-aware positioning, compact internal padding, no unnecessary terminal punctuation, LTR/RTL directionality, and absolutely no parent/container layout shift when opening or closing the floating tooltip.
+- This rule is approved; the overall Tooltip component still requires final visual/interaction validation.
