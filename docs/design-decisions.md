@@ -174,3 +174,10 @@ Status: Living decision log. Product-independent visual design system.
 - Native browser/system capabilities may be used under the hood for accessibility and function (e.g., a visually hidden file input triggered by a Zenit-styled upload button); the OS file selection dialog is outside the product's visual surface.
 - Apply consistently across the entire Zenit product family and all design lab demos. Treat any visible native picker in earlier prototypes as a design defect, not an approved precedent.
 - Import implementation still needs actual XLSX/ODS support, type validation, error handling and persistence; the demonstrated CSV/TSV flow is a prototype only.
+
+## Universal Zenit File Picker — APPROVED
+- User approved the interactive File Picker design shown in Lab 03.13 without changes.
+- Reusable across all Zenit products; custom-styled drop zone and selection button, with native OS file dialog accessed only through a visually hidden file input. Never expose browser-native-looking file controls.
+- Supports context-configurable single-file and multi-file selection, drag-and-drop, accepted-format and file-size validation, duplicate detection, selected-file list (filename, extension, size, status, remove), clear selection and explicit continue action.
+- Selecting files does not automatically upload or process them. Production implementation requires content-level validation, accessible keyboard and touch handling, upload progress/cancel/error recovery where applicable, and permissions appropriate to the product.
+- The Lab 03.13 demonstration was a client-side prototype, not a production implementation or server upload. File types and 10 MB limit in the demo are examples, not universal fixed limits.
