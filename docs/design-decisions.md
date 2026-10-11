@@ -277,3 +277,10 @@ Status: Living decision log. Product-independent visual design system.
 - Use compact horizontal progress indicator, stable tabular percentage, reserved status-message space without layout shifts, optional compact description-free presentation, accessible progress announcements, reduced-motion behavior and RTL/LTR compatibility.
 - Theme via semantic product/tenant tokens rather than hardcoded lab green.
 - Approval covers the demonstrated design and functional requirements, not production implementation or verified animation/accessibility behavior.
+
+## Zenit Tabs & Navigation 03.20 — APPROVED DESIGN
+- User explicitly approved all three presented navigation variants: classic tabs with bottom indicator, compact tabs with subtle selected background, and grouped segmented navigation. Retain all three in the shared design system, with context-appropriate usage.
+- Support optional counts, active states identifiable beyond color alone, readable inactive tabs, accessible click/touch targets, keyboard and screen-reader tab semantics, and semantic product/tenant theming.
+- On narrow viewports, prefer horizontal scrolling or adaptive navigation rather than squeezing or clipping labels. Avoid unnecessary layout shifts when switching tabs or changing counters.
+- Support RTL/LTR layout and direction-aware navigation. Distinguish navigational tabs from filter controls even if visual styling overlaps.
+- This is approval of the design demonstrated in chat, not a claim of production implementation or verified accessibility.
