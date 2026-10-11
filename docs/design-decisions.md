@@ -98,3 +98,10 @@ Status: Living decision log. Product-independent visual design system.
 - Use a single, uniformly weighted green outer border for individual cells or rectangular multi-cell ranges; subtle interior shading and distinct active-cell indicator within a range.
 - Expand the actual outer rectangle on Shift+arrow, Shift+click, or pointer drag; avoid doubled or uneven borders and layout shifts.
 - The user confirmed the corrected v3 visual behavior. Other keyboard navigation details remain subject to separate approval.
+
+## Editable table keyboard direct typing — USER-REQUESTED REFINEMENT (IN REVIEW)
+- When a cell is selected in navigation mode, typing a printable character immediately starts editing with that character, replacing the previous cell value (Excel-like).
+- Enter, F2, or double-click start editing while preserving the existing value.
+- Escape cancels and restores the prior value; Enter commits and moves down; Tab commits and advances horizontally.
+- When a range is selected, direct typing replaces only the active cell, not every cell in the range.
+- Keep standard text-editing shortcuts within an open editor. Confirm in an interactive demonstration before marking the keyboard-navigation component fully approved.
