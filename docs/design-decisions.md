@@ -181,3 +181,9 @@ Status: Living decision log. Product-independent visual design system.
 - Supports context-configurable single-file and multi-file selection, drag-and-drop, accepted-format and file-size validation, duplicate detection, selected-file list (filename, extension, size, status, remove), clear selection and explicit continue action.
 - Selecting files does not automatically upload or process them. Production implementation requires content-level validation, accessible keyboard and touch handling, upload progress/cancel/error recovery where applicable, and permissions appropriate to the product.
 - The Lab 03.13 demonstration was a client-side prototype, not a production implementation or server upload. File types and 10 MB limit in the demo are examples, not universal fixed limits.
+
+## Zenit Select universal dropdown — APPROVED (Lab 03.14)
+- User approved the presented custom-styled Zenit Select interaction and appearance.
+- Support configurable single selection (closes on choice) and multiple selection (compact selected chips and explicit Done), optional searchable filtering, optional grouped choices, clear selection, and empty-results state.
+- Large datasets require internal scrolling, scalable virtualization and optional remote search. Production accessibility must implement keyboard arrows, Enter/Space activation, Escape close, focus indicators and appropriate screen-reader combobox/listbox semantics.
+- No visible browser-native select controls. The in-chat prototype demonstrated selection, search and grouping only; production keyboard/virtualization behavior is a requirement, not a tested implementation.
