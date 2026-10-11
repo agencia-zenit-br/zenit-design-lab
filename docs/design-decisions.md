@@ -105,3 +105,12 @@ Status: Living decision log. Product-independent visual design system.
 - Escape cancels and restores the prior value; Enter commits and moves down; Tab commits and advances horizontally.
 - When a range is selected, direct typing replaces only the active cell, not every cell in the range.
 - Keep standard text-editing shortcuts within an open editor. Confirm in an interactive demonstration before marking the keyboard-navigation component fully approved.
+
+## Editable table direct typing — APPROVED
+- The user approved the interactive v5 behavior: typing a printable character while a cell is selected replaces its existing value immediately; Enter/F2/double-click preserve existing text for editing. Escape cancels; Enter commits and moves down; Tab commits and advances.
+
+## Editable table fill handle — PROPOSED, PENDING INTERACTIVE APPROVAL
+- Show a small draggable handle at the bottom-right corner of the selected cell or rectangular range, similar to Excel.
+- Drag vertically to preview extension of the range; on release fill target cells by repeating the source values/pattern, preserving order for multi-cell selections.
+- Show a green outline for the prospective fill extent, without shifting layout. Record the entire fill as one undoable operation.
+- Initially support literal-value copying; numerical/date series and formulas require a separate design decision.
