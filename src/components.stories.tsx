@@ -1,0 +1,10 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button, MetricCard, StatusPill } from './components';
+const meta = { title: 'Precision/Buttons', component: Button, args: { children: 'Nueva operación' }, tags: ['autodocs'] } satisfies Meta<typeof Button>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+export const Primary: Story = {};
+export const Secondary: Story = { args: { variant: 'secondary', children: 'Ver servicios' } };
+export const Disabled: Story = { args: { disabled: true } };
+export const Metric = () => <MetricCard label="Servicios activos" value="12" detail="Datos sintéticos" icon="◇" />;
+export const Success = () => <StatusPill tone="success">Activo</StatusPill>;
