@@ -92,3 +92,8 @@ Status: Living decision log. Product-independent visual design system.
 - Optional history panel, normally collapsed, exposes a readable action list without occupying persistent table space.
 - Treat the mechanism as a reusable design-system capability across Zenit editors.
 - Session-local history is approved for the prototype; persistence across editor sessions and server-side save boundaries require separate design decisions.
+
+## Editable table keyboard selection geometry — IN REVIEW
+- User requests selection to outline the complete cell rectangle rather than merely shading the text/value area.
+- Proposed visual treatment: full-cell green outline for a single selection; one continuous outer outline around a rectangular multi-cell range, subtle interior fill, and a more distinct active-cell border.
+- Selection indicators must not change row/column dimensions. Keyboard navigation behavior remains under review pending revised visual demonstration and explicit approval.
