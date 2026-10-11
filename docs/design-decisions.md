@@ -290,3 +290,9 @@ Status: Living decision log. Product-independent visual design system.
 - This is broader than the approved 03.19 Progress & Loading component; reuse its determinate/indeterminate primitives where appropriate but define context-specific loading states, transitions and behavior.
 - Explore a reusable Zenit loading identity with tenant/product semantic theming, layout-preserving skeletons, media aspect-ratio placeholders, inline button states, progress when measurable, accessible announcements and reduced-motion alternatives.
 - Keep the loading experience visually stable without layout shifts. This is a future design task, not yet approved or implemented. Continue with Breadcrumbs 03.21 before scheduling this lab, unless the user changes priorities.
+
+## Zenit Breadcrumbs 03.21 — APPROVED DESIGN
+- User explicitly approved both presented variants: full breadcrumb trail for desktop and compact trail that collapses intermediate hierarchy into an accessible menu for constrained spaces.
+- Current location is visually distinguished and not a self-link; earlier levels navigate to real ancestors. Optional home icon, long-label handling, and RTL-aware separator direction are required.
+- Breadcrumbs must reflect actual product navigation rather than fabricate routes. Preserve responsive behavior, keyboard accessibility, screen-reader semantics and semantic product/tenant theming.
+- Approval applies to the chat design prototype; production implementation and testing remain pending.
