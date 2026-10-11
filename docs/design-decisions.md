@@ -358,3 +358,10 @@ Status: Living decision log. Product-independent visual design system.
 - Results/action table uses uniform 14px horizontal cell padding; reserve a sufficiently wide action column with centered ellipsis trigger and adequate edge clearance. Keep menu padding around 7px, consistent option spacing (roughly 10–11px), aligned icon/text columns, and a divider separating destructive actions.
 - The context menu is an overlay that does not reflow rows; position within viewport, flip upward where necessary, close on action/Escape/outside click, and provide focus and keyboard support.
 - Include permission-aware individual actions, contextual bulk actions for multi-selection, and explicit confirmation for destructive actions. Enforce permissions server-side. Interactive prototypes simulated actions only; implementation remains pending.
+
+## Zenit Design System 03.26 — FORMS AND VALIDATION APPROVED
+- User approved the interactive compact client-creation form pattern with aligned labels and fields, required-field asterisks, optional-field identification, contextual field help, and consistent spacing.
+- Show actionable validation messages adjacent to fields; reserve stable space for brief help/errors to minimize layout shifts. Validate complex formats on blur as appropriate; preserve accessible associations between inputs and errors.
+- Track unsaved changes, request confirmation before discarding or navigating away in the implemented version, and retain inputs on submission failure. The prototype's Cancel reset without confirmation is explicitly not the final production behavior.
+- Reuse approved 03.22 operation-loading patterns for submissions: stable button dimensions, duplicate-submission prevention, real status, and retry when supported. Enforce all important validation and authorization server-side.
+- Accessible keyboard and screen-reader semantics, RTL/LTR, and consistent responsive layout are mandatory. Prototype saves are simulated; production implementation is pending.
