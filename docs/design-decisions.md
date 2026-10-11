@@ -570,3 +570,10 @@ Status: Living decision log. Product-independent visual design system.
 - Tasks, progress, results, errors, retries and audit trails are scoped to their originating instance. Authorized users see only operations for instances they may access; enforce tenant and instance isolation server-side, not just through UI filters.
 - An internal platform administration console may oversee multiple instances for authorized Zenit operators, but is distinct from customer-facing instance-specific operations centers and must not imply cross-instance access for customers.
 - Example balances, dates and operation counts in the in-chat diagram are illustrative. The overall 03.48 laboratory remains under review; no implementation is implied.
+
+## Zenit Platform 03.48 — MONTHLY ALLOTMENT TOKENS EXPIRE AT INSTANCE RENEWAL (APPROVED RULE)
+- User explicitly decided that unused Tokens are forfeited at each individual instance's renewal boundary: no rollover, accumulation, transfer to another instance, or restoration in later cycles.
+- Maintain per-instance billing cycle, renewal date, Tokens balance and audit ledger. At cycle end expire remaining periodic allotment Tokens; on successful renewal allocate the new cycle's plan allowance. Never grant a new allotment if renewal/payment has not succeeded.
+- Customer UI should clearly show current balance, upcoming renewal/expiry date and the fact that unused Tokens expire. Preserve transaction records for expired balances.
+- Ensure already-authorized in-flight operations have explicit reservation/settlement rules at the cycle boundary; avoid accidental double charge or unexpected interruption.
+- Separate purchased top-up Tokens, if offered later, are NOT yet governed by this decision; their expiry policy remains open. The overall 03.48 operations-center laboratory remains under review.
