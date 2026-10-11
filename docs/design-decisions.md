@@ -549,3 +549,9 @@ Status: Living decision log. Product-independent visual design system.
 - User explicitly requires text-entry fields to be more spacious whenever layout space is available. Apply as a cross-product UI guideline to prompts, AI assistant conversations, additional instructions, comments, forms and editors.
 - Textareas should use available container width and a comfortable minimum height, expand vertically with content up to a reasonable context-sensitive maximum, and only then scroll internally. On wide screens avoid unnecessarily narrow input columns; on small screens use available width within safe margins.
 - Expansion must respect layout bounds, keyboard visibility, essential controls and overlay/no-reflow principles where applicable. The user reviewed 03.47 V1 and requested this refinement; full 03.47 approval has not yet been explicitly recorded.
+
+## Zenit Design System 03.47 — COMPACT CONVERSATION COMPOSER (REVIEW)
+- In AI conversations, prioritize the chronological question-answer history rather than a tall input field.
+- Default the message composer to approximately two lines; auto-grow to about five lines, then scroll within the input. Offer optional manual expansion for long messages.
+- Keep the Send action and its quoted Tokens cost visible and accessible. Preserve a spacious writing area for long-form contextual instructions; input sizing must match the task.
+- This refines the 03.47 V2 prototype; the overall assistant design is still under review. No production implementation is implied.
