@@ -198,3 +198,8 @@ Status: Living decision log. Product-independent visual design system.
 - Use product- or tenant-specific semantic theme tokens for selected-day accents (rather than hard-coding the lab's dark green), with accessible contrast across light/dark themes.
 - The overall date/time picker design covers date, date range, date-time and time modes, month navigation, 12/24-hour configuration, timezone and locale-aware display, bounds and validation; advanced cross-month range behavior, manual entry and timezone correctness remain implementation requirements, not features proven by the prototype.
 - Reuse one universal component; avoid visible native date/time controls.
+
+## Calendar weekday initials by locale — APPROVED CORRECTION
+- In the Spanish compact Date & Time Picker, use the weekday header initials **L · M · M · J · V · S · D** (Monday through Sunday). Tuesday and Wednesday are both M; do not substitute X for Wednesday.
+- Weekday labels are locale-specific and should be generated/configured for each user/product language, not hard-coded globally. Maintain weekday ordering appropriate to the locale or product settings and accessible full weekday names for screen readers/tooltips.
+- Preserve the previously approved compact seven-column calendar geometry.
