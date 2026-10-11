@@ -93,7 +93,8 @@ Status: Living decision log. Product-independent visual design system.
 - Treat the mechanism as a reusable design-system capability across Zenit editors.
 - Session-local history is approved for the prototype; persistence across editor sessions and server-side save boundaries require separate design decisions.
 
-## Editable table keyboard selection geometry — IN REVIEW
-- User requests selection to outline the complete cell rectangle rather than merely shading the text/value area.
-- Proposed visual treatment: full-cell green outline for a single selection; one continuous outer outline around a rectangular multi-cell range, subtle interior fill, and a more distinct active-cell border.
-- Selection indicators must not change row/column dimensions. Keyboard navigation behavior remains under review pending revised visual demonstration and explicit approval.
+## Editable table keyboard selection geometry — APPROVED
+- Approved after interactive v3 validation: selection outlines the entire cell rectangle rather than the text/value area.
+- Use a single, uniformly weighted green outer border for individual cells or rectangular multi-cell ranges; subtle interior shading and distinct active-cell indicator within a range.
+- Expand the actual outer rectangle on Shift+arrow, Shift+click, or pointer drag; avoid doubled or uneven borders and layout shifts.
+- The user confirmed the corrected v3 visual behavior. Other keyboard navigation details remain subject to separate approval.
