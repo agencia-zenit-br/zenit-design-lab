@@ -38,3 +38,7 @@ Status: Living decision log. Product-independent visual design system.
 - Scrollbars: match the Editorial Minimalism palette with subdued track/thumb, rounded geometry, clear hover/active affordances, and preserved native scroll behavior; verify Windows/macOS and touch devices. Never hide essential scroll affordances.
 - First-use guidance: brief, dismissible contextual onboarding tied to actual controls; persistent, discoverable help entry points for later reference; keyboard/screen-reader support; do not obstruct essential actions or permanently consume valuable screen space. Avoid repeating dismissed guidance unnecessarily.
 - Table advanced interaction review: column resizing, row/column reordering with destination preview, undo/redo, and scrolling behavior. Await explicit user approval before marking these as final.
+
+## Space efficiency — APPROVED PRINCIPLE
+- Maximize usable workspace while preserving legibility, accessible target sizes, and comfortable interaction. Do not add unnecessary rows, columns, dividers, or empty space.
+- Place table column-reordering arrows inline with the column title, in the compact arrangement `< Product >`, rather than creating a separate control row. Use responsive adaptations if space is constrained.
