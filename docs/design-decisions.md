@@ -597,3 +597,9 @@ Status: Living decision log. Product-independent visual design system.
 - Approval is for VISUAL ARCHITECTURE and interaction organization only. This design laboratory must not continue specifying detailed billing/business logic; the user explicitly redirected the conversation back to the universal visual language of the Zenit product family.
 - Prior approved rules on Tokens, expiry, discounts, lot consumption and renewal are preserved as future Platform/product functional requirements, NOT as implemented billing functionality.
 - Subsequent labs should prioritize reusable cross-product design primitives, components and interaction patterns rather than commercial/accounting workflows. No production React/Storybook/backend code or deployment implied.
+
+## Zenit Design System 03.48 — INSTANCE OPERATIONS CENTER V2 VISUAL LAYOUT APPROVED
+- User reviewed and approved the V2 visual composition: instance-scoped operations center; compact summary indicators for Tokens, renewal and active operations; Operations, Tokens, Renewal and History tabs; per-lot expiry presentation; operation progress, status and contextual actions; responsive, accessible design.
+- This approval concerns visual architecture and interaction patterns only, NOT implementation of billing, token ledgers, payment flows, commercial pricing, expiration mechanics or other backend business logic.
+- Scope boundary clarified by user: Zenit Design Lab defines the universal visual language, components, navigation, states, accessibility and responsive patterns. Detailed financial/commercial rules belong to Zenit Platform product architecture and must not derail design-system review. Capture functional requirements as handoff notes rather than design-lab implementation tasks.
+- Visual laboratory 03.48 is approved and closed. Proceed to the next universal design component. No production component, Storybook story or deployment is implied.
