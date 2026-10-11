@@ -1,0 +1,73 @@
+name: Deploy Design Lab
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: design-lab-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy isolated Design Lab
+    runs-on: ubuntu-latest
+    environment: design-lab
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build application
+        run: npm run build
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Build and push immutable image
+        run: |
+          gcloud builds submit \
+            --project zenit-platform-labs \
+            --tag "southamerica-east1-docker.pkg.dev/zenit-platform-labs/zenit-platform-labs/zenit-design-lab:${GITHUB_SHA}"
+      - name: Resolve image digest
+        id: image
+        shell: bash
+        run: |
+          IMAGE="southamerica-east1-docker.pkg.dev/zenit-platform-labs/zenit-platform-labs/zenit-design-lab"
+          DIGEST="$(gcloud artifacts docker images describe "${IMAGE}:${GITHUB_SHA}" --project zenit-platform-labs --format='value(image_summary.digest)')"
+          test -n "$DIGEST"
+          echo "uri=${IMAGE}@${DIGEST}" >> "$GITHUB_OUTPUT"
+      - name: Deploy Design Lab only
+        run: |
+          gcloud run deploy zenit-design-lab \
+            --project zenit-platform-labs \
+            --region southamerica-east1 \
+            --platform managed \
+            --image "${{ steps.image.outputs.uri }}" \
+            --port 8080 \
+            --cpu 1 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 1 \
+            --concurrency 20 \
+            --timeout 60 \
+            --quiet
+      - name: Verify health endpoint
+        run: |
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 \
+            "https://zenit-design-lab-725877092709.southamerica-east1.run.app/healthz"
