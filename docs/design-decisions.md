@@ -591,3 +591,9 @@ Status: Living decision log. Product-independent visual design system.
 - Snapshot the exact offered commercial terms at purchase, including price, discount, purchased quantity, purchase timestamp, expiration calculation, currency, tax treatment and offer/version reference. Later catalog edits must not retroactively change previously purchased lots.
 - Apply existing worst-case provider cost, markup, margin-floor and applicable tax safeguards to promotional pricing. Discounting must not bypass cost coverage. Display price, discount and expiry transparently before purchase; do not infer or approve any specific default duration or rate from illustrative UI values.
 - These are approved rules within the still-in-review 03.48 operations and instance billing laboratory. No production implementation is implied.
+
+## Zenit Design System 03.48 — INSTANCE OPERATIONS CENTER V2 VISUAL ARCHITECTURE APPROVED
+- User approved the V2 visual distribution: compact summary header, instance-contextual information, tabs for operations/Tokens/renewal/history, KPI cards, status/progress rows, Token-lot expiry breakdown, and isolated per-instance views.
+- Approval is for VISUAL ARCHITECTURE and interaction organization only. This design laboratory must not continue specifying detailed billing/business logic; the user explicitly redirected the conversation back to the universal visual language of the Zenit product family.
+- Prior approved rules on Tokens, expiry, discounts, lot consumption and renewal are preserved as future Platform/product functional requirements, NOT as implemented billing functionality.
+- Subsequent labs should prioritize reusable cross-product design primitives, components and interaction patterns rather than commercial/accounting workflows. No production React/Storybook/backend code or deployment implied.
