@@ -429,3 +429,10 @@ Status: Living decision log. Product-independent visual design system.
 - User menu provides profile, preferences, organization switching (when permitted), and sign-out, separate from product navigation.
 - All dropdowns and menus must be anchored floating overlays that do not reflow or push the main content; the in-chat prototype used inline panels for illustration only. Maintain compact consistent header height, responsive mobile treatment, accessibility and LTR/RTL support.
 - Prototype products, menu entries and actions were illustrative; final catalog, entitlements and branding remain product-specific and pending implementation.
+
+## Zenit Design System 03.36 — ORGANIZATION IDENTITY AND WORKSPACES APPROVED
+- User approved the universal context hierarchy Organization → Product → Workspace. A user may access multiple authorized organizations and products without logging out; workspaces are optional/configurable depending on product needs.
+- Organization switcher offers search, recognizable organization identity (name/logo), role indication and clear active selection. Product and workspace choices update to the new organization's authorized context; do not expose unauthorized organizations, products or data.
+- Keep organization identity and branding distinct from the active Zenit product identity. Integrate organization and product selectors with approved 03.35 application header, using anchored floating overlays without content reflow.
+- Switching organization/workspace must respect unsaved changes (03.28 confirmation), permissions and entitlements, clear tenant isolation enforced server-side, and safe navigation; restore last-used context only while authorization remains valid.
+- Support responsive layouts, accessible keyboard/touch navigation, LTR/RTL and independent user/organization/product preferences. The in-chat prototype uses illustrative organizations, roles and products only; it is not a production implementation or proof of real access.
