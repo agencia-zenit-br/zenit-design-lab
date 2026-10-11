@@ -284,3 +284,9 @@ Status: Living decision log. Product-independent visual design system.
 - On narrow viewports, prefer horizontal scrolling or adaptive navigation rather than squeezing or clipping labels. Avoid unnecessary layout shifts when switching tabs or changing counters.
 - Support RTL/LTR layout and direction-aware navigation. Distinguish navigational tabs from filter controls even if visual styling overlaps.
 - This is approval of the design demonstrated in chat, not a claim of production implementation or verified accessibility.
+
+## Future lab priority — Zenit Loading System (PENDING DESIGN)
+- User requested a dedicated upcoming design discussion for loading indicators in three distinct contexts: individual operations/actions, whole pages/app sections, and multimedia content (images, videos, audio, documents/previews).
+- This is broader than the approved 03.19 Progress & Loading component; reuse its determinate/indeterminate primitives where appropriate but define context-specific loading states, transitions and behavior.
+- Explore a reusable Zenit loading identity with tenant/product semantic theming, layout-preserving skeletons, media aspect-ratio placeholders, inline button states, progress when measurable, accessible announcements and reduced-motion alternatives.
+- Keep the loading experience visually stable without layout shifts. This is a future design task, not yet approved or implemented. Continue with Breadcrumbs 03.21 before scheduling this lab, unless the user changes priorities.
