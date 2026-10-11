@@ -627,3 +627,8 @@ Status: Living decision log. Product-independent visual design system.
 - Clipboard copies must preserve editable layer content, styling, dimensions, and applicable properties. Pasted layers should be selected and visibly offset to distinguish them from originals; copying across compatible documents/projects is a desired behavior, subject to permissions and asset-reference integrity.
 - Keyboard shortcuts are context-aware: when editing text inside a field or text layer, native text clipboard semantics take precedence over layer clipboard actions. Provide accessible menu actions and touch equivalents.
 - This documents an explicitly requested interaction requirement for the 03.51 review, not approval of the full lab or production implementation.
+
+## Zenit Design System 03.51 — DIRECT MANIPULATION AND ZOOM CONTROL REFINEMENT
+- User explicitly rejects slider bars for object X/Y positioning and resizing in the visual editor. Direct click-hold dragging and corner/edge handles are the primary manipulation mechanisms; numeric X/Y/width/height fields may remain for precision, without sliders.
+- User explicitly requests a dedicated zoom slider for the canvas. Design proposal: place it in a compact canvas footer with minus/plus controls, visible zoom percentage, and fit-to-window action; zoom must not change document geometry or object dimensions. Mouse wheel with modifier and trackpad gesture are supplementary proposals.
+- This refines the ongoing 03.51 visual design review; do not claim the full laboratory is approved or implemented.
