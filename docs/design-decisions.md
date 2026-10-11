@@ -632,3 +632,9 @@ Status: Living decision log. Product-independent visual design system.
 - User explicitly rejects slider bars for object X/Y positioning and resizing in the visual editor. Direct click-hold dragging and corner/edge handles are the primary manipulation mechanisms; numeric X/Y/width/height fields may remain for precision, without sliders.
 - User explicitly requests a dedicated zoom slider for the canvas. Design proposal: place it in a compact canvas footer with minus/plus controls, visible zoom percentage, and fit-to-window action; zoom must not change document geometry or object dimensions. Mouse wheel with modifier and trackpad gesture are supplementary proposals.
 - This refines the ongoing 03.51 visual design review; do not claim the full laboratory is approved or implemented.
+
+## Zenit Design System 03.51 — VECTOR SHAPES AND ICON LIBRARY REQUIREMENT
+- User requests that the universal visual composition editor support inserting editable geometric shapes (squares, rectangles, semicircles, circles, etc.) and icons, with direct control over dimensions and color.
+- Proposed visual design: an Insert/Shapes and Icons library; inserted items become independent editable vector layers compatible with direct canvas drag/resize, layer ordering, copy/paste, grouping and the 03.50 inspector. Contextual properties include fill, stroke, stroke width, opacity and rotation; additional shapes, arrows and icon sets can be extended.
+- Prefer resolution-independent vector objects, not rasterized shape assets. Shape geometry should be manipulated primarily on the canvas using handles, with precise numeric fields as an option; do not reintroduce position sliders. The dedicated zoom slider remains a canvas control.
+- This records the user's additional 03.51 requirement and prototype direction, not approval of the full 03.51 lab or production implementation.
