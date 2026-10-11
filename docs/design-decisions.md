@@ -218,3 +218,9 @@ Status: Living decision log. Product-independent visual design system.
 - Support Unicode bidirectional text correctly, including mixed Arabic/Hebrew with Latin text, numbers, dates, email addresses, identifiers, accounting values and code; isolate direction-sensitive substrings as needed. Preserve canonical data independently of visual direction.
 - Language, text direction, calendar system, locale, timezone and theme must remain independently configurable, with sensible defaults. Support appropriate fonts and glyph coverage, accessible focus/reading order, keyboard behavior, and both desktop and mobile layouts.
 - Establish RTL acceptance testing for every reusable component and product before releasing Hebrew/Arabic versions; this is a design/architecture mandate, not a claim of current implementation.
+
+## Accessibility program — FUTURE DEDICATED REVIEW; BASELINE MANDATORY NOW
+- User explicitly requests a later, dedicated discussion and formal decisions about accessibility across the Zenit product family.
+- Accessibility must be considered from the start for every shared component and product; it is not a premium feature or optional add-on. Include keyboard access, screen-reader semantics, visible focus, accessible error/status feedback, touch targets, contrast, RTL/LTR support, text scaling and reduced motion.
+- Schedule a dedicated design review to establish an accessibility policy, acceptance criteria, testing methodology and governance. WCAG 2.2 Level AA is a proposed baseline for that future discussion, not yet a formally user-approved compliance commitment.
+- Review visual, motor, auditory and cognitive accessibility, high-contrast modes, complex data grids, and accessible localization. Do not claim certification or conformance until implementation and audits verify it.
