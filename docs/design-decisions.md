@@ -264,3 +264,9 @@ Status: Living decision log. Product-independent visual design system.
 - Limit tooltip inline size to approximately 33.33vw, additionally constrained by safe viewport-edge margins. Wrap naturally only when the text exceeds that available width. Handle unusually long unbroken tokens without overflow.
 - Preserve collision-aware positioning, compact internal padding, no unnecessary terminal punctuation, LTR/RTL directionality, and absolutely no parent/container layout shift when opening or closing the floating tooltip.
 - This rule is approved; the overall Tooltip component still requires final visual/interaction validation.
+
+## Zenit Notifications 03.18 — APPROVED DESIGN
+- User approved the presented universal notification structure: success, information, warning, and error variants, each with a compact icon, short heading, supporting message, and dismiss action.
+- Inline/form notifications reserve layout space to prevent shifts; floating notifications render in an overlay without resizing page content.
+- Preserve restrained padding, readable wrapped text, accessible status/error announcements, semantic theme tokens, responsive layout, and LTR/RTL support.
+- Approval is for the design demonstrated in chat; it does not imply production implementation or completed accessibility tests.
