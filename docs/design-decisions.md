@@ -59,3 +59,10 @@ Status: Living decision log. Product-independent visual design system.
 - Preserve completed/skipped state per user and feature across sessions in production.
 - Prefer anchored overlays that do not cause layout shifts; support keyboard, touch, reduced motion, and accessible dismissal.
 - Keep copy concise and avoid persistent instructional clutter.
+
+## Table column drag-and-drop visual behavior — APPROVED
+- Directly dragging a column header will show a subtle muted-green vertical insertion line between columns at the intended drop location.
+- The dragged header receives a restrained elevated visual treatment during drag.
+- The table's definitive column order changes only upon drop, not during hovering.
+- Preserve the previously approved inline chevron reorder controls as an alternative, including for keyboard/accessibility.
+- Visual behavior approved; implementation and hands-on drag interaction remain to be reviewed in the next interactive prototype.
