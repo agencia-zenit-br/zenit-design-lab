@@ -302,3 +302,8 @@ Status: Living decision log. Product-independent visual design system.
 - Proposed image transition: a restrained blur-to-sharp and low-to-full opacity reveal (approximately 200–300 ms), while preserving media aspect ratio and container dimensions and without delaying ready images artificially.
 - Respect prefers-reduced-motion, image errors and cached/instant image loads; avoid flashing, excessive animation, and layout shift. The illustrated transition is a prototype, not a real image-loading integration.
 - The four-mode Loading System remains in review until the user explicitly approves the revised design.
+
+## Loading System 03.22 — bidirectional repeating image sweep (USER REVISION, IN REVIEW)
+- User prefers a subtle repeating side-to-side light/render sweep across the reserved image area during loading, rather than a one-time blur-to-sharp effect as the primary loading indicator.
+- Sweep reverses horizontally at the edges and continues while the resource is loading. On completion, stop the sweep and reveal the actual image without changing container size or aspect ratio. Respect reduced-motion with a static placeholder.
+- Prototype is a visual simulation; it does not demonstrate real network image loading. Final motion intensity, speed and overall Loading System approval await user validation.
