@@ -43,9 +43,9 @@ Status: Living decision log. Product-independent visual design system.
 - Maximize usable workspace while preserving legibility, accessible target sizes, and comfortable interaction. Do not add unnecessary rows, columns, dividers, or empty space.
 - Place table column-reordering arrows inline with the column title, in the compact arrangement `< Product >`, rather than creating a separate control row. Use responsive adaptations if space is constrained.
 
-## Column reorder icon refinement — PROPOSED
+## Column reorder icon refinement — APPROVED
 - The literal characters `<` and `>` were placeholders for layout, not the desired icon glyphs.
-- Proposed: polished, thin-stroke vector chevrons inline with header text, borderless at rest, subtle palette-consistent hover feedback. Await explicit visual approval.
+- Approved: polished, thin-stroke vector chevrons inline with header text, borderless at rest, subtle palette-consistent hover feedback.
 
-## Table reorder chevron scale — IN REVIEW
+## Table reorder chevron scale — APPROVED
 - User preference: chevrons visually smaller than header text. Prototype target: approximately 12px vector chevrons alongside 14px header labels, fine strokes, subtle visual weight, with usable interaction targets and no extra header row.
