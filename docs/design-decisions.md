@@ -344,3 +344,10 @@ Status: Living decision log. Product-independent visual design system.
 - Use restrained contextual icons, concise messages and one useful primary action where permitted. Empty states orient toward first creation; no-results states offer clearing filters or adjusting search without deleting source data; connectivity and server errors must be distinguished and allow retry where appropriate.
 - Preserve user input and unsaved edits where possible. Keep recovery actions contextual and permission-aware, avoid unnecessary technical details, and support section/table/full-page placements with product-specific theme tokens, accessibility and RTL/LTR.
 - The chat prototype simulated action completion; actual error detection and recovery integration remain pending.
+
+## Zenit Design System 03.24 — UNIVERSAL SEARCH AND FILTERS APPROVED
+- User approved the interactive search/filter prototype after the results-table margin and column layout correction.
+- Search immediately by name, identifier and authorized attributes. Combine type/status and extensible filters; show removable active-filter chips and a clear/reset action. Sorting is independent of search/filter state. Show contextual no-results pattern (03.23).
+- Results table: uniform 14px horizontal cell padding, stable proportional columns (approximately 49% record, 23% status, 28% date in the demonstrated layout), visually restrained neutral status labels, dates right-aligned on one line with tabular numerals, readable two-line record identifiers, and horizontal scrolling on narrow screens rather than crushing content. Use logical alignment for RTL/LTR.
+- Restore search, filters, sorting and list position on navigation back where applicable. At scale, use server-side pagination, debounced search, stale-request cancellation and access-controlled query fields.
+- Approval covers the design and revised table spacing; the interactive prototype used fictional local records and is not a production implementation.
