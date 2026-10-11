@@ -187,3 +187,8 @@ Status: Living decision log. Product-independent visual design system.
 - Support configurable single selection (closes on choice) and multiple selection (compact selected chips and explicit Done), optional searchable filtering, optional grouped choices, clear selection, and empty-results state.
 - Large datasets require internal scrolling, scalable virtualization and optional remote search. Production accessibility must implement keyboard arrows, Enter/Space activation, Escape close, focus indicators and appropriate screen-reader combobox/listbox semantics.
 - No visible browser-native select controls. The in-chat prototype demonstrated selection, search and grouping only; production keyboard/virtualization behavior is a requirement, not a tested implementation.
+
+## Date & Time Picker refinements — IN REVIEW
+- User requests a denser day grid: reduce horizontal and vertical gaps between day cells, avoiding a loose/spread-out calendar while preserving usable touch and keyboard hit targets.
+- Universal product theming rule confirmed: dark green is the Design Lab reference accent, not a hard-coded color across all Zenit products. Each product (and potentially tenant/brand) may supply semantic design tokens for selected, hover, focus, accent and contrast states while retaining shared geometry, interaction and accessibility.
+- Apply semantic color tokens rather than literal `#35584A` in production components; validate contrast in light and dark themes. The Date & Time Picker itself remains under review pending user approval of the compact revision.
