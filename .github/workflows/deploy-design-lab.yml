@@ -71,4 +71,4 @@ jobs:
       - name: Verify health endpoint
         run: |
           curl --fail --silent --show-error --retry 5 --retry-delay 3 \
-            "https://zenit-design-lab-725877092709.southamerica-east1.run.app/healthz"
+            "https://zenit-design-lab-725877092709.southamerica-east1.run.app/healthz/"
