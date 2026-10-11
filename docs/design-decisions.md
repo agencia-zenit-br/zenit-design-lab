@@ -379,3 +379,10 @@ Status: Living decision log. Product-independent visual design system.
 - Make confirmation proportional to risk: simple confirmations for ordinary destructive actions; typed confirmation for especially consequential or irrecoverable bulk/organization-level operations. Favor reliable Undo over needless confirmation for reversible actions.
 - Default focus normally favors the data-preserving choice; guard against accidental Enter activation of destructive operations. Apply accessible modal focus trapping/return, safe Escape behavior, and LTR/RTL support.
 - Semantic danger colors for irreversible destruction and restrained warning/neutral treatment for other consequential changes; never rely solely on color. Demonstrated actions are simulated; implementation pending.
+
+## Zenit Design System 03.29 — DRAG, DROP AND REORDER APPROVED
+- User explicitly rejected a mere insertion line during drag and approved the revised interactive prototype that opens a **full-sized dynamic insertion gap** as an item is moved with the pointer held down.
+- When drag begins from a six-dot handle, lift the dragged item visually and leave an equal-height placeholder; as the pointer moves, surrounding items smoothly rearrange to open a real drop slot at the prospective destination. On release, insert the item in that slot; on cancellation, restore the prior order.
+- Retain up/down arrow controls as an accessible alternative. Support pointer, touch and keyboard workflows, RTL/LTR, reduced motion, focus management and accessible announcements. Provide auto-scroll near container edges in the production implementation.
+- Mark changes as unsaved until explicit save; offer reset and cancellation. Drag-to-reorder does not imply file relocation or changes in record status; apply separate permissions and semantics to those operations.
+- Approved as an interaction/design specification. The in-chat prototype simulates persistence; deployed implementation remains pending.
