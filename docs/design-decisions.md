@@ -52,3 +52,10 @@ Status: Living decision log. Product-independent visual design system.
 
 ## Table guide header alignment — APPROVED
 - Approved default: center guide/header titles horizontally while keeping data alignment appropriate to content; center the full label-plus-chevron group, and allow table-level override.
+
+## First-use contextual guidance — APPROVED
+- Provide a brief, optional first-use walkthrough per feature, with Next, Skip, and Finish.
+- Users can recover and replay guidance later from a clearly discoverable contextual Help control. Do not restrict help to hover or first use.
+- Preserve completed/skipped state per user and feature across sessions in production.
+- Prefer anchored overlays that do not cause layout shifts; support keyboard, touch, reduced motion, and accessible dismissal.
+- Keep copy concise and avoid persistent instructional clutter.
