@@ -114,3 +114,13 @@ Status: Living decision log. Product-independent visual design system.
 - Drag vertically to preview extension of the range; on release fill target cells by repeating the source values/pattern, preserving order for multi-cell selections.
 - Show a green outline for the prospective fill extent, without shifting layout. Record the entire fill as one undoable operation.
 - Initially support literal-value copying; numerical/date series and formulas require a separate design decision.
+
+## Editable table fill handle — APPROVED
+- User approved the interactive fill-handle prototype: bottom-right square handle on the selected cell/range; pointer drag previews a contiguous extension with a green outline; releasing fills target cells by repeating the literal source values or block in order.
+- A fill gesture is one logical undoable/redoable operation. Keep the selection geometry consistent with the previously approved full-cell outline, without changing table dimensions.
+- Initial implementation is literal-value fill; numeric/date sequence inference is deferred.
+
+## Spreadsheet-like cell formatting and formulas — FUTURE ROADMAP (NOT APPROVED FOR INITIAL SCOPE)
+- Consider cell-level formatting: data types, currency, percentages, decimals, dates, colors, alignment, conditional formatting.
+- Consider spreadsheet-style formulas (e.g. =A1+B1, =SUMA(B2:B10)), references, dependencies, and automatic recalculation.
+- Design a forward-compatible cell model that separates raw value, display formatting, and eventual formula metadata, but do not treat formula engine or rich formatting as initial release requirements.
