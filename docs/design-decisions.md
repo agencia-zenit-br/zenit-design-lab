@@ -247,3 +247,9 @@ Status: Living decision log. Product-independent visual design system.
 - Use restrained internal padding and compact typography rather than oversized tooltip surfaces.
 - Omit terminal full stops in short contextual help labels and short tooltip descriptions. Preserve internal punctuation and punctuation needed for longer or more complex prose.
 - These refinements respond to user feedback on the prototype; do not mark the full Tooltip component approved until the revised behavior is validated.
+
+## Zenit Tooltip 03.17 — Stable layout and padding correction (IN REVIEW)
+- User identified layout shift when contextual help appears. Establish a general no-layout-shift principle for contextual messaging.
+- Floating tooltips must overlay content without changing parent dimensions. Inline/contextual status or help messages must have a reserved message area from initial render, including when the message is hidden; determine a stable height appropriate to content and responsive breakpoints.
+- Correct the 'Message length' control label alignment: apply the same consistent horizontal inset/padding as the surrounding content. Audit labels and controls for edge-hugging and inconsistent alignment.
+- Maintain previous rules: text wrapping without overflow, compact padding, no terminal period for short contextual messages. The revised demo and component remain under review pending explicit approval.
