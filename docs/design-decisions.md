@@ -351,3 +351,10 @@ Status: Living decision log. Product-independent visual design system.
 - Results table: uniform 14px horizontal cell padding, stable proportional columns (approximately 49% record, 23% status, 28% date in the demonstrated layout), visually restrained neutral status labels, dates right-aligned on one line with tabular numerals, readable two-line record identifiers, and horizontal scrolling on narrow screens rather than crushing content. Use logical alignment for RTL/LTR.
 - Restore search, filters, sorting and list position on navigation back where applicable. At scale, use server-side pagination, debounced search, stale-request cancellation and access-controlled query fields.
 - Approval covers the design and revised table spacing; the interactive prototype used fictional local records and is not a production implementation.
+
+## Zenit Design System 03.25 — CONTEXT MENUS AND QUICK ACTIONS APPROVED
+- User approved the revised contextual action menu after correcting both table/action-column margins and menu-item spacing, then replacing improvised typographic glyphs with professional, consistent vector icons.
+- Use coherent Lucide-style semantic icons (approximately 16px, consistent 1.75px stroke); do not use Unicode glyphs, emojis or mixed icon libraries as substitutes for functional UI iconography. Brand marks are a separate case.
+- Results/action table uses uniform 14px horizontal cell padding; reserve a sufficiently wide action column with centered ellipsis trigger and adequate edge clearance. Keep menu padding around 7px, consistent option spacing (roughly 10–11px), aligned icon/text columns, and a divider separating destructive actions.
+- The context menu is an overlay that does not reflow rows; position within viewport, flip upward where necessary, close on action/Escape/outside click, and provide focus and keyboard support.
+- Include permission-aware individual actions, contextual bulk actions for multi-selection, and explicit confirmation for destructive actions. Enforce permissions server-side. Interactive prototypes simulated actions only; implementation remains pending.
