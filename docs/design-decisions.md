@@ -365,3 +365,10 @@ Status: Living decision log. Product-independent visual design system.
 - Track unsaved changes, request confirmation before discarding or navigating away in the implemented version, and retain inputs on submission failure. The prototype's Cancel reset without confirmation is explicitly not the final production behavior.
 - Reuse approved 03.22 operation-loading patterns for submissions: stable button dimensions, duplicate-submission prevention, real status, and retry when supported. Enforce all important validation and authorization server-side.
 - Accessible keyboard and screen-reader semantics, RTL/LTR, and consistent responsive layout are mandatory. Prototype saves are simulated; production implementation is pending.
+
+## Zenit Design System 03.27 — CONTEXTUAL SIDE PANELS APPROVED
+- User approved a true lateral sliding drawer, explicitly **not** a vertical accordion or an expanding section below the records table. Earlier stacked prototype was misleading; the subsequent side-by-side illustration clarified the intended pattern.
+- On desktop the drawer overlays the existing page from the logical inline-end edge (right in LTR, left in RTL) without resizing, compressing, reflowing or scrolling the underlying table. Preserve page position and working context when opened and closed.
+- Use the drawer for quick record inspection and editing, with the approved 03.26 form conventions, accessible focus management, keyboard close, and explicit unsaved-changes confirmation. Complex workflows should use the previously approved window system instead.
+- On narrow/mobile screens the drawer becomes a full-screen contextual view with accessible header and actions. Respect RTL directionality.
+- Approved as a design specification; implementation in the deployed design lab remains pending.
