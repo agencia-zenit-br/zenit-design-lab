@@ -338,3 +338,9 @@ Status: Living decision log. Product-independent visual design system.
 - Pause, resume and retry must appear only where backend operations support them; successful completion and failure must be represented accurately. Allow users to continue working in other sections while tasks execute; persistence/recovery across navigation must be implemented and verified separately.
 - The interactive demo uses local simulated progress and controls, not actual persistent background jobs.
 - With this approval, all four 03.22 loading modes have an approved design: multimedia bidirectional shimmer with centered type icon; structural page skeletons; stable operation-button loading; compact long-running task center. Production implementation remains pending.
+
+## Zenit Design System 03.23 — EMPTY STATES AND ERRORS APPROVED
+- User approved the interactive proposal for four states: no content, no search results, offline/connectivity failure, and operation/load error.
+- Use restrained contextual icons, concise messages and one useful primary action where permitted. Empty states orient toward first creation; no-results states offer clearing filters or adjusting search without deleting source data; connectivity and server errors must be distinguished and allow retry where appropriate.
+- Preserve user input and unsaved edits where possible. Keep recovery actions contextual and permission-aware, avoid unnecessary technical details, and support section/table/full-page placements with product-specific theme tokens, accessibility and RTL/LTR.
+- The chat prototype simulated action completion; actual error detection and recovery integration remain pending.
