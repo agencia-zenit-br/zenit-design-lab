@@ -458,3 +458,10 @@ Status: Living decision log. Product-independent visual design system.
 - Never present steps for inaccessible features. Track completed, skipped and in-progress state per user, product and version; allow recovery/replay through approved 03.38 contextual help center.
 - Optional contextual hints can be disabled. Preserve ongoing user work, forms and navigation context. Do not automatically publish, delete, charge or otherwise mutate real data during tours; interactive practice requires safe sandbox/demo data and explicit authorization for consequential actions.
 - In-chat prototype was illustrative only; production positioning, persistence, tour engine and integrations remain unimplemented.
+
+## Zenit Design System 03.40 — METRICS, KPIs AND DASHBOARDS APPROVED
+- User approved compact KPI cards with clearly identified metric, unit, time range, change and comparison baseline, and consistent line/bar/area/distribution charts and accessible tabular alternatives. Choose chart forms based on data semantics, not decoration.
+- Provide explicit time ranges, comparison periods and auditable change calculations. Preserve precise units, currencies, timezone, last updated timestamp, source and provenance; avoid misleading axes and ambiguous rounding.
+- Dashboard composition may be configured by authorized users using approved 03.29 reorder and 03.31 resizable layout patterns. Respect each product's semantic design tokens rather than hardcoding a universal accent color.
+- Data quality must distinguish observed/actual, estimated, provisional, incomplete and stale values. Missing or failed-to-load data must NEVER silently become zero. Integrate loading, empty and error states from 03.22–03.23.
+- Production charts should support point/series interaction, keyboard navigation, screen readers, responsive presentation and LTR/RTL. In-chat prototype values, chart series, exports and filters were illustrative only, not connected to live backend data; production React implementation remains pending.
