@@ -609,3 +609,10 @@ Status: Living decision log. Product-independent visual design system.
 - Keep controls visually compact, predictable and accessible, with responsive horizontal overflow when needed. Continue design review for frozen, resizable and reorderable columns, keyboard navigation and loading states without treating those unshown details as approved implementations.
 - Reuse the editable grid behaviors approved under laboratory 03.03 where applicable; do not duplicate the editing component.
 - This is a visual/interaction design approval only, not backend functionality, production React/Storybook code or deployment. Continue focusing Zenit Design Lab on the cross-product design language rather than commercial or billing logic.
+
+## Zenit Design System 03.50 — UNIVERSAL PROPERTIES INSPECTOR APPROVED
+- User approved the reusable universal contextual properties inspector, following the interactive editorial-card example and the initial inspector V1 exploration.
+- The inspector displays controls for the currently selected object, with a consistent compact header, grouped/collapsible property sections, contextual content and design controls, and immediate canvas preview of visual changes.
+- Reuse the same visual interaction model across editorial modules, commerce product cards, social-creative layers, form fields, dashboards and other visual builders, while each product supplies its own appropriate properties.
+- The inspector complements rather than replaces specialized editors (e.g. media editing). Desktop may show it as a side panel; narrow/mobile viewports use an overlay to preserve usable canvas width and avoid unexpected reflow. Maintain accessibility, keyboard navigation, logical-direction layout and stable controls.
+- This is approval of the design pattern only, not production functionality, Storybook implementation or deployment. No product-specific business rules are approved by this decision.
