@@ -231,3 +231,8 @@ Status: Living decision log. Product-independent visual design system.
 - Eyedropper desired behavior: activate sampling, allow scrolling to find a target color, click to sample, apply it and restore the prior work position/state. Assess browser API permissions and limitations; do not promise unrestricted screen pixel sampling or scroll behavior unsupported by native EyeDropper. Provide a controlled in-app fallback where feasible.
 - CMYK is print-oriented; conversions from screen RGB without ICC profiles are approximations. Distinguish precise color-managed workflows from convenience conversions.
 - This is a change request to the prototype, not final component approval. Validate interactive behavior before marking approved.
+
+## Color Picker 03.16 — Compact Photoshop-like popover refinement (IN REVIEW)
+- User clarified the desired reference is Photoshop's compact color picker, not the large/wide preview shown earlier.
+- Target a small anchored popover (~240–260px wide as an initial desktop design target), with a compact square saturation/value field, narrow hue control, small current/previous swatches, eyedropper and compact HEX/RGB/CMYK fields. Keep spacing tight and avoid oversized previews or swatches.
+- Adapt positioning to available viewport space and mobile layouts; final dimensions and interaction remain subject to prototype validation.
