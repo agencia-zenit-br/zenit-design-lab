@@ -70,5 +70,6 @@ jobs:
             --quiet
       - name: Verify health endpoint
         run: |
-          curl --fail --silent --show-error --retry 5 --retry-delay 3 \
-            "https://zenit-design-lab-725877092709.southamerica-east1.run.app/healthz/"
+          response=$(curl --fail --silent --show-error --retry 5 --retry-delay 3 \
+            "https://zenit-design-lab-725877092709.southamerica-east1.run.app/__zenit_health")
+          test "$response" = "ok" || { echo "Unexpected health response: $response"; exit 1; }
