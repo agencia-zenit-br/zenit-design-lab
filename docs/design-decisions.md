@@ -312,3 +312,8 @@ Status: Living decision log. Product-independent visual design system.
 - User likes the repeating horizontal bidirectional loading sweep but suggests adding a centered multimedia icon.
 - Proposed refinement: a small, subtle, semi-transparent centered icon identifying image, video, audio or document, kept static while the sweep moves behind it. Avoid excessive visual emphasis or using the Zenit logo for every media placeholder.
 - Preserve reserved media dimensions, accessibility, reduced-motion support and the previously requested sweep. This icon treatment is proposed, not yet approved; the latest illustrative chat mockup did not animate the sweep.
+
+## Zenit Loading System 03.22 — APPROVED MULTIMEDIA LOADER VARIANT
+- User approved the combined multimedia loading prototype: continuous subtle horizontal light sweep that reverses direction, with a static centered semi-transparent media-type icon (image, video, audio, document).
+- Keep the reserved media aspect ratio and dimensions fixed; stop the sweep and replace the placeholder when the actual resource becomes ready. Respect reduced-motion preferences with a nonanimated fallback; use semantic product/tenant theming and accessible status text.
+- This approval is specifically for the demonstrated multimedia loader appearance and behavior. The chat demo simulates completion and is not evidence of real asset-loading integration. The full page/action/process Loading System may require separate final validation.
