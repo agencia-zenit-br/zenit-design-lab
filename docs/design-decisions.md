@@ -331,3 +331,10 @@ Status: Living decision log. Product-independent visual design system.
 - On success, display a concise completion confirmation; on failure, explain the error and allow retry without losing entered data. For long-running jobs, add real determinate progress when available; never fabricate percentage or server status.
 - Respect reduced-motion, keyboard accessibility, RTL/LTR and product-specific semantic theming.
 - Approval covers the interactive visual prototype and design behavior; production implementation and backend integration remain pending.
+
+## Zenit Loading System 03.22 — LONG-RUNNING TASK CENTER APPROVED
+- User explicitly approved the compact task center for long-running background work (e.g., record imports and media processing), rather than choosing a floating/minimizable window as the primary presentation.
+- Show distinct determinate progress only with trustworthy server-provided measurements; otherwise use an indeterminate activity bar. Include concise task name, context, status, progress and appropriate controls.
+- Pause, resume and retry must appear only where backend operations support them; successful completion and failure must be represented accurately. Allow users to continue working in other sections while tasks execute; persistence/recovery across navigation must be implemented and verified separately.
+- The interactive demo uses local simulated progress and controls, not actual persistent background jobs.
+- With this approval, all four 03.22 loading modes have an approved design: multimedia bidirectional shimmer with centered type icon; structural page skeletons; stable operation-button loading; compact long-running task center. Production implementation remains pending.
