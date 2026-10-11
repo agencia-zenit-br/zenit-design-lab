@@ -66,3 +66,10 @@ Status: Living decision log. Product-independent visual design system.
 - The table's definitive column order changes only upon drop, not during hovering.
 - Preserve the previously approved inline chevron reorder controls as an alternative, including for keyboard/accessibility.
 - Visual behavior approved; implementation and hands-on drag interaction remain to be reviewed in the next interactive prototype.
+
+## Dynamic table semantic column alignment — APPROVED
+- Column alignment follows its semantic role, not its current position in the reorderable table.
+- Identifier/name columns (for example, Product) align their body values left; attribute columns (for example, Quantity, Price, Status) center their body values by default.
+- Reordering a column must not change its alignment.
+- Preserve the previously approved centered guide/header titles, including their inline chevrons, independently of body-cell alignment.
+- Permit per-column alignment overrides for specialized content or requirements.
