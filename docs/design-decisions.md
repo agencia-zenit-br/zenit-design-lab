@@ -83,3 +83,12 @@ Status: Living decision log. Product-independent visual design system.
 - When total column width exceeds the viewport, use native horizontal scrolling rather than compressing columns.
 - Preserve semantic body-cell alignment, centered guide headers, column order, and consistent padding while resizing.
 - Provide an explicit restore-default-widths action. Interaction design approved; production implementation and cross-device QA remain separate.
+
+## Shared undo/redo action history — APPROVED
+- Provide discreet, always-discoverable Undo and Redo controls, with Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts (and platform-appropriate equivalents).
+- Track completed logical operations as individual history entries, not every keystroke; include cell edits, column reorder, column width changes, row edits, and other supported table operations.
+- Undo reverses the last committed operation; Redo reapplies it. A new operation after Undo truncates the previous redo branch.
+- Keep disabled actions visible but subdued.
+- Optional history panel, normally collapsed, exposes a readable action list without occupying persistent table space.
+- Treat the mechanism as a reusable design-system capability across Zenit editors.
+- Session-local history is approved for the prototype; persistence across editor sessions and server-side save boundaries require separate design decisions.
