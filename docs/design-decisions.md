@@ -393,3 +393,10 @@ Status: Living decision log. Product-independent visual design system.
 - Preserve the entire moved subtree, including all nested folders and contents. Prevent self-parenting, cycles, moving into descendants, and other unauthorized or invalid hierarchy changes; validate server-side, especially where permissions, paths or inherited access may change.
 - For reordering among siblings, reuse the approved 03.29 full-height dynamic insertion gap; distinguish insertion-between from drop-onto-folder via clear target feedback. Support delayed auto-expansion of collapsed folders on hover during drag.
 - Keep compact, expandable hierarchical rows with consistent indentation and Lucide icons; separate expand/collapse from selection. Provide keyboard and touch alternatives, RTL/LTR and accessible announcements. The in-chat demo simulated changes only; production implementation pending.
+
+## Zenit Design System 03.31 — RESIZABLE PANELS AND WORKSPACE LAYOUT APPROVED
+- User approved the 03.31 concept for adjustable workspace panels: direct click-and-hold dragging on subtle splitters with a larger accessible hit target, resizing live without content loss or layout jumps.
+- Support horizontal and vertical splits, practical min/max panel sizes, collapse and restore retaining previous dimensions, and double-click on splitter to restore default proportions.
+- Persist layout preferences per user, product and workspace as appropriate; restore across sessions/devices where supported. Provide explicit reset and responsive fallback to alternate views on narrow screens.
+- Support keyboard resizing, touch/pointer input, reduced motion and LTR/RTL logical directions.
+- The chat prototype demonstrated proportions with a slider, not a functioning draggable divider. The user approved the design concept; direct divider drag must be implemented and verified in production.
