@@ -386,3 +386,10 @@ Status: Living decision log. Product-independent visual design system.
 - Retain up/down arrow controls as an accessible alternative. Support pointer, touch and keyboard workflows, RTL/LTR, reduced motion, focus management and accessible announcements. Provide auto-scroll near container edges in the production implementation.
 - Mark changes as unsaved until explicit save; offer reset and cancellation. Drag-to-reorder does not imply file relocation or changes in record status; apply separate permissions and semantics to those operations.
 - Approved as an interaction/design specification. The in-chat prototype simulates persistence; deployed implementation remains pending.
+
+## Zenit Design System 03.30 — TREE NAVIGATION AND HIERARCHIES APPROVED
+- User approved the folder tree design with Windows Explorer/macOS Finder-style direct click-and-hold drag-and-drop, without requiring origin/destination dropdowns or separate Move buttons.
+- Dragging a folder onto another folder nests it within the target; dragging onto a parent folder moves it up to that level; dragging onto a clearly marked Root target extracts it to the root. Support moving freely into, out of, and between nested folder hierarchies.
+- Preserve the entire moved subtree, including all nested folders and contents. Prevent self-parenting, cycles, moving into descendants, and other unauthorized or invalid hierarchy changes; validate server-side, especially where permissions, paths or inherited access may change.
+- For reordering among siblings, reuse the approved 03.29 full-height dynamic insertion gap; distinguish insertion-between from drop-onto-folder via clear target feedback. Support delayed auto-expansion of collapsed folders on hover during drag.
+- Keep compact, expandable hierarchical rows with consistent indentation and Lucide icons; separate expand/collapse from selection. Provide keyboard and touch alternatives, RTL/LTR and accessible announcements. The in-chat demo simulated changes only; production implementation pending.
