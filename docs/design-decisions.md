@@ -188,7 +188,13 @@ Status: Living decision log. Product-independent visual design system.
 - Large datasets require internal scrolling, scalable virtualization and optional remote search. Production accessibility must implement keyboard arrows, Enter/Space activation, Escape close, focus indicators and appropriate screen-reader combobox/listbox semantics.
 - No visible browser-native select controls. The in-chat prototype demonstrated selection, search and grouping only; production keyboard/virtualization behavior is a requirement, not a tested implementation.
 
-## Date & Time Picker refinements — IN REVIEW
+## Date & Time Picker refinements — APPROVED
 - User requests a denser day grid: reduce horizontal and vertical gaps between day cells, avoiding a loose/spread-out calendar while preserving usable touch and keyboard hit targets.
 - Universal product theming rule confirmed: dark green is the Design Lab reference accent, not a hard-coded color across all Zenit products. Each product (and potentially tenant/brand) may supply semantic design tokens for selected, hover, focus, accent and contrast states while retaining shared geometry, interaction and accessibility.
 - Apply semantic color tokens rather than literal `#35584A` in production components; validate contrast in light and dark themes. The Date & Time Picker itself remains under review pending user approval of the compact revision.
+
+## Zenit Date & Time Picker compact calendar — APPROVED (Lab 03.15)
+- User explicitly approved the revised compact calendar day-grid density and appearance: seven tightly spaced columns, approximately 2px cell gaps and 36px day hit areas in the prototype, with a restrained calendar width.
+- Use product- or tenant-specific semantic theme tokens for selected-day accents (rather than hard-coding the lab's dark green), with accessible contrast across light/dark themes.
+- The overall date/time picker design covers date, date range, date-time and time modes, month navigation, 12/24-hour configuration, timezone and locale-aware display, bounds and validation; advanced cross-month range behavior, manual entry and timezone correctness remain implementation requirements, not features proven by the prototype.
+- Reuse one universal component; avoid visible native date/time controls.
