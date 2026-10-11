@@ -210,3 +210,11 @@ Status: Living decision log. Product-independent visual design system.
 - Allow Hebrew and Islamic date entry/display with validated conversions to normalized internal instants or civil dates, as appropriate to the field; distinguish date-only values from timezone-dependent timestamps.
 - For Hijri calendars, support explicit calculation/observational convention where applicable; do not assume one universally agreed conversion. Religious holidays and sunset-based day boundaries may require jurisdiction/community-specific policies.
 - This is an architectural roadmap requirement, not an assertion that these calendar systems are already implemented or visually approved. Design and test the dedicated calendar views in a later lab.
+
+## Universal bidirectional layout (LTR/RTL) — MANDATORY PLATFORM-WIDE REQUIREMENT
+- All Zenit products and shared Design System components must be architected for both left-to-right (LTR) and right-to-left (RTL) interfaces, especially future Hebrew and Arabic localizations. RTL is a first-class direction mode, not a separate duplicated product or optional calendar-only feature.
+- Mirror appropriate layout/navigation structure: sidebars, menus, dialogs, forms, data grids, calendars, contextual popovers, focus/navigation flow and directional icons. Do not mirror non-directional symbols, logos, images or data indiscriminately.
+- Use CSS logical properties and direction-aware design tokens instead of hardcoded physical left/right positioning wherever layout direction matters. Test overflow, sticky columns, resizers, drag/drop, range selection and context menus in both directions.
+- Support Unicode bidirectional text correctly, including mixed Arabic/Hebrew with Latin text, numbers, dates, email addresses, identifiers, accounting values and code; isolate direction-sensitive substrings as needed. Preserve canonical data independently of visual direction.
+- Language, text direction, calendar system, locale, timezone and theme must remain independently configurable, with sensible defaults. Support appropriate fonts and glyph coverage, accessible focus/reading order, keyboard behavior, and both desktop and mobile layouts.
+- Establish RTL acceptance testing for every reusable component and product before releasing Hebrew/Arabic versions; this is a design/architecture mandate, not a claim of current implementation.
