@@ -603,3 +603,9 @@ Status: Living decision log. Product-independent visual design system.
 - This approval concerns visual architecture and interaction patterns only, NOT implementation of billing, token ledgers, payment flows, commercial pricing, expiration mechanics or other backend business logic.
 - Scope boundary clarified by user: Zenit Design Lab defines the universal visual language, components, navigation, states, accessibility and responsive patterns. Detailed financial/commercial rules belong to Zenit Platform product architecture and must not derail design-system review. Capture functional requirements as handoff notes rather than design-lab implementation tasks.
 - Visual laboratory 03.48 is approved and closed. Proceed to the next universal design component. No production component, Storybook story or deployment is implied.
+
+## Zenit Design System 03.49 — ADVANCED DATA TABLES V1 VISUAL PATTERN APPROVED
+- User approved the V1 universal advanced data table visual composition: compact density and headers; search and status filters; sortable columns; row and multi-row selection; persistent selection across pagination; configurable column visibility; compact/comfortable density toggle; contextual row menus; pagination and contextual empty state.
+- Keep controls visually compact, predictable and accessible, with responsive horizontal overflow when needed. Continue design review for frozen, resizable and reorderable columns, keyboard navigation and loading states without treating those unshown details as approved implementations.
+- Reuse the editable grid behaviors approved under laboratory 03.03 where applicable; do not duplicate the editing component.
+- This is a visual/interaction design approval only, not backend functionality, production React/Storybook code or deployment. Continue focusing Zenit Design Lab on the cross-product design language rather than commercial or billing logic.
