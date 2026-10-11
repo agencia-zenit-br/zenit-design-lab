@@ -413,3 +413,11 @@ Status: Living decision log. Product-independent visual design system.
 - User approved the compact universal command palette with searchable actions by name/intention/synonyms, contextual and recent commands, grouping, permission filtering, and overlay presentation without reflow. Keyboard shortcuts: Ctrl+K (Windows/Linux), Command+K (macOS); arrows navigate, Enter executes, Escape closes. Preserve focus and support accessibility/RTL.
 - User requested a more professional keyboard-help footer than the plain string '↑ ↓ Navegar · Enter Ejecutar · Esc Cerrar'. Approved refinement: render discrete subtle bordered keycaps for Up and Down arrow icons, Enter, and Esc, each paired with its label ('Navegar', 'Ejecutar', 'Cerrar'), with uniform compact spacing and responsive wrapping. Avoid raw typography-based separators or crude glyphs; use consistent vector icons and semantic key labels. Respect platform keyboard conventions.
 - Prototype command actions and shortcuts were illustrative only; actual commands, keyboard handling, permission checks and navigation remain implementation requirements.
+
+## Zenit Design System 03.34 — MAIN MENUS AND SIDEBAR NAVIGATION APPROVED
+- User approved the first proposed navigation layout: a compact expandable/collapsible sidebar with consistent Lucide icons, nested module groups, and a clearly highlighted active destination.
+- Expanded sidebar shows labels and hierarchy; collapsed sidebar shows icons with accessible tooltips, and opens group submodules in overlay flyout menus without expanding the entire sidebar.
+- Keep global product identity/product switching separate from navigation modules belonging to the currently active Zenit product; do not mix all products' modules into one unbounded menu. Module names and final product information architecture remain product-specific and undecided.
+- On desktop, support resizing via approved 03.31 splitters, and persist expanded/collapsed preference and expanded groups per user/workspace as appropriate.
+- On mobile, show an overlay sidebar rather than compressing the workspace, and dismiss on destination selection.
+- Respect product entitlements and user permissions, keyboard focus and navigation, screen readers, touch and LTR/RTL direction. Prototype is a design demonstration, not deployed production implementation.
