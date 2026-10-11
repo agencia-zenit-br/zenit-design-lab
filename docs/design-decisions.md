@@ -34,8 +34,8 @@ Status: Living decision log. Product-independent visual design system.
 - Update this log as decisions change, ideally in the same PR as corresponding implementation; keep experimental in-chat demos distinct from committed code.
 - This repository is a standalone visual prototyping workspace; do not include secrets, customer data, or private Zenit Platform backend code.
 
-## Cross-component proposals — IN REVIEW
-- Scrollbars: match the Editorial Minimalism palette with subdued track/thumb, rounded geometry, clear hover/active affordances, and preserved native scroll behavior; verify Windows/macOS and touch devices. Never hide essential scroll affordances.
+## Cross-component decisions and proposals
+- Scrollbars: APPROVED. Default 8px where browser supports exact sizing, balanced contrast (track #e8ebe6, thumb #b0beb4, hover #6e8a79), rounded geometry; preserve native scroll behavior and accessibility. Respect browser limitations, OS conventions, and touch overlay scrolling. Alternative widths/contrasts may remain configurable.
 - First-use guidance: brief, dismissible contextual onboarding tied to actual controls; persistent, discoverable help entry points for later reference; keyboard/screen-reader support; do not obstruct essential actions or permanently consume valuable screen space. Avoid repeating dismissed guidance unnecessarily.
 - Table advanced interaction review: column resizing, row/column reordering with destination preview, undo/redo, and scrolling behavior. Await explicit user approval before marking these as final.
 
