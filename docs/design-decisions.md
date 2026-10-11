@@ -46,3 +46,6 @@ Status: Living decision log. Product-independent visual design system.
 ## Column reorder icon refinement — PROPOSED
 - The literal characters `<` and `>` were placeholders for layout, not the desired icon glyphs.
 - Proposed: polished, thin-stroke vector chevrons inline with header text, borderless at rest, subtle palette-consistent hover feedback. Await explicit visual approval.
+
+## Table reorder chevron scale — IN REVIEW
+- User preference: chevrons visually smaller than header text. Prototype target: approximately 12px vector chevrons alongside 14px header labels, fine strokes, subtle visual weight, with usable interaction targets and no extra header row.
