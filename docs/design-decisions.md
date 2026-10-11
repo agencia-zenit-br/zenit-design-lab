@@ -21,13 +21,15 @@ Status: Living decision log. Product-independent visual design system.
 - Regular and compact variants; min/max and step configuration; manual entry and validation in final implementation; disabled state and sufficiently large touch targets.
 - Preserve the approved circular selection-control visual effect for compact/disabled option toggles in the design language.
 
-## Component 03 — Editable dynamic table — IN REVIEW
+## Component 03 — Editable dynamic table — APPROVED (header/guide behavior; other advanced features pending)
 - Add/remove rows and columns, edit cells and column names, select rows and perform bulk actions.
-- NEW PROPOSAL, NOT YET APPROVED: optional first-row header formatting and independent optional first-column guide formatting, including both together and a distinct intersection cell.
-- Header/guide formatting should use subtle backgrounds, stronger type, and appropriate dividers; separate optional sticky row/column behavior for large tables.
+- APPROVED: optional first-row header formatting and independent optional first-column guide formatting, including both together and a distinct intersection cell.
+- APPROVED: header/guide formatting uses subtle backgrounds, stronger type, and appropriate dividers; separate optional sticky row/column behavior for large tables.
 - Further review: drag reordering, resizing, undo/redo, keyboard navigation, responsive overflow and accessible semantics.
 
 ## Governance
+- This file is the canonical, binding design baseline for this repository. Read it before design or implementation decisions; link it from the root README. Approved decisions override incidental demo choices. Proposals are nonbinding until explicit approval.
+
 - Review and approve components one at a time. Do not label a component approved until explicit user approval.
 - Update this log as decisions change, ideally in the same PR as corresponding implementation; keep experimental in-chat demos distinct from committed code.
 - This repository is a standalone visual prototyping workspace; do not include secrets, customer data, or private Zenit Platform backend code.
