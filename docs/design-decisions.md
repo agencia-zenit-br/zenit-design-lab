@@ -224,3 +224,10 @@ Status: Living decision log. Product-independent visual design system.
 - Accessibility must be considered from the start for every shared component and product; it is not a premium feature or optional add-on. Include keyboard access, screen-reader semantics, visible focus, accessible error/status feedback, touch targets, contrast, RTL/LTR support, text scaling and reduced motion.
 - Schedule a dedicated design review to establish an accessibility policy, acceptance criteria, testing methodology and governance. WCAG 2.2 Level AA is a proposed baseline for that future discussion, not yet a formally user-approved compliance commitment.
 - Review visual, motor, auditory and cognitive accessibility, high-contrast modes, complex data grids, and accessible localization. Do not claim certification or conformance until implementation and audits verify it.
+
+## Zenit Color Picker 03.16 — USER REVIEW / REVISION REQUIRED
+- Previous prototype's swatches and preview blocks were judged excessively large. Redesign as a compact, high-density professional color picker with small swatches.
+- User requires HEX, RGB, CMYK input/display modes, continuous visual color spectrum selection, and a real eyedropper.
+- Eyedropper desired behavior: activate sampling, allow scrolling to find a target color, click to sample, apply it and restore the prior work position/state. Assess browser API permissions and limitations; do not promise unrestricted screen pixel sampling or scroll behavior unsupported by native EyeDropper. Provide a controlled in-app fallback where feasible.
+- CMYK is print-oriented; conversions from screen RGB without ICC profiles are approximations. Distinguish precise color-managed workflows from convenience conversions.
+- This is a change request to the prototype, not final component approval. Validate interactive behavior before marking approved.
