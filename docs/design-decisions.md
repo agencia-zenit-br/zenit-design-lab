@@ -421,3 +421,11 @@ Status: Living decision log. Product-independent visual design system.
 - On desktop, support resizing via approved 03.31 splitters, and persist expanded/collapsed preference and expanded groups per user/workspace as appropriate.
 - On mobile, show an overlay sidebar rather than compressing the workspace, and dismiss on destination selection.
 - Respect product entitlements and user permissions, keyboard focus and navigation, screen readers, touch and LTR/RTL direction. Prototype is a design demonstration, not deployed production implementation.
+
+## Zenit Design System 03.35 — APPLICATION HEADER AND PRODUCT SWITCHER APPROVED
+- User approved the compact, stable universal application header: active product identity/logo and name on the leading side; global search, notification indicator and user account menu on the trailing side.
+- Product switcher lists only products available to the current user and organization, with clear active selection and product-specific identity. The product's internal navigation remains in the separately approved 03.34 sidebar.
+- Search button opens the existing 03.33 universal command palette; do not implement a competing search experience. Global notifications should identify originating product and support opening the relevant item.
+- User menu provides profile, preferences, organization switching (when permitted), and sign-out, separate from product navigation.
+- All dropdowns and menus must be anchored floating overlays that do not reflow or push the main content; the in-chat prototype used inline panels for illustration only. Maintain compact consistent header height, responsive mobile treatment, accessibility and LTR/RTL support.
+- Prototype products, menu entries and actions were illustrative; final catalog, entitlements and branding remain product-specific and pending implementation.
