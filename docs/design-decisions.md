@@ -296,3 +296,9 @@ Status: Living decision log. Product-independent visual design system.
 - Current location is visually distinguished and not a self-link; earlier levels navigate to real ancestors. Optional home icon, long-label handling, and RTL-aware separator direction are required.
 - Breadcrumbs must reflect actual product navigation rather than fabricate routes. Preserve responsive behavior, keyboard accessibility, screen-reader semantics and semantic product/tenant theming.
 - Approval applies to the chat design prototype; production implementation and testing remain pending.
+
+## Zenit Loading System 03.22 — image reveal refinement (IN REVIEW)
+- User likes the four loading modes and requests a subtle render/reveal effect as images load.
+- Proposed image transition: a restrained blur-to-sharp and low-to-full opacity reveal (approximately 200–300 ms), while preserving media aspect ratio and container dimensions and without delaying ready images artificially.
+- Respect prefers-reduced-motion, image errors and cached/instant image loads; avoid flashing, excessive animation, and layout shift. The illustrated transition is a prototype, not a real image-loading integration.
+- The four-mode Loading System remains in review until the user explicitly approves the revised design.
