@@ -372,3 +372,10 @@ Status: Living decision log. Product-independent visual design system.
 - Use the drawer for quick record inspection and editing, with the approved 03.26 form conventions, accessible focus management, keyboard close, and explicit unsaved-changes confirmation. Complex workflows should use the previously approved window system instead.
 - On narrow/mobile screens the drawer becomes a full-screen contextual view with accessible header and actions. Respect RTL directionality.
 - Approved as a design specification; implementation in the deployed design lab remains pending.
+
+## Zenit Design System 03.28 — CONFIRMATION DIALOGS AND CRITICAL DECISIONS APPROVED
+- User approved the interactive proposal for three contextual confirmation types: destructive record deletion, discarding unsaved changes, and replacing an existing file.
+- Dialogs use concise consequence-oriented headings and descriptions, explicit action labels instead of ambiguous Yes/No, consistent compact margins and professional semantic vector iconography. Production dialogs are true floating modals that do not reflow the underlying interface; the stacked prototype was only for demonstration.
+- Make confirmation proportional to risk: simple confirmations for ordinary destructive actions; typed confirmation for especially consequential or irrecoverable bulk/organization-level operations. Favor reliable Undo over needless confirmation for reversible actions.
+- Default focus normally favors the data-preserving choice; guard against accidental Enter activation of destructive operations. Apply accessible modal focus trapping/return, safe Escape behavior, and LTR/RTL support.
+- Semantic danger colors for irreversible destruction and restrained warning/neutral treatment for other consequential changes; never rely solely on color. Demonstrated actions are simulated; implementation pending.
