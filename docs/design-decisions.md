@@ -33,3 +33,8 @@ Status: Living decision log. Product-independent visual design system.
 - Review and approve components one at a time. Do not label a component approved until explicit user approval.
 - Update this log as decisions change, ideally in the same PR as corresponding implementation; keep experimental in-chat demos distinct from committed code.
 - This repository is a standalone visual prototyping workspace; do not include secrets, customer data, or private Zenit Platform backend code.
+
+## Cross-component proposals — IN REVIEW
+- Scrollbars: match the Editorial Minimalism palette with subdued track/thumb, rounded geometry, clear hover/active affordances, and preserved native scroll behavior; verify Windows/macOS and touch devices. Never hide essential scroll affordances.
+- First-use guidance: brief, dismissible contextual onboarding tied to actual controls; persistent, discoverable help entry points for later reference; keyboard/screen-reader support; do not obstruct essential actions or permanently consume valuable screen space. Avoid repeating dismissed guidance unnecessarily.
+- Table advanced interaction review: column resizing, row/column reordering with destination preview, undo/redo, and scrolling behavior. Await explicit user approval before marking these as final.
