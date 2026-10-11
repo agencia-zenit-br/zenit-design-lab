@@ -270,3 +270,10 @@ Status: Living decision log. Product-independent visual design system.
 - Inline/form notifications reserve layout space to prevent shifts; floating notifications render in an overlay without resizing page content.
 - Preserve restrained padding, readable wrapped text, accessible status/error announcements, semantic theme tokens, responsive layout, and LTR/RTL support.
 - Approval is for the design demonstrated in chat; it does not imply production implementation or completed accessibility tests.
+
+## Zenit Progress & Loading 03.19 — APPROVED DESIGN
+- User approved the demonstrated compact progress/loading component with determinate percentage bar and indeterminate activity variant.
+- Include running, paused, completed and error states; only expose pause/cancel controls when supported by the underlying operation.
+- Use compact horizontal progress indicator, stable tabular percentage, reserved status-message space without layout shifts, optional compact description-free presentation, accessible progress announcements, reduced-motion behavior and RTL/LTR compatibility.
+- Theme via semantic product/tenant tokens rather than hardcoded lab green.
+- Approval covers the demonstrated design and functional requirements, not production implementation or verified animation/accessibility behavior.
