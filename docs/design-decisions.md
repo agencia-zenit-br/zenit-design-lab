@@ -236,3 +236,8 @@ Status: Living decision log. Product-independent visual design system.
 - User clarified the desired reference is Photoshop's compact color picker, not the large/wide preview shown earlier.
 - Target a small anchored popover (~240–260px wide as an initial desktop design target), with a compact square saturation/value field, narrow hue control, small current/previous swatches, eyedropper and compact HEX/RGB/CMYK fields. Keep spacing tight and avoid oversized previews or swatches.
 - Adapt positioning to available viewport space and mobile layouts; final dimensions and interaction remain subject to prototype validation.
+
+## Zenit Color Picker 03.16 — APPROVED COMPACT DESIGN
+- User approved the compact Photoshop-inspired color picker layout presented in the design lab: a small anchored popover (~240–260 px desktop reference), square saturation/value spectrum with narrow vertical hue strip, small swatch and HEX display, and compact format controls.
+- Retain the previously requested functional requirements: editable HEX, RGB and CMYK, interactive spectrum, eyedropper with scroll-to-target / click / return-to-workflow behavior where technically supported, opacity where relevant, and themeable, accessible LTR/RTL behavior.
+- Approval applies to the visual layout and stated requirements; the latest visual was explicitly a noninteractive size/layout reference. Do not mark spectrum, eyedropper, or conversion behavior as implemented or tested. Browser eyedropper constraints and color-managed CMYK/ICC support need engineering validation.
