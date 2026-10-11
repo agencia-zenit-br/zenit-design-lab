@@ -73,3 +73,13 @@ Status: Living decision log. Product-independent visual design system.
 - Reordering a column must not change its alignment.
 - Preserve the previously approved centered guide/header titles, including their inline chevrons, independently of body-cell alignment.
 - Permit per-column alignment overrides for specialized content or requirements.
+
+## Dynamic table column resizing — APPROVED
+- Resize columns independently by dragging a narrow handle at the right edge of each header; update width live during drag.
+- Double-click the handle to fit the column to its content.
+- Enforce a usable minimum width per column; do not collapse or hide columns by resizing.
+- Support keyboard resizing on the focused separator: Left/Right arrows in 10px increments; Home to minimum width.
+- On touch devices, allow direct handle dragging without interfering with ordinary table scrolling.
+- When total column width exceeds the viewport, use native horizontal scrolling rather than compressing columns.
+- Preserve semantic body-cell alignment, centered guide headers, column order, and consistent padding while resizing.
+- Provide an explicit restore-default-widths action. Interaction design approved; production implementation and cross-device QA remain separate.
