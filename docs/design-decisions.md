@@ -253,3 +253,8 @@ Status: Living decision log. Product-independent visual design system.
 - Floating tooltips must overlay content without changing parent dimensions. Inline/contextual status or help messages must have a reserved message area from initial render, including when the message is hidden; determine a stable height appropriate to content and responsive breakpoints.
 - Correct the 'Message length' control label alignment: apply the same consistent horizontal inset/padding as the surrounding content. Audit labels and controls for edge-hugging and inconsistent alignment.
 - Maintain previous rules: text wrapping without overflow, compact padding, no terminal period for short contextual messages. The revised demo and component remain under review pending explicit approval.
+
+## Tooltip 03.17 — second visual correction (IN REVIEW)
+- User reports the 'Save changes' sample looked like a strange button. Separate the real action control from its contextual tooltip; do not present tooltip content as an apparent standalone action.
+- User reports slight container expansion persists despite min-height reservations. min-height is insufficient for strict layout stability; floating tooltips should use an overlay layer outside normal layout flow (e.g. absolute positioning/portal), with collision avoidance and no parent reflow. Inline messages requiring reservation must use a measured/stable allocated slot, not an expanding minimum height.
+- Demonstrate the revised interaction and confirm zero card-size changes before approval. Maintain compact wrapping, inner padding, and omission of terminal periods.
