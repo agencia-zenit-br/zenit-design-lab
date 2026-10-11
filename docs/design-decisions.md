@@ -203,3 +203,10 @@ Status: Living decision log. Product-independent visual design system.
 - In the Spanish compact Date & Time Picker, use the weekday header initials **L · M · M · J · V · S · D** (Monday through Sunday). Tuesday and Wednesday are both M; do not substitute X for Wednesday.
 - Weekday labels are locale-specific and should be generated/configured for each user/product language, not hard-coded globally. Maintain weekday ordering appropriate to the locale or product settings and accessible full weekday names for screen readers/tooltips.
 - Preserve the previously approved compact seven-column calendar geometry.
+
+## Additional calendar systems — FUTURE REQUIREMENT
+- User expects potential Jewish and Muslim customers; the universal Date & Time Picker must be architected to support non-Gregorian calendars, prioritizing **Hebrew** and **Islamic/Hijri** alongside Gregorian.
+- Keep interface language, calendar system, locale/date formatting, timezone, and text direction as independent configuration dimensions. Support RTL layouts, localized weekday/month names and accessible labels.
+- Allow Hebrew and Islamic date entry/display with validated conversions to normalized internal instants or civil dates, as appropriate to the field; distinguish date-only values from timezone-dependent timestamps.
+- For Hijri calendars, support explicit calculation/observational convention where applicable; do not assume one universally agreed conversion. Religious holidays and sunset-based day boundaries may require jurisdiction/community-specific policies.
+- This is an architectural roadmap requirement, not an assertion that these calendar systems are already implemented or visually approved. Design and test the dedicated calendar views in a later lab.
