@@ -317,3 +317,10 @@ Status: Living decision log. Product-independent visual design system.
 - User approved the combined multimedia loading prototype: continuous subtle horizontal light sweep that reverses direction, with a static centered semi-transparent media-type icon (image, video, audio, document).
 - Keep the reserved media aspect ratio and dimensions fixed; stop the sweep and replace the placeholder when the actual resource becomes ready. Respect reduced-motion preferences with a nonanimated fallback; use semantic product/tenant theming and accessible status text.
 - This approval is specifically for the demonstrated multimedia loader appearance and behavior. The chat demo simulates completion and is not evidence of real asset-loading integration. The full page/action/process Loading System may require separate final validation.
+
+## Zenit Loading System 03.22 — PAGE LOADING APPROVED (STRUCTURAL)
+- User explicitly approved the structural page-loading variant. Keep page navigation and layout stable, with reserved skeleton areas for cards, text and tables and a subtle repeated bidirectional shimmer on pending content.
+- Structural skeleton loading is the selected default for page loading. The full-page overlay transition was demonstrated but NOT selected as the default; do not present it as approved.
+- Skeletons should approximate final content geometry, avoid cumulative layout shift, stop on data readiness, respect reduced-motion and RTL/LTR, and avoid fake progress.
+- Multimedia loader was separately approved earlier: bidirectional sweep behind a static contextual media icon.
+- This records design approval, not completed implementation in production.
