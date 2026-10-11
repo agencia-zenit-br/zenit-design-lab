@@ -451,3 +451,10 @@ Status: Living decision log. Product-independent visual design system.
 - Open as an anchored, logical inline-end overlay drawer reusing 03.27, without resizing or reflowing the workspace; use full-screen presentation on mobile. Preserve unsaved forms, selections, filters and scroll positions while help opens and closes.
 - Minimize diagnostic data and apply appropriate disclosure/consent and access controls. Avoid sharing private information with external models without an appropriate authorization basis. Keyboard, touch, screen reader, LTR/RTL and accessibility support are mandatory.
 - In-chat demo guides, AI responses and prepared support ticket are illustrative only; no model, documentation backend or ticketing service was connected and no production React implementation has been delivered.
+
+## Zenit Design System 03.39 — ONBOARDING AND GUIDED TOURS APPROVED
+- User approved voluntary, contextual, role/product/permission-aware onboarding and guided tours. First access should offer a discreet invitation to start, postpone or skip, rather than automatically launching a full walkthrough.
+- Tours highlight actual interface targets and show viewport-safe anchored floating guidance without reflow; support previous/next, skip, finish and replay. Respect keyboard, touch, screen readers, reduced motion, mobile and LTR/RTL.
+- Never present steps for inaccessible features. Track completed, skipped and in-progress state per user, product and version; allow recovery/replay through approved 03.38 contextual help center.
+- Optional contextual hints can be disabled. Preserve ongoing user work, forms and navigation context. Do not automatically publish, delete, charge or otherwise mutate real data during tours; interactive practice requires safe sandbox/demo data and explicit authorization for consequential actions.
+- In-chat prototype was illustrative only; production positioning, persistence, tour engine and integrations remain unimplemented.
