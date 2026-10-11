@@ -577,3 +577,10 @@ Status: Living decision log. Product-independent visual design system.
 - Customer UI should clearly show current balance, upcoming renewal/expiry date and the fact that unused Tokens expire. Preserve transaction records for expired balances.
 - Ensure already-authorized in-flight operations have explicit reservation/settlement rules at the cycle boundary; avoid accidental double charge or unexpected interruption.
 - Separate purchased top-up Tokens, if offered later, are NOT yet governed by this decision; their expiry policy remains open. The overall 03.48 operations-center laboratory remains under review.
+
+## Zenit Platform 03.48 — TOP-UP TOKENS WITH INDEPENDENT EXPIRATION (APPROVED)
+- User chose additional purchased Tokens to have their own expiration date calculated from each purchase, independent of the product instance's subscription renewal date.
+- Keep subscription allotment Tokens expiring at the instance renewal as already approved; top-up Tokens persist across plan renewals until their respective purchased lot expires. All balances, lots, purchases, charges and expirations remain scoped to the same individual instance, with no cross-instance pooling.
+- Maintain per-lot accounting (purchase time, quantity, amount consumed, expiration and ledger events) and show the customer a combined balance plus an understandable expiration breakdown.
+- The duration of a top-up's validity has NOT been decided and must not be treated as fixed. Consuming the earliest-expiring Tokens first is a proposed operational policy, NOT yet approved.
+- The overall 03.48 laboratory remains in review; no production implementation is implied.
