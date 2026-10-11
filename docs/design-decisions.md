@@ -241,3 +241,9 @@ Status: Living decision log. Product-independent visual design system.
 - User approved the compact Photoshop-inspired color picker layout presented in the design lab: a small anchored popover (~240–260 px desktop reference), square saturation/value spectrum with narrow vertical hue strip, small swatch and HEX display, and compact format controls.
 - Retain the previously requested functional requirements: editable HEX, RGB and CMYK, interactive spectrum, eyedropper with scroll-to-target / click / return-to-workflow behavior where technically supported, opacity where relevant, and themeable, accessible LTR/RTL behavior.
 - Approval applies to the visual layout and stated requirements; the latest visual was explicitly a noninteractive size/layout reference. Do not mark spectrum, eyedropper, or conversion behavior as implemented or tested. Browser eyedropper constraints and color-managed CMYK/ICC support need engineering validation.
+
+## Zenit Tooltip 03.17 — USER-REQUESTED REFINEMENTS (IN REVIEW)
+- Tooltip content must never overflow its container or viewport. Use intrinsic sizing with a sensible maximum width, natural line wrapping, and collision-aware positioning; ensure long translated strings and narrow mobile viewports remain legible. No clipping or text running outside the tooltip.
+- Use restrained internal padding and compact typography rather than oversized tooltip surfaces.
+- Omit terminal full stops in short contextual help labels and short tooltip descriptions. Preserve internal punctuation and punctuation needed for longer or more complex prose.
+- These refinements respond to user feedback on the prototype; do not mark the full Tooltip component approved until the revised behavior is validated.
