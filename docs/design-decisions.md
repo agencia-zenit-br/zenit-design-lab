@@ -324,3 +324,10 @@ Status: Living decision log. Product-independent visual design system.
 - Skeletons should approximate final content geometry, avoid cumulative layout shift, stop on data readiness, respect reduced-motion and RTL/LTR, and avoid fake progress.
 - Multimedia loader was separately approved earlier: bidirectional sweep behind a static contextual media icon.
 - This records design approval, not completed implementation in production.
+
+## Zenit Loading System 03.22 — OPERATION LOADING APPROVED
+- User approved the demonstrated operation loading states for save, publish, import and export.
+- Keep action button width and height stable. During execution, display a compact inline activity indicator with the action label and prevent duplicate submissions. Provide accessible status messaging in a reserved stable slot.
+- On success, display a concise completion confirmation; on failure, explain the error and allow retry without losing entered data. For long-running jobs, add real determinate progress when available; never fabricate percentage or server status.
+- Respect reduced-motion, keyboard accessibility, RTL/LTR and product-specific semantic theming.
+- Approval covers the interactive visual prototype and design behavior; production implementation and backend integration remain pending.
