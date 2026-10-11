@@ -400,3 +400,11 @@ Status: Living decision log. Product-independent visual design system.
 - Persist layout preferences per user, product and workspace as appropriate; restore across sessions/devices where supported. Provide explicit reset and responsive fallback to alternate views on narrow screens.
 - Support keyboard resizing, touch/pointer input, reduced motion and LTR/RTL logical directions.
 - The chat prototype demonstrated proportions with a slider, not a functioning draggable divider. The user approved the design concept; direct divider drag must be implemented and verified in production.
+
+## Zenit Design System 03.32 — CONTEXTUAL TOOLBARS AND COMMANDS APPROVED (SECOND PROPOSAL)
+- User approved proposal B: keep a simple, stable global toolbar for persistent document-level actions (e.g. Save, Preview), and reveal compact contextual toolbars only for the currently edited/selected object (text, image, etc.). Do not make the entire top toolbar unpredictably morph by context.
+- Text editing toolbar MUST float near the active text/caret/selection at the vertical position of the edited passage in long documents, rather than being pinned to the top of the editor or viewport. Reposition with scrolling and editing; avoid covering text and respect viewport edges, side panels, LTR/RTL.
+- Hide the floating toolbar when the editor leaves the viewport, and also when the active passage/caret is outside the visible viewport even if another part of the editor remains visible. Restore it when the active editing position is visible again and editing context remains active.
+- Hide when editing focus is lost, except while interacting with the toolbar itself (avoid blur-before-click bugs). Use overlay/portal positioning without layout reflow or jumps; accessibility, keyboard, touch and reduced motion remain required.
+- Show only tools relevant to the selected content type; hide contextual tools when nothing is selected or actively edited. Secondary tools may go in an overflow menu; complex apps can have fuller fixed toolbars where warranted.
+- In-chat prototype demonstrated contextual controls but not real caret-anchored viewport-aware floating behavior; this is an approved production requirement pending implementation and testing.
