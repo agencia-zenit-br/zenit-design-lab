@@ -50,5 +50,5 @@ Status: Living decision log. Product-independent visual design system.
 ## Table reorder chevron scale — APPROVED
 - User preference: chevrons visually smaller than header text. Prototype target: approximately 12px vector chevrons alongside 14px header labels, fine strokes, subtle visual weight, with usable interaction targets and no extra header row.
 
-## Table guide header alignment — IN REVIEW
-- User requests horizontally centered titles for guide/header columns. Proposed default: center guide headers while keeping data alignment appropriate to content; center the full label-plus-chevron group, and allow table-level override. Await explicit approval.
+## Table guide header alignment — APPROVED
+- Approved default: center guide/header titles horizontally while keeping data alignment appropriate to content; center the full label-plus-chevron group, and allow table-level override.
