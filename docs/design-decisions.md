@@ -167,3 +167,10 @@ Status: Living decision log. Product-independent visual design system.
 - Preserve cell/range geometry, blank cells, Unicode, locale-aware decimals, dates, percentages, currencies and large datasets; define explicit type inference, validation and conflict handling without silent conversion or truncation.
 - Accounting-grade use cases require exact decimal representation, separation of canonical values from display formatting, currencies, permissions, auditability, and transactional validation. Clipboard/import actions must not automatically post financial entries or mutate authoritative records without explicit authorized confirmation.
 - Compatibility is an architectural and acceptance-test goal, not a claim of current tested implementation. Verify behavior against real Excel, Google Sheets, LibreOffice and representative enterprise exports; defer advanced formatting/formula fidelity and vendor-specific integrations to separate scope decisions.
+
+## Data import/export workflow — APPROVED WITH DESIGN CORRECTION
+- User approved the three-stage import flow (File → Review → Confirm), preview, type mapping and export direction.
+- **Universal mandatory design rule:** NEVER expose browser-native form control styling in Zenit product UI. In particular, no visible default `input[type=file]` / "Choose File" button, default browser selects, or other unstyled native widgets. All visible file pickers, dropdowns, buttons, input states, drop zones and controls must use the Zenit Design System.
+- Native browser/system capabilities may be used under the hood for accessibility and function (e.g., a visually hidden file input triggered by a Zenit-styled upload button); the OS file selection dialog is outside the product's visual surface.
+- Apply consistently across the entire Zenit product family and all design lab demos. Treat any visible native picker in earlier prototypes as a design defect, not an approved precedent.
+- Import implementation still needs actual XLSX/ODS support, type validation, error handling and persistence; the demonstrated CSV/TSV flow is a prototype only.
