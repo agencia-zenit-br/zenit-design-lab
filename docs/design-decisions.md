@@ -145,3 +145,17 @@ Status: Living decision log. Product-independent visual design system.
 - Keep a compact menu with keyboard shortcut hints where relevant. Preserve existing selection when secondary-click occurs inside it; otherwise select the clicked cell.
 - Design the menu as an extensible, context-aware command registry. Future Excel-like options may include insert/delete rows and columns, cell formatting, sorting/filtering, validation, formulas, and other commands; these are roadmap candidates, not current-scope approvals.
 - Show only commands applicable to the current table, selection, user permissions, and product capabilities. Analyze with AI opens a scoped read-only-by-default panel; actual LLM integration remains separate.
+
+## Table structural operations — APPROVED
+- User approved insertion of rows above/below and columns left/right, and deletion of entire selected rows/columns.
+- A multi-row or multi-column selection determines the number of structures inserted or removed; each operation is a single undoable action.
+- New columns have editable provisional titles; guard against deleting the last required row/column; enforce permissions, schema constraints and server-side record semantics for data-bound tables.
+
+## Bidirectional Microsoft Excel clipboard interoperability — REQUIRED
+- The editable table must support reliable copy/paste of single cells and rectangular ranges Excel → Zenit and Zenit → Excel, preserving row/column positions, empty cells, and rectangular shape.
+- Support text/tab-separated-values (TSV) and HTML table clipboard formats where supported by the browser; use standards-compatible clipboard read/write with appropriate fallback.
+- Avoid silent truncation: offer explicit row/column expansion or clear handling when incoming data exceeds the table bounds.
+- Handle locale-sensitive numeric, decimal, date, percentage and currency values without silent coercion or data loss. Document the import/type-inference policy and provide a safe text-preserving path for ambiguous inputs.
+- Treat each paste as one undoable operation. Preserve appropriate keyboard shortcuts and avoid hijacking native text editing while editing a cell.
+- Initial acceptance scope: data values and rectangular structure. Formatting, formulas and references are future roadmap items requiring separate decisions; macros and proprietary Excel features are not implied.
+- Verify interoperability in both directions against actual Excel clipboard samples, including multiline quoted content, Unicode, tabs/newlines, empty cells and large ranges. Browser clipboard permissions and platform limitations must be accounted for.
