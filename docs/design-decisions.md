@@ -1064,3 +1064,8 @@ Regla obligatoria para toda la familia Zenit: ningún listado, tabla, formulario
 ## Zenit Design System V3.6.1 — aprobación visual
 
 El usuario aprobó visualmente V3.6.1 («ok»), que corrige los márgenes de Registros tras rechazar ese aspecto de V3.6. Regla transversal: contenedores con padding estándar 16 px, compacto 12 px, amplio 24 px; tablas con padding propio por celda, ningún contenido pegado a bordes, y móvil sin scroll horizontal. La inspección de márgenes es criterio obligatorio de aceptación visual en todas las futuras pantallas. La aprobación es visual, no funcional. Próxima etapa V3.7 — Unified Data Tables & Record Management.
+
+
+## Zenit Design System V3.7 — aprobación visual
+
+El usuario aprobó visualmente V3.7 — Unified Data Tables & Record Management («ok»). Se consolidan patrones compartidos de búsqueda, filtros, ordenación, selección múltiple, paginación y edición de registros; contenedores con padding estándar 16 px y padding propio en celdas; adaptación móvil a tarjetas sin desplazamiento horizontal. Aprobación visual de prototipo con datos simulados, no validación funcional o de producción. Próxima etapa V3.8 — Unified Forms & Contextual Workflows.
