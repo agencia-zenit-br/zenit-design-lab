@@ -803,3 +803,9 @@ Status: Living decision log. Product-independent visual design system.
 - Sections Components, Forms and States require visual refinement: button dimensions feel disproportionate relative to typography, and spacing between labels, controls, content blocks and actions is inconsistent.
 - Next V1.1 design review should normalize component size scale (compact/standard/prominent), text-to-icon ratio, control heights, button horizontal/vertical padding, field label/control/group spacing, modal and alert hierarchy, and an explicit reusable spacing scale. Avoid forcing all controls to identical height regardless of context.
 - Status: user observations and proposed refinements; not approved V1.1 implementation or deployment.
+
+## Zenit Design System V1.1 — visual approval
+- User visually approved Design System V1.1 (2026-10-12): refined button/control proportions, typography hierarchy, spacing, forms, components and system states. This is a VISUAL approval only; interactive behaviors, accessibility and production implementation remain unverified.
+- Reference scale demonstrated: compact buttons 27px, standard buttons 32px, prominent buttons 37px, form controls 34px; spacing tokens 4/8/12/16/24/32px. Treat these as visual starting values subject to accessibility and usability validation, not immutable production specifications.
+- Maintain V1.1 visual composition for subsequent prototypes; next proposed iteration V1.2: cohesive SVG iconography aligned with Unified Visual Editor V16, and consistent hover/focus/selected/disabled states.
+- No deployment or source-code implementation implied by this approval.
