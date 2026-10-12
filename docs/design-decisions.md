@@ -888,3 +888,13 @@ El usuario aprobó el prototipo V2.0 — Unified Application Shell respondiendo 
 - V2.0 queda como **baseline visual principal** de la familia Zenit, preservando las decisiones específicas de V1.1–V1.9 y de la iconografía/editor previamente aprobados.
 - La aprobación no constituye implementación en producción, conexión al backend, datos reales, certificación de accesibilidad ni QA funcional.
 - Próxima etapa: V2.1 — Responsive Design & Adaptive Layouts (desktop, tablet, mobile; navegación, tablas, paneles e inspector adaptativos).
+
+
+## Zenit Design System V2.1.1 — aprobación visual (2026-10-12)
+
+El usuario aprobó la revisión V2.1.1 («ok, se ve bien») después de observar problemas de márgenes en las variantes de V2.1.
+
+- **V2.1 original no aprobada**: márgenes y espaciado inconsistentes en escritorio, tablet y móvil; compresión del área principal por navegación e inspector.
+- **V2.1.1 aprobada visualmente**: escala consistente de espaciado, padding regular en tarjetas y contenedores, contenido prioritario, navegación desplegable en tablet/móvil e inspector separado del flujo horizontal para evitar compresión.
+- La validación fue visual en prototipo; faltan pruebas reales de breakpoints, navegadores, accesibilidad y QA.
+- Próxima exploración: V2.2 — Accessibility & Interaction States.
