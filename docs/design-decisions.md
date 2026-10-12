@@ -907,3 +907,12 @@ El usuario aprobó visualmente V2.2 — Accessibility & Interaction States respo
 - **Aprobación visual** de estados normal/error/deshabilitado, énfasis de foco, validación de campos, controles y acciones primarias/secundarias/destructivas, notificaciones y variantes claro/oscuro.
 - La aprobación no equivale a conformidad WCAG, pruebas con lectores de pantalla, contraste medido ni validación de navegación real por teclado.
 - Próxima exploración: V2.3 — Command Center & Global Search, búsqueda transversal y comandos rápidos por producto.
+
+
+## Zenit Design System V2.3 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.3 — Command Center & Global Search respondiendo «ok», conforme a la convención acordada de aprobar y avanzar.
+
+- **Aprobación visual** del centro de comandos transversal, búsqueda y filtrado por producto, resultados agrupables por tipo y acciones rápidas.
+- La búsqueda y las acciones fueron simuladas; los atajos Ctrl+K, flechas, Enter y Esc eran una propuesta no implementada ni validada con teclado real.
+- Próxima etapa: V2.4 — Notifications & Activity Center, unificación de avisos, tareas, aprobaciones y eventos por producto.
