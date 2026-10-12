@@ -878,3 +878,13 @@ El usuario aprobó el prototipo V1.9 respondiendo «ok», conforme a la convenci
 - **Aprobación visual** del selector de productos, shell compartido, navegación lateral expandible/compacta, secciones contextuales por producto y continuidad entre Platform, Media Core, Commerce y Creative.
 - El prototipo usa métricas y módulos ilustrativos; no supone despliegue, funcionalidad productiva ni QA.
 - Próxima etapa: V2.0 — Unified Application Shell, integración visual de patrones V1.1–V1.9 en una aplicación coherente.
+
+
+## Zenit Design System V2.0 — aprobación visual (2026-10-12)
+
+El usuario aprobó el prototipo V2.0 — Unified Application Shell respondiendo «ok», según la convención explícita de aprobación y avance automático.
+
+- **Aprobación visual** de la integración de navegación por productos, indicadores, tabla de registros, búsqueda/filtros, selección, inspector de propiedades, notificaciones y modal de creación en un único application shell.
+- V2.0 queda como **baseline visual principal** de la familia Zenit, preservando las decisiones específicas de V1.1–V1.9 y de la iconografía/editor previamente aprobados.
+- La aprobación no constituye implementación en producción, conexión al backend, datos reales, certificación de accesibilidad ni QA funcional.
+- Próxima etapa: V2.1 — Responsive Design & Adaptive Layouts (desktop, tablet, mobile; navegación, tablas, paneles e inspector adaptativos).
