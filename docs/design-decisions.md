@@ -820,3 +820,13 @@ El usuario revisó el prototipo interactivo `Zenit Visual Editor — Toolbar V1.
 - Conservar la evaluación favorable previa de los iconos de Estados y de la biblioteca SVG, así como el refinamiento V1.3.1 de Pluma, Cuentagotas, Pincel y Máscara.
 - Esta aprobación no constituye implementación de producción ni validación funcional, accesibilidad, atajos, menús de variantes ni operaciones reales del editor.
 - Siguiente exploración: V1.4 — Navigation & Advanced Panels, manteniendo las proporciones y componentes V1.1 ya aprobados.
+
+
+## Zenit Design System V1.4 — aprobación visual (2026-10-12)
+
+El usuario revisó el prototipo interactivo `Zenit Design System V1.4 — Navigation & Advanced Panels` y confirmó: «Sí, lo veo bien».
+
+- Aprobación **visual** de navegación lateral expandida/compacta, menús desplegables, panel derecho de propiedades y controles avanzados (densidad, radio, toggles).
+- Conservar escala compacta, espaciados, jerarquía y componentes previamente validados en V1.1, así como Zenit Icons V1.3.2.
+- La aprobación no equivale a implementación productiva, QA funcional ni accesibilidad certificada. Algunas acciones del prototipo son demostrativas.
+- Próxima etapa sugerida: patrones de tablas, vistas de datos, filtros, estados vacíos y diálogos; aplicar la misma identidad a Platform y productos.
