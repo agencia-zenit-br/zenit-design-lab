@@ -955,3 +955,12 @@ El usuario aprobó visualmente la corrección V2.7.2 («Así sí»).
 - La restricción anterior de 75 % en escritorio queda descartada para este patrón.
 - Esta aprobación no valida por sí sola la implementación real de drawers laterales, accesibilidad o comportamiento del servidor.
 - Próxima etapa: V2.8 — Navigation Hierarchy & Breadcrumbs.
+
+
+## Zenit Design System V2.8 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.8 — Navigation Hierarchy & Breadcrumbs («ok, se ve bien»).
+
+- **Aprobación visual** de navegación jerárquica Platform → organización → producto → sección → recurso, selector de organización y producto, navegación lateral contextual, breadcrumbs interactivos y modo claro/oscuro.
+- Las rutas y permisos reales no fueron implementados ni validados; los datos de navegación eran simulados.
+- Próxima etapa: V2.9 — Data Explorer & Advanced Filters.
