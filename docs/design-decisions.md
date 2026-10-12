@@ -997,3 +997,14 @@ El usuario seleccionó expresamente como **referencia visual principal** la capt
 - Mantener estructura, proporciones y márgenes de la referencia en variantes responsive.
 - En móvil evitar desplazamiento horizontal: reorganizar navegación, tablas y formularios dentro del ancho útil.
 - V3.1.1 aún no está aprobada; debe ajustarse a esta referencia antes de validarse.
+
+
+## Zenit Design System V3.1.2 — aprobación visual y lenguaje único (2026-10-12)
+
+El usuario aprobó visualmente V3.1.2 («Sí, se ve bien»), con una condición estructural: **todo Zenit debe replicar el mismo lenguaje visual** (fondos, botones, márgenes, tablas, formularios, tipografía, navegación y estados), tanto en Platform como en Media Core, Commerce, Creative y futuros productos.
+
+- Referencia visual canónica: captura de Integrated Workspace V3.0, con fondo gris claro, superficies discretas, bordes finos, texto negro/gris, navegación tipo píldora con activo negro y verde oscuro reservado para la marca.
+- La variante responsive debe conservar el mismo diseño; móvil sin barras de desplazamiento horizontales, convirtiendo tablas en tarjetas compactas cuando corresponda.
+- Se requiere un catálogo de design tokens y componentes compartidos para evitar estilos divergentes por producto.
+- Aprobación visual únicamente: no certifica implementación, accesibilidad ni persistencia.
+- Próxima etapa: V3.2 — Unified Design Tokens & Component Standards.
