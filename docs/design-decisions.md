@@ -1041,3 +1041,14 @@ El usuario aprobó visualmente V3.4 — Density, Spacing & Layout Standards resp
 - Preservar colores, tipografía, controles, márgenes coherentes y estructura visual de V3.0; móvil sin scroll horizontal.
 - Aprobación visual de prototipo con datos simulados, no implementación en producción.
 - Próxima etapa: V3.5 — Unified Product Experience.
+
+
+## Zenit Design System V3.5 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V3.5 — Unified Product Experience respondiendo «ok».
+
+- Platform, Media Core, Commerce, Creative y futuros productos deben compartir una única interfaz base y lenguaje visual.
+- Al cambiar de producto cambian las funciones, herramientas y datos, pero no navegación horizontal, tipografía, botones, fondos, márgenes, tarjetas, tablas o estados.
+- Mantener la referencia V3.0 y adaptación responsive sin desplazamiento horizontal en móvil.
+- Aprobación visual de prototipo simulado, no implementación funcional.
+- Próxima etapa: V3.6 — Global Application Shell.
