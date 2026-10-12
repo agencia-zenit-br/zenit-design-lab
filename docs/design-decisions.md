@@ -964,3 +964,13 @@ El usuario aprobó visualmente V2.8 — Navigation Hierarchy & Breadcrumbs («ok
 - **Aprobación visual** de navegación jerárquica Platform → organización → producto → sección → recurso, selector de organización y producto, navegación lateral contextual, breadcrumbs interactivos y modo claro/oscuro.
 - Las rutas y permisos reales no fueron implementados ni validados; los datos de navegación eran simulados.
 - Próxima etapa: V2.9 — Data Explorer & Advanced Filters.
+
+
+## Zenit Design System V2.9 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.9 — Data Explorer & Advanced Filters respondiendo «ok».
+
+- **Aprobación visual** de tablas compactas, búsqueda, filtros combinados, ordenación, vistas guardadas, selección múltiple, acciones por lotes y estados sin resultados.
+- Mantener el aprovechamiento del ancho horizontal útil y la jerarquía entre filtros y resultados.
+- Los datos, operaciones por lotes y vistas guardadas eran simulados y no persistían fuera de la demostración.
+- Próxima etapa: V3.0 — Design System Integration, validación conjunta de componentes aprobados.
