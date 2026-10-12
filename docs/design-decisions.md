@@ -944,3 +944,14 @@ El usuario aprobó visualmente V2.6 — Onboarding & Empty States respondiendo �
 - **Aprobación visual** del onboarding por etapas (organización, producto, equipo, finalización), progreso visible, incorporación opcional de colaboradores y estados vacíos contextuales de proyectos, biblioteca y búsqueda.
 - La configuración y las acciones son simuladas; no se crean organizaciones, proyectos ni invitaciones reales.
 - Próxima etapa: V2.7 — Dialogs, Drawers & Contextual Actions, formularios y acciones auxiliares sin perder el contexto.
+
+
+## Zenit Design System V2.7.2 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente la corrección V2.7.2 («Así sí»).
+
+- En capas contextuales inferiores, los formularios y contenedores aprovechan **100 % del ancho útil**, conservando los márgenes internos del sistema visual.
+- Los campos se expanden horizontalmente y los botones de acción permanecen alineados a la derecha.
+- La restricción anterior de 75 % en escritorio queda descartada para este patrón.
+- Esta aprobación no valida por sí sola la implementación real de drawers laterales, accesibilidad o comportamiento del servidor.
+- Próxima etapa: V2.8 — Navigation Hierarchy & Breadcrumbs.
