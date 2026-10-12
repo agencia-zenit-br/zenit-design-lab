@@ -1030,3 +1030,14 @@ El usuario aprobó visualmente V3.3 — Component States & Interaction Matrix re
 - Regla: las variaciones de estado no alteran dimensiones, márgenes ni estructura del componente; evitar saltos visuales y divergencias entre productos.
 - Hover/foco/carga/error son demostraciones visuales, sin validación funcional completa ni certificación de accesibilidad.
 - Próxima etapa: V3.4 — Density, Spacing & Layout Standards.
+
+
+## Zenit Design System V3.4 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V3.4 — Density, Spacing & Layout Standards respondiendo «ok».
+
+- Densidad estándar predeterminada en toda la familia Zenit.
+- Variantes compacta (listados y operaciones) y amplia (formularios largos y lectura) como ajustes controlados exclusivamente del espaciado, no como sistemas visuales independientes.
+- Preservar colores, tipografía, controles, márgenes coherentes y estructura visual de V3.0; móvil sin scroll horizontal.
+- Aprobación visual de prototipo con datos simulados, no implementación en producción.
+- Próxima etapa: V3.5 — Unified Product Experience.
