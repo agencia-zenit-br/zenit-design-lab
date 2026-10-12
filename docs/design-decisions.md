@@ -984,3 +984,16 @@ El usuario aprobó visualmente V3.0 — Integrated Workspace respondiendo «ok»
 - Mantener densidad compacta, jerarquía visual, márgenes coherentes y acciones alineadas.
 - La aprobación es visual; no valida persistencia, rutas, integración de servicios, comportamiento responsive real ni accesibilidad certificada.
 - Próxima etapa: V3.1 — Responsive Integrated Workspace.
+
+
+## Referencia visual principal — captura V3.0 (2026-10-12)
+
+El usuario seleccionó expresamente como **referencia visual principal** la captura de Integrated Workspace V3.0 compartida el 12 de octubre de 2026 (fondo gris claro, navegación superior horizontal y botón activo negro).
+
+- Fondo gris muy claro, tarjetas discretas, bordes finos grises y texto negro/gris.
+- Verde oscuro concentrado en el identificador de marca, sin teñir indiscriminadamente los controles.
+- Navegación horizontal con botones tipo píldora; activo negro con texto blanco y opciones inactivas con contorno gris.
+- Métricas compactas en tres tarjetas, actividad en tarjeta de ancho completo y estados semánticos verde/naranja.
+- Mantener estructura, proporciones y márgenes de la referencia en variantes responsive.
+- En móvil evitar desplazamiento horizontal: reorganizar navegación, tablas y formularios dentro del ancho útil.
+- V3.1.1 aún no está aprobada; debe ajustarse a esta referencia antes de validarse.
