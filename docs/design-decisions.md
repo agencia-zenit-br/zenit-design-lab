@@ -898,3 +898,12 @@ El usuario aprobó la revisión V2.1.1 («ok, se ve bien») después de observar
 - **V2.1.1 aprobada visualmente**: escala consistente de espaciado, padding regular en tarjetas y contenedores, contenido prioritario, navegación desplegable en tablet/móvil e inspector separado del flujo horizontal para evitar compresión.
 - La validación fue visual en prototipo; faltan pruebas reales de breakpoints, navegadores, accesibilidad y QA.
 - Próxima exploración: V2.2 — Accessibility & Interaction States.
+
+
+## Zenit Design System V2.2 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.2 — Accessibility & Interaction States respondiendo «ok», conforme a la convención de aprobar y avanzar.
+
+- **Aprobación visual** de estados normal/error/deshabilitado, énfasis de foco, validación de campos, controles y acciones primarias/secundarias/destructivas, notificaciones y variantes claro/oscuro.
+- La aprobación no equivale a conformidad WCAG, pruebas con lectores de pantalla, contraste medido ni validación de navegación real por teclado.
+- Próxima exploración: V2.3 — Command Center & Global Search, búsqueda transversal y comandos rápidos por producto.
