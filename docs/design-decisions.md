@@ -1069,3 +1069,8 @@ El usuario aprobó visualmente V3.6.1 («ok»), que corrige los márgenes de Reg
 ## Zenit Design System V3.7 — aprobación visual
 
 El usuario aprobó visualmente V3.7 — Unified Data Tables & Record Management («ok»). Se consolidan patrones compartidos de búsqueda, filtros, ordenación, selección múltiple, paginación y edición de registros; contenedores con padding estándar 16 px y padding propio en celdas; adaptación móvil a tarjetas sin desplazamiento horizontal. Aprobación visual de prototipo con datos simulados, no validación funcional o de producción. Próxima etapa V3.8 — Unified Forms & Contextual Workflows.
+
+
+## Zenit Design System V3.8 — aprobación visual
+
+El usuario aprobó visualmente V3.8 — Unified Forms & Contextual Workflows («ok»). Estándar compartido para creación/edición, validación de campos junto al input, acciones Guardar/Cancelar y panel contextual bajo contenido ocupando 100% del ancho disponible con padding estándar 16px, sin scroll horizontal en móvil. La aprobación es visual; prototipo con datos simulados y sin persistencia real. Próxima etapa V3.9 — Dialogs, Overlays & Confirmation Patterns. Formularios de trabajo preferentemente contextuales; diálogos reservados para decisiones breves, especialmente destructivas.
