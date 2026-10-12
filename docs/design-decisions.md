@@ -1079,3 +1079,8 @@ El usuario aprobó visualmente V3.8 — Unified Forms & Contextual Workflows («
 ## Zenit Design System V3.9 — aprobación visual
 
 El usuario aprobó visualmente V3.9 — Dialogs, Overlays & Confirmation Patterns («ok»). Se establecen confirmaciones breves para publicación, descarte y acciones destructivas, con cancelación visible, tratamiento semántico de peligro, padding consistente y adaptación móvil. Formularios extensos permanecen en paneles contextuales de ancho completo. La aprobación es visual; el prototipo no certifica comportamiento modal, gestión de foco o accesibilidad. Próxima etapa V4.0 — Unified Application Experience, integración del shell, navegación, registros, formularios, confirmaciones, notificaciones y estados.
+
+
+## Zenit Design System V4.0 — aprobación visual
+
+El usuario aprobó visualmente V4.0 — Unified Application Experience («ok»). Se cierra la etapa de integración visual del shell de navegación horizontal, registros, formularios contextuales de ancho completo, confirmaciones, notificaciones y adaptación móvil sin scroll horizontal. Mantener márgenes interiores estándar 16px, compactos 12px, amplios 24px y padding propio en tablas. La aprobación es visual del prototipo, no validación de producción, persistencia ni accesibilidad. Próxima etapa V4.1 — Component Library & Design Tokens: especificaciones reutilizables de componentes, variantes, dimensiones, espaciados y composición para todos los productos sin rediseño.
