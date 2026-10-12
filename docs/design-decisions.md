@@ -1059,3 +1059,8 @@ El usuario aprobó visualmente V3.5 — Unified Product Experience respondiendo 
 El usuario detectó que en V3.6 la columna/tabla de **Registros** carecía de márgenes internos adecuados. **V3.6 no se considera aprobada todavía**; se corrige como V3.6.1 sin cambiar el lenguaje visual.
 
 Regla obligatoria para toda la familia Zenit: ningún listado, tabla, formulario, tarjeta o bloque de contenido debe quedar pegado al borde de su contenedor. Padding de contenedores: estándar 16px, compacto 12px y amplio 24px; las celdas de tablas deben conservar padding horizontal/vertical propio. Mantener márgenes laterales en móvil y evitar scroll horizontal con tarjetas adaptativas. Incluir inspección explícita de márgenes en las próximas revisiones visuales y QA. Esta regla es transversal, no una excepción de la pantalla Registros.
+
+
+## Zenit Design System V3.6.1 — aprobación visual
+
+El usuario aprobó visualmente V3.6.1 («ok»), que corrige los márgenes de Registros tras rechazar ese aspecto de V3.6. Regla transversal: contenedores con padding estándar 16 px, compacto 12 px, amplio 24 px; tablas con padding propio por celda, ningún contenido pegado a bordes, y móvil sin scroll horizontal. La inspección de márgenes es criterio obligatorio de aceptación visual en todas las futuras pantallas. La aprobación es visual, no funcional. Próxima etapa V3.7 — Unified Data Tables & Record Management.
