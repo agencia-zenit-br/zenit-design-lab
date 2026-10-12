@@ -860,3 +860,12 @@ El usuario aprobó la demostración interactiva V1.7 respondiendo «ok», confor
 - Conservar el lenguaje visual compacto y las jerarquías aprobadas hasta V1.6.
 - Las operaciones, la progresión y las notificaciones fueron simuladas; no hubo integración con servicios reales ni validación de accesibilidad/QA funcional.
 - Próxima etapa: V1.8 — Dashboards & Analytics, con tarjetas KPI, visualización de datos, filtros temporales y paneles de control.
+
+
+## Zenit Design System V1.8 — aprobación visual (2026-10-12)
+
+El usuario aprobó la demostración V1.8 — Dashboards & Analytics respondiendo «ok», según la convención acordada de aprobar y avanzar.
+
+- **Aprobación visual** de tarjetas KPI, series temporales, distribución por producto, filtros de período/producto, vistas de actividad y variantes claro/oscuro.
+- Las cifras, tendencias y actividades del prototipo eran ficticias. No constituye validación de telemetría real, integración, accesibilidad ni QA funcional.
+- Próxima exploración: V1.9 — Product Workspace & Navigation, interfaz coherente para cambiar entre productos de la familia Zenit.
