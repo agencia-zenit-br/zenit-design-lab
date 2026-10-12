@@ -1008,3 +1008,15 @@ El usuario aprobó visualmente V3.1.2 («Sí, se ve bien»), con una condición 
 - Se requiere un catálogo de design tokens y componentes compartidos para evitar estilos divergentes por producto.
 - Aprobación visual únicamente: no certifica implementación, accesibilidad ni persistencia.
 - Próxima etapa: V3.2 — Unified Design Tokens & Component Standards.
+
+
+## Zenit Design System V3.2 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V3.2 — Unified Design Tokens & Component Standards respondiendo «ok».
+
+- Establecer **una sola biblioteca de componentes y tokens visuales** compartida por Platform, Media Core, Commerce, Creative y futuros productos.
+- Referencia visual canónica V3.0: fondos gris claro, superficies neutras, bordes finos, texto negro/gris, navegación activa negra, verde de marca #476b59 y estados semánticos.
+- Escala de márgenes 4/8/12/16/24/32 px; controles compactos, formularios alineados, tablas compactas y tarjetas adaptativas en móvil sin scroll horizontal.
+- Las diferencias de producto se expresan en iconografía y funciones específicas, no en estilos divergentes.
+- La aprobación es visual y no equivale a implementación o certificación de accesibilidad.
+- Próxima etapa: V3.3 — Component States & Interaction Matrix.
