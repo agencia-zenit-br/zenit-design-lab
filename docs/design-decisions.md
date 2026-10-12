@@ -797,3 +797,9 @@ Status: Living decision log. Product-independent visual design system.
 - Preserve the accepted visual composition: compact top toolbar, contextual floating toolbar, coherent SVG icon direction, canvas and guides/selection affordances, layers panel with thumbnails, and contextual organization of typography, shapes, images and AI tools.
 - Defer behavioral calibration and professional editing engine implementation to a dedicated functional validation phase; keep open regressions/limitations recorded rather than claiming complete crop, image-region selection, gradient editor, custom spectrum picker, AI integration or reliable history/clipboard.
 - Next design phase approved in principle: define the cross-product Zenit design system (visual tokens, typography, colors, spacing, component patterns, navigation, forms, panels, states and interactions) reusable across Zenit Platform product family, including Zenit Media Core. No production components or deployment implied.
+
+## Zenit Design System V1 review — component proportion and spacing
+- User feedback (2026-10-12): retain general V1 navigation/layout direction; improve iconography to the same quality and consistency targeted for Unified Visual Editor V16, potentially in a subsequent dedicated iconography pass.
+- Sections Components, Forms and States require visual refinement: button dimensions feel disproportionate relative to typography, and spacing between labels, controls, content blocks and actions is inconsistent.
+- Next V1.1 design review should normalize component size scale (compact/standard/prominent), text-to-icon ratio, control heights, button horizontal/vertical padding, field label/control/group spacing, modal and alert hierarchy, and an explicit reusable spacing scale. Avoid forcing all controls to identical height regardless of context.
+- Status: user observations and proposed refinements; not approved V1.1 implementation or deployment.
