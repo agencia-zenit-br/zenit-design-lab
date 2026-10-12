@@ -926,3 +926,12 @@ El usuario aprobó visualmente V2.4 — Notifications & Activity Center respondi
 - Distinción de conceptos: notificación informativa, tarea que requiere intervención e historial consultable.
 - Las operaciones de marcar, revisar y resolver eran simuladas y no representan flujos de aprobación o cambios persistentes reales.
 - Próxima etapa: V2.5 — Settings & Administration, configuración compartida, permisos y preferencias.
+
+
+## Zenit Design System V2.5 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.5 — Settings & Administration respondiendo «ok», conforme a la convención de aprobar y avanzar.
+
+- **Aprobación visual** de categorías de configuración, preferencias generales y regionalización, identidad, roles y permisos, preferencias de notificación, integraciones y barra de guardar/descartar con detección de cambios pendientes.
+- El guardado y las integraciones eran simulados, sin mutaciones persistentes ni conexiones externas.
+- Próxima exploración: V2.6 — Onboarding & Empty States, configuración inicial de organización y estados vacíos contextuales.
