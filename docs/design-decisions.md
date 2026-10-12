@@ -830,3 +830,13 @@ El usuario revisó el prototipo interactivo `Zenit Design System V1.4 — Naviga
 - Conservar escala compacta, espaciados, jerarquía y componentes previamente validados en V1.1, así como Zenit Icons V1.3.2.
 - La aprobación no equivale a implementación productiva, QA funcional ni accesibilidad certificada. Algunas acciones del prototipo son demostrativas.
 - Próxima etapa sugerida: patrones de tablas, vistas de datos, filtros, estados vacíos y diálogos; aplicar la misma identidad a Platform y productos.
+
+
+## Zenit Design System V1.5 — aprobación visual (2026-10-12)
+
+El usuario revisó el prototipo interactivo `Zenit Design System V1.5 — Data Tables & Workflows` y respondió «Me gusta».
+
+- **Aprobación visual** de tablas administrativas, búsqueda, filtros por estado, ordenación, selección individual y masiva, paginación, badges de estado, estados vacíos y diálogos de confirmación.
+- Preservar proporciones compactas, navegación y jerarquía previamente aprobadas en V1.1–V1.4.
+- El prototipo utiliza datos ficticios; no está integrado con Zenit Platform. Esta validación no implica aprobación de operaciones reales, accesibilidad, seguridad, permisos ni QA funcional.
+- Próxima exploración: V1.6 — Forms & Multi-Step Workflows (formularios avanzados, validación, pasos, borradores y operaciones con permisos).
