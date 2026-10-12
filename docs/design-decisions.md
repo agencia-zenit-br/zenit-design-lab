@@ -840,3 +840,13 @@ El usuario revisó el prototipo interactivo `Zenit Design System V1.5 — Data T
 - Preservar proporciones compactas, navegación y jerarquía previamente aprobadas en V1.1–V1.4.
 - El prototipo utiliza datos ficticios; no está integrado con Zenit Platform. Esta validación no implica aprobación de operaciones reales, accesibilidad, seguridad, permisos ni QA funcional.
 - Próxima exploración: V1.6 — Forms & Multi-Step Workflows (formularios avanzados, validación, pasos, borradores y operaciones con permisos).
+
+
+## Zenit Design System V1.6 — aprobación visual (2026-10-12)
+
+El usuario aprobó el prototipo interactivo V1.6 respondiendo «ok», según la convención explícita de que «ok» significa aprobar y avanzar automáticamente.
+
+- **Aprobación visual** de asistente de cuatro etapas: información, selección de producto, permisos y revisión; formularios compactos, errores por campo, navegación anterior/siguiente y representación de borrador.
+- Preservar la identidad, jerarquía y densidad visual aprobadas en V1.1–V1.5.
+- La aprobación no acredita persistencia de borradores, creación de organizaciones, autorización backend, accesibilidad ni QA funcional; estas funciones son simuladas.
+- Próxima etapa: V1.7 — Feedback & System States, con toasts, alertas, progreso, estados asíncronos y recuperación de errores.
