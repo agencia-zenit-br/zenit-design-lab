@@ -1052,3 +1052,10 @@ El usuario aprobó visualmente V3.5 — Unified Product Experience respondiendo 
 - Mantener la referencia V3.0 y adaptación responsive sin desplazamiento horizontal en móvil.
 - Aprobación visual de prototipo simulado, no implementación funcional.
 - Próxima etapa: V3.6 — Global Application Shell.
+
+
+## Zenit Design System V3.6.1 — corrección obligatoria de márgenes
+
+El usuario detectó que en V3.6 la columna/tabla de **Registros** carecía de márgenes internos adecuados. **V3.6 no se considera aprobada todavía**; se corrige como V3.6.1 sin cambiar el lenguaje visual.
+
+Regla obligatoria para toda la familia Zenit: ningún listado, tabla, formulario, tarjeta o bloque de contenido debe quedar pegado al borde de su contenedor. Padding de contenedores: estándar 16px, compacto 12px y amplio 24px; las celdas de tablas deben conservar padding horizontal/vertical propio. Mantener márgenes laterales en móvil y evitar scroll horizontal con tarjetas adaptativas. Incluir inspección explícita de márgenes en las próximas revisiones visuales y QA. Esta regla es transversal, no una excepción de la pantalla Registros.
