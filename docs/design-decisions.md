@@ -916,3 +916,13 @@ El usuario aprobó visualmente V2.3 — Command Center & Global Search respondie
 - **Aprobación visual** del centro de comandos transversal, búsqueda y filtrado por producto, resultados agrupables por tipo y acciones rápidas.
 - La búsqueda y las acciones fueron simuladas; los atajos Ctrl+K, flechas, Enter y Esc eran una propuesta no implementada ni validada con teclado real.
 - Próxima etapa: V2.4 — Notifications & Activity Center, unificación de avisos, tareas, aprobaciones y eventos por producto.
+
+
+## Zenit Design System V2.4 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.4 — Notifications & Activity Center respondiendo «ok», según la convención acordada de aprobar y avanzar.
+
+- **Aprobación visual** de bandeja unificada, métricas de no leídos/pendientes/eventos, filtros por producto y tipo, estados de lectura, tareas pendientes y registro de actividad.
+- Distinción de conceptos: notificación informativa, tarea que requiere intervención e historial consultable.
+- Las operaciones de marcar, revisar y resolver eran simuladas y no representan flujos de aprobación o cambios persistentes reales.
+- Próxima etapa: V2.5 — Settings & Administration, configuración compartida, permisos y preferencias.
