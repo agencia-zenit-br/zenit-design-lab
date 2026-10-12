@@ -1020,3 +1020,13 @@ El usuario aprobó visualmente V3.2 — Unified Design Tokens & Component Standa
 - Las diferencias de producto se expresan en iconografía y funciones específicas, no en estilos divergentes.
 - La aprobación es visual y no equivale a implementación o certificación de accesibilidad.
 - Próxima etapa: V3.3 — Component States & Interaction Matrix.
+
+
+## Zenit Design System V3.3 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V3.3 — Component States & Interaction Matrix respondiendo «ok».
+
+- **Aprobación visual** de estados normal, hover, foco, seleccionado, deshabilitado, carga y error en botones, campos, selecciones y tarjetas; mensajes semánticos de éxito, advertencia y error.
+- Regla: las variaciones de estado no alteran dimensiones, márgenes ni estructura del componente; evitar saltos visuales y divergencias entre productos.
+- Hover/foco/carga/error son demostraciones visuales, sin validación funcional completa ni certificación de accesibilidad.
+- Próxima etapa: V3.4 — Density, Spacing & Layout Standards.
