@@ -935,3 +935,12 @@ El usuario aprobó visualmente V2.5 — Settings & Administration respondiendo �
 - **Aprobación visual** de categorías de configuración, preferencias generales y regionalización, identidad, roles y permisos, preferencias de notificación, integraciones y barra de guardar/descartar con detección de cambios pendientes.
 - El guardado y las integraciones eran simulados, sin mutaciones persistentes ni conexiones externas.
 - Próxima exploración: V2.6 — Onboarding & Empty States, configuración inicial de organización y estados vacíos contextuales.
+
+
+## Zenit Design System V2.6 — aprobación visual (2026-10-12)
+
+El usuario aprobó visualmente V2.6 — Onboarding & Empty States respondiendo «ok», según la convención de aprobar y avanzar.
+
+- **Aprobación visual** del onboarding por etapas (organización, producto, equipo, finalización), progreso visible, incorporación opcional de colaboradores y estados vacíos contextuales de proyectos, biblioteca y búsqueda.
+- La configuración y las acciones son simuladas; no se crean organizaciones, proyectos ni invitaciones reales.
+- Próxima etapa: V2.7 — Dialogs, Drawers & Contextual Actions, formularios y acciones auxiliares sin perder el contexto.
