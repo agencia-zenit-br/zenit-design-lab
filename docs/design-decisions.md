@@ -850,3 +850,13 @@ El usuario aprobó el prototipo interactivo V1.6 respondiendo «ok», según la 
 - Preservar la identidad, jerarquía y densidad visual aprobadas en V1.1–V1.5.
 - La aprobación no acredita persistencia de borradores, creación de organizaciones, autorización backend, accesibilidad ni QA funcional; estas funciones son simuladas.
 - Próxima etapa: V1.7 — Feedback & System States, con toasts, alertas, progreso, estados asíncronos y recuperación de errores.
+
+
+## Zenit Design System V1.7 — aprobación visual (2026-10-12)
+
+El usuario aprobó la demostración interactiva V1.7 respondiendo «ok», conforme a la convención acordada de aprobar y avanzar automáticamente.
+
+- **Aprobación visual** de mensajes de éxito, advertencia y error, indicadores de progreso, estados de operaciones, reintentos, cancelación y notificaciones descartables.
+- Conservar el lenguaje visual compacto y las jerarquías aprobadas hasta V1.6.
+- Las operaciones, la progresión y las notificaciones fueron simuladas; no hubo integración con servicios reales ni validación de accesibilidad/QA funcional.
+- Próxima etapa: V1.8 — Dashboards & Analytics, con tarjetas KPI, visualización de datos, filtros temporales y paneles de control.
