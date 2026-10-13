@@ -1104,3 +1104,8 @@ El usuario aprobó visualmente V4.3 — Foundations & Semantic Tokens («ok»). 
 ## Zenit Design System V4.4 — aprobación visual
 
 El usuario aprobó visualmente V4.4 — Interaction & Accessibility Standards («ok»). Se aprueban patrones visuales compartidos de estados normal/error/deshabilitado, jerarquía de acciones, errores con texto e icono, mensajes de sistema y confirmación previa para acciones destructivas, conservando el diseño V3.0 y márgenes estándar de 16 px. No implica certificación WCAG, gestión de foco ni navegación por teclado implementadas; deben verificarse técnicamente. Próxima etapa V4.5 — Design System Governance & Product Consistency, reglas para extender componentes y productos sin fragmentación visual.
+
+
+## V4.5.1 — separación de instrumentación y producto
+
+Aprobación del usuario («ok») de la corrección conceptual: retirar «Padding activo» y cualquier instrumentación del Design System de las pantallas de producto. Los valores de padding 12/16/24 px permanecen como tokens internos. Los controles de inspección pertenecen al laboratorio de diseño, fuera del producto. V4.5.1 se presenta como prototipo corregido para aprobación visual; no se considera aprobada toda V4.5 por esta confirmación.
