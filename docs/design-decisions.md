@@ -1099,3 +1099,8 @@ El usuario aprobó visualmente V4.2 — Component Composition & Responsive Patte
 ## Zenit Design System V4.3 — aprobación visual
 
 El usuario aprobó visualmente V4.3 — Foundations & Semantic Tokens («ok»). Quedan aprobadas las tres capas de tokens (fundamentales, semánticos y de componentes), la paleta neutral (fondo #f5f5f5, superficie #ffffff, texto #191919, navegación activa #111111, marca #476b59), padding compacto 12px/estándar 16px/amplio 24px y coherencia visual sin overrides por producto. Es aprobación visual, no publicación de CSS ni validación de accesibilidad. Próxima etapa V4.4 — Interaction & Accessibility Standards: estados, foco, errores, teclado y accesibilidad visual, conservando diseño aprobado.
+
+
+## Zenit Design System V4.4 — aprobación visual
+
+El usuario aprobó visualmente V4.4 — Interaction & Accessibility Standards («ok»). Se aprueban patrones visuales compartidos de estados normal/error/deshabilitado, jerarquía de acciones, errores con texto e icono, mensajes de sistema y confirmación previa para acciones destructivas, conservando el diseño V3.0 y márgenes estándar de 16 px. No implica certificación WCAG, gestión de foco ni navegación por teclado implementadas; deben verificarse técnicamente. Próxima etapa V4.5 — Design System Governance & Product Consistency, reglas para extender componentes y productos sin fragmentación visual.
