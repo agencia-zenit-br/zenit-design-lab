@@ -1109,3 +1109,8 @@ El usuario aprobó visualmente V4.4 — Interaction & Accessibility Standards (�
 ## V4.5.1 — separación de instrumentación y producto
 
 Aprobación del usuario («ok») de la corrección conceptual: retirar «Padding activo» y cualquier instrumentación del Design System de las pantallas de producto. Los valores de padding 12/16/24 px permanecen como tokens internos. Los controles de inspección pertenecen al laboratorio de diseño, fuera del producto. V4.5.1 se presenta como prototipo corregido para aprobación visual; no se considera aprobada toda V4.5 por esta confirmación.
+
+
+## V4.5.1 — aprobación visual
+
+El usuario aprobó visualmente («ok») el prototipo corregido V4.5.1 — Product Consistency. Instrumentación de laboratorio separada de la interfaz de producto; navegación horizontal, tokens, componentes y márgenes compartidos entre Platform, Media Core, Commerce y Creative; reflujo móvil sin scroll horizontal. Aprobación exclusivamente visual; no implica funcionalidad de backend. Siguiente versión V4.6 — Unified Component Specifications.
