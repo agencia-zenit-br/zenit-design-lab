@@ -1084,3 +1084,8 @@ El usuario aprobó visualmente V3.9 — Dialogs, Overlays & Confirmation Pattern
 ## Zenit Design System V4.0 — aprobación visual
 
 El usuario aprobó visualmente V4.0 — Unified Application Experience («ok»). Se cierra la etapa de integración visual del shell de navegación horizontal, registros, formularios contextuales de ancho completo, confirmaciones, notificaciones y adaptación móvil sin scroll horizontal. Mantener márgenes interiores estándar 16px, compactos 12px, amplios 24px y padding propio en tablas. La aprobación es visual del prototipo, no validación de producción, persistencia ni accesibilidad. Próxima etapa V4.1 — Component Library & Design Tokens: especificaciones reutilizables de componentes, variantes, dimensiones, espaciados y composición para todos los productos sin rediseño.
+
+
+## Zenit Design System V4.1 — aprobación visual
+
+El usuario aprobó visualmente V4.1 — Component Library & Design Tokens («ok»). Se consolidan como patrones visuales compartidos los tokens de superficies, texto, color de marca, espaciado 4/8/12/16/24/32 px, padding de contenedores 12/16/24 px por densidad, botones, campos, navegación horizontal y datos con márgenes por celda. Esta es una aprobación visual de laboratorio, no una biblioteca de código implementada ni certificación de accesibilidad. Próxima etapa V4.2 — Component Composition & Responsive Patterns, con jerarquía, alineación, márgenes y adaptación escritorio/tablet/móvil sin rediseñar la referencia V3.0.
