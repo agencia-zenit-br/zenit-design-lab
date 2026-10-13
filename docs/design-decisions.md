@@ -1089,3 +1089,8 @@ El usuario aprobó visualmente V4.0 — Unified Application Experience («ok»).
 ## Zenit Design System V4.1 — aprobación visual
 
 El usuario aprobó visualmente V4.1 — Component Library & Design Tokens («ok»). Se consolidan como patrones visuales compartidos los tokens de superficies, texto, color de marca, espaciado 4/8/12/16/24/32 px, padding de contenedores 12/16/24 px por densidad, botones, campos, navegación horizontal y datos con márgenes por celda. Esta es una aprobación visual de laboratorio, no una biblioteca de código implementada ni certificación de accesibilidad. Próxima etapa V4.2 — Component Composition & Responsive Patterns, con jerarquía, alineación, márgenes y adaptación escritorio/tablet/móvil sin rediseñar la referencia V3.0.
+
+
+## Zenit Design System V4.2 — aprobación visual
+
+El usuario aprobó visualmente V4.2 — Component Composition & Responsive Patterns («aprobdo»). Se validó visualmente la composición coherente entre escritorio, tablet y móvil; densidades compacta, estándar y amplia (padding 12/16/24 px), márgenes internos y padding de celdas, navegación horizontal, adaptación de tablas a tarjetas en móvil y formularios contextuales de ancho completo. Aprobación solo visual de prototipo, no certificación de implementación, accesibilidad ni persistencia. Próxima etapa V4.3 — Design System Foundations & Semantic Tokens, jerarquía de tokens fundamentales, semánticos y de componentes.
