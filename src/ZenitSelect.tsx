@@ -1,139 +1,170 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Icon } from './Icon';
 
-export type ZenitOption<Value extends string> = { value: Value; label: string; disabled?: boolean };
-
-type ZenitSelectProps<Value extends string> = {
-  label: string;
+export type ZenitOption<Value extends string> = {
   value: Value;
-  options: readonly ZenitOption<Value>[];
-  onChange: (value: Value) => void;
+  label: string;
   disabled?: boolean;
-  className?: string;
+  group?: string;
 };
 
-/**
- * Design Lab implementation of the approved 03.14 select-only pattern.
- * A non-native, rounded, anchored popup with single selection and keyboard navigation.
- * Multi-select, search, remote filtering and grouped choices are separate unimplemented modes.
- */
-export function ZenitSelect<Value extends string>({ label, value, options, onChange, disabled = false, className = '' }: ZenitSelectProps<Value>) {
+export type ZenitSelectProps<Value extends string> = {
+  label: string;
+  value: Value | null;
+  options: readonly ZenitOption<Value>[];
+  onChange: (value: Value) => void;
+  onClear?: () => void;
+  searchable?: boolean;
+  disabled?: boolean;
+  className?: string;
+  placeholder?: string;
+  searchPlaceholder?: string;
+};
+
+type VisibleItem<Value extends string> = { option: ZenitOption<Value>; index: number };
+
+const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+
+/** Approved Zenit Select 03.14: native-free single-choice combobox with groups and optional search. */
+export function ZenitSelect<Value extends string>({
+  label, value, options, onChange, onClear, searchable = false, disabled = false,
+  className = '', placeholder = 'Seleccionar', searchPlaceholder = 'Buscar opciones…',
+}: ZenitSelectProps<Value>) {
   const [open, setOpen] = useState(false);
-  const [highlighted, setHighlighted] = useState(0);
+  const [highlighted, setHighlighted] = useState(-1);
+  const [query, setQuery] = useState('');
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+  const search = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const selectedIndex = options.findIndex(option => option.value === value);
   const selected = options[selectedIndex];
-  const activeIndex = Math.max(0, highlighted);
+  const visible: VisibleItem<Value>[] = options
+    .map((option, index) => ({ option, index }))
+    .filter(({ option }) => !query || normalize(option.label).includes(normalize(query)) || (option.group && normalize(option.group).includes(normalize(query))));
+  const enabledIndices = visible.filter(({ option }) => !option.disabled).map(({ index }) => index);
+  const activeIndex = enabledIndices.includes(highlighted) ? highlighted : (enabledIndices[0] ?? -1);
+  const popup = open ? `${id}-list` : undefined;
+  const activeOptionId = open && activeIndex >= 0 ? `${id}-option-${activeIndex}` : undefined;
 
-  const selectable = (index: number) => index >= 0 && index < options.length && !options[index].disabled;
-  const stepIndex = (start: number, direction: number) => {
-    for (let count = 1; count <= options.length; count++) {
-      const candidate = (start + direction * count + options.length * (count + 1)) % options.length;
-      if (selectable(candidate)) return candidate;
-    }
-    return start;
-  };
-  const openPopup = (initial?: number) => {
-    if (disabled || !options.length) return;
-    setHighlighted(initial !== undefined && selectable(initial) ? initial : selectable(selectedIndex) ? selectedIndex : stepIndex(options.length - 1, 1));
-    setOpen(true);
-  };
-  const closePopup = (restoreFocus = false) => {
+  const close = (restoreFocus = false) => {
     setOpen(false);
+    setQuery('');
     if (restoreFocus) trigger.current?.focus();
   };
+  const openPopup = (target?: number) => {
+    if (disabled) return;
+    setQuery('');
+    setHighlighted(target !== undefined && !options[target]?.disabled ? target : selectedIndex >= 0 && !options[selectedIndex].disabled ? selectedIndex : options.findIndex(option => !option.disabled));
+    setOpen(true);
+  };
   const choose = (index: number) => {
-    if (!selectable(index)) return;
+    if (index < 0 || options[index]?.disabled) return;
     onChange(options[index].value);
-    closePopup(true);
+    close(true);
+  };
+  const advance = (direction: number) => {
+    if (!enabledIndices.length) return;
+    const currentPosition = enabledIndices.indexOf(activeIndex);
+    const nextPosition = currentPosition < 0 ? 0 : (currentPosition + direction + enabledIndices.length) % enabledIndices.length;
+    setHighlighted(enabledIndices[nextPosition]);
   };
 
   useEffect(() => {
     if (!open) return;
     const outside = (event: PointerEvent) => {
-      if (root.current && !root.current.contains(event.target as Node)) setOpen(false);
+      if (!root.current?.contains(event.target as Node)) close(false);
     };
-    const blurWindow = () => setOpen(false);
+    const blur = () => close(false);
     document.addEventListener('pointerdown', outside);
-    window.addEventListener('blur', blurWindow);
-    return () => {
-      document.removeEventListener('pointerdown', outside);
-      window.removeEventListener('blur', blurWindow);
-    };
+    window.addEventListener('blur', blur);
+    return () => { document.removeEventListener('pointerdown', outside); window.removeEventListener('blur', blur); };
   }, [open]);
 
+  useEffect(() => { if (open && searchable) search.current?.focus(); }, [open, searchable]);
   useEffect(() => {
     if (!open) return;
-    const option = optionRefs.current[activeIndex];
-    const panel = list.current;
-    if (option && panel) {
-      const top = option.offsetTop;
-      if (top < panel.scrollTop) panel.scrollTop = top;
-      else if (top + option.offsetHeight > panel.scrollTop + panel.clientHeight) {
-        panel.scrollTop = top + option.offsetHeight - panel.clientHeight;
-      }
-    }
-  }, [open, activeIndex]);
+    const element = optionRefs.current[activeIndex];
+    const scrollArea = list.current;
+    if (!element || !scrollArea) return;
+    if (element.offsetTop < scrollArea.scrollTop) scrollArea.scrollTop = element.offsetTop;
+    else if (element.offsetTop + element.offsetHeight > scrollArea.scrollTop + scrollArea.clientHeight)
+      scrollArea.scrollTop = element.offsetTop + element.offsetHeight - scrollArea.clientHeight;
+  }, [activeIndex, open, query]);
 
-  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
+    const typing = event.target instanceof HTMLInputElement;
     if (event.key === 'Escape') {
-      if (open) { event.preventDefault(); closePopup(); }
-      return;
-    }
-    if (event.key === 'Tab') { setOpen(false); return; }
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (open) { event.preventDefault(); event.stopPropagation(); close(true); }
+    } else if (event.key === 'Tab') {
+      close(false);
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      const direction = event.key === 'ArrowDown' ? 1 : -1;
-      if (!open) openPopup(selectedIndex < 0 ? undefined : selectedIndex);
-      else setHighlighted(previous => stepIndex(previous, direction));
-      return;
-    }
-    if (event.key === 'Home' || event.key === 'End') {
+      if (!open) openPopup();
+      else advance(event.key === 'ArrowDown' ? 1 : -1);
+    } else if (event.key === 'Home' || event.key === 'End') {
+      if (typing) return;
       event.preventDefault();
-      const first = event.key === 'Home';
-      const indices = first ? options.map((_, i) => i) : options.map((_, i) => options.length - 1 - i);
-      const next = indices.find(selectable);
-      if (next !== undefined) { if (!open) openPopup(next); else setHighlighted(next); }
-      return;
-    }
-    if (event.key === 'Enter' || event.key === ' ') {
+      const index = event.key === 'Home' ? enabledIndices[0] : enabledIndices[enabledIndices.length - 1];
+      if (!open) openPopup(index);
+      else if (index !== undefined) setHighlighted(index);
+    } else if (event.key === 'Enter' || (event.key === ' ' && !typing)) {
       event.preventDefault();
-      if (open) choose(activeIndex);
-      else openPopup();
+      if (!open) openPopup();
+      else choose(activeIndex);
     }
   };
 
-  return <div ref={root} className={`zenit-select ${open ? 'zenit-select--open' : ''} ${className}`.trim()}>
+  return <div ref={root} className={`zenit-select ${open ? 'zenit-select--open' : ''} ${className}`.trim()} onKeyDown={onKeyDown}>
     <span className="zenit-select__label" id={`${id}-label`}>{label}</span>
-    <button
-      type="button" ref={trigger} role="combobox" aria-labelledby={`${id}-label ${id}-value`}
-      aria-haspopup="listbox" aria-controls={open ? `${id}-list` : undefined} aria-expanded={open}
-      aria-activedescendant={open ? `${id}-option-${activeIndex}` : undefined}
-      className="zenit-select__trigger"
-      disabled={disabled}
-      onClick={() => open ? closePopup() : openPopup()}
-      onKeyDown={handleKeyDown}>
-      <span id={`${id}-value`} className="zenit-select__value">{selected?.label ?? 'Seleccionar'}</span>
-      <Icon name="chevron-right" size={13} className="zenit-select__chevron" />
-    </button>
+    <div className="zenit-select__control">
+      <button type="button" ref={trigger}
+        role="combobox" aria-labelledby={`${id}-label ${id}-value`} aria-haspopup="listbox"
+        aria-controls={popup} aria-expanded={open} aria-activedescendant={!searchable ? activeOptionId : undefined}
+        className="zenit-select__trigger" disabled={disabled} onClick={() => open ? close() : openPopup()}>
+        <span id={`${id}-value`} className="zenit-select__value">{selected?.label ?? placeholder}</span>
+        <Icon name="chevron-right" size={13} className="zenit-select__chevron"/>
+      </button>
+      {onClear && value !== null && !disabled && <button type="button" className="zenit-select__clear icon-button"
+        aria-label={`Limpiar ${label}`} title="Limpiar selección"
+        onClick={event => { event.stopPropagation(); onClear(); close(); }}>
+        <Icon name="x" size={13}/>
+      </button>}
+    </div>
     {open && <div className="zenit-select__popover">
+      {searchable && <div className="zenit-select__search">
+        <Icon name="search" size={15}/>
+        <input ref={search} type="text" value={query} placeholder={searchPlaceholder}
+          aria-label={`Buscar en ${label}`} role="combobox" aria-expanded={open}
+          aria-autocomplete="list" aria-controls={popup} aria-activedescendant={activeOptionId}
+          onChange={event => { const next = event.target.value; setQuery(next);
+            const first = options.findIndex(option => !option.disabled && (
+              normalize(option.label).includes(normalize(next)) ||
+              Boolean(option.group && normalize(option.group).includes(normalize(next)))));
+            setHighlighted(first);
+          }}/>
+      </div>}
       <div ref={list} role="listbox" id={`${id}-list`} aria-labelledby={`${id}-label`} className="zenit-select__list">
-        {options.map((option, index) => <div
-          key={option.value} id={`${id}-option-${index}`}
-          ref={element => { optionRefs.current[index] = element; }}
-          role="option" aria-selected={option.value === value} aria-disabled={option.disabled || undefined}
-          className={`zenit-select__option ${highlighted === index ? 'zenit-select__option--highlighted' : ''}`}
-          onPointerEnter={() => { if (!option.disabled) setHighlighted(index); }}
-          onPointerDown={event => event.preventDefault()}
-          onClick={() => choose(index)}>
-          <span>{option.label}</span>
-          {option.value === value && <Icon name="check" size={15} />}
-        </div>)}
+        {!visible.length && <div role="status" className="zenit-select__empty">Sin resultados</div>}
+        {visible.map(({ option, index }, position) => {
+          const previous = visible[position - 1]?.option.group;
+          return <Fragment key={option.value}>
+            {option.group && (position === 0 || option.group !== previous) &&
+              <div className="zenit-select__group" role="presentation">{option.group}</div>}
+            <div id={`${id}-option-${index}`} role="option"
+              ref={element => { optionRefs.current[index] = element; }}
+              aria-selected={option.value === value} aria-disabled={option.disabled || undefined}
+              className={`zenit-select__option ${activeIndex === index ? 'zenit-select__option--highlighted' : ''}`}
+              onPointerEnter={() => { if (!option.disabled) setHighlighted(index); }}
+              onPointerDown={event => event.preventDefault()} onClick={() => choose(index)}>
+              <span>{option.label}</span>
+              {option.value === value && <Icon name="check" size={15}/>}
+            </div>
+          </Fragment>;
+        })}
       </div>
     </div>}
   </div>;
