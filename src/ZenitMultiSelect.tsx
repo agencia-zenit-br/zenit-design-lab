@@ -85,6 +85,10 @@ export function ZenitMultiSelect<Value extends string>({
   const onKeyDown = (event:ReactKeyboardEvent<HTMLDivElement>) => {
     if(disabled)return;
     const typing=event.target instanceof HTMLInputElement;
+    if(event.target instanceof HTMLButtonElement && event.target!==trigger.current){
+      if(event.key==='Escape'&&open){event.preventDefault();close(true);}
+      return;
+    }
     if(event.key==='Escape'){
       if(open){event.preventDefault();event.stopPropagation();close(true);}
     } else if(event.key==='ArrowDown'||event.key==='ArrowUp'){
