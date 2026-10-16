@@ -15,3 +15,28 @@
 .editorial-field input:disabled,.editorial-field textarea:disabled{opacity:.65;cursor:not-allowed}
 .editorial-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 @media(max-width:850px){.editorial-layout{grid-template-columns:minmax(0,1fr)}}
+
+
+/* Design system catalog — isolated demo controls */
+.catalog {display:grid;gap:20px;min-width:0}
+.catalog__intro {display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.catalog__intro h1 {margin:0 0 8px}
+.catalog__intro p {max-width:720px;margin:0}
+.catalog__section {min-width:0}
+.catalog__display {margin:12px 0}
+.catalog__row {display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:14px 0}
+.catalog__field {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.catalog__field input,.catalog__table input:not([type=checkbox]) {min-width:0;padding:9px 10px;border:1px solid var(--border,#d9dfdc);border-radius:7px;background:transparent;color:inherit;font:inherit}
+.catalog__check {display:inline-flex;align-items:center;gap:7px}
+.catalog__message {min-height:22px;font-size:13px}
+.catalog__table-scroll {max-width:100%;overflow-x:auto}
+.catalog__table {border-collapse:collapse;width:100%;min-width:550px;font-size:14px}
+.catalog__table th,.catalog__table td {padding:12px;border-bottom:1px solid var(--border,#d9dfdc);text-align:left}
+.catalog__table th {font-weight:650;text-align:center}
+.catalog__table--compact th,.catalog__table--compact td {padding:5px 9px}
+.catalog__table td input:not([type=checkbox]) {width:100%}
+.catalog__th {display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.catalog__th button {border:0;background:transparent;color:inherit;cursor:pointer;font-size:16px;padding:4px;line-height:1}
+.catalog__th button:disabled {opacity:.25;cursor:default}
+.catalog__footnote {font-size:13px;opacity:.8;margin-top:14px}
+@media(max-width:640px){.catalog__intro{display:block}.catalog__intro .status{margin-top:10px}.catalog__row{align-items:stretch}.catalog__row .button{max-width:100%}}
