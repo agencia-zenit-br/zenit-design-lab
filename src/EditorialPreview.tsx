@@ -36,10 +36,10 @@ export function EditorialPreview() {
     <p className="editorial-disclaimer">Prototipo interactivo con datos sintéticos. No conectado a la API, permisos ni almacenamiento de Zenit Platform.</p>
     {notice && <div className="notice" role="status">{notice}<button type="button" aria-label="Cerrar aviso" onClick={() => setNotice('')} className="icon-button"><Icon name="x" size={16}/></button></div>}
     <div className="editorial-layout">
-      <section className="panel editorial-list" aria-label="Lista de artículos"><div className="panel__head"><div><h2>Artículos</h2><p>{articles.length} elementos de muestra</p></div></div>
+      <section id="editorial-list" className="panel editorial-list" aria-label="Lista de artículos"><div className="panel__head"><div><h2>Artículos</h2><p>{articles.length} elementos de muestra</p></div></div>
         {articles.map(item => <button type="button" key={item.id} className={`editorial-item ${selected === item.id ? 'editorial-item--selected' : ''}`} onClick={() => { setSelected(item.id); setReturnReason(''); setNotice(''); }} aria-pressed={selected === item.id}><strong>{item.title}</strong><span>{item.status} · Revisión {item.revision}</span></button>)}
       </section>
-      <section className="panel editorial-editor" aria-label="Editor de artículo">
+      <section id="editorial-editor" className="panel editorial-editor" aria-label="Editor de artículo">
         {article ? <><div className="panel__head"><div><h2>Editor</h2><p>Revisión {article.revision} · Cambios locales</p></div><StatusPill>{article.status}</StatusPill></div>
           <label className="editorial-field">Título<input value={article.title} disabled={article.status !== 'Borrador'} onChange={event => update({ title: event.target.value })}/></label>
           <label className="editorial-field">Resumen<textarea rows={3} value={article.summary} disabled={article.status !== 'Borrador'} onChange={event => update({ summary: event.target.value })}/></label>
