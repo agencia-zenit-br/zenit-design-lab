@@ -5,6 +5,7 @@ const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
 const shell = readFileSync(new URL('../src/DesignLab.tsx', import.meta.url), 'utf8');
 const catalog = readFileSync(new URL('../src/ComponentCatalog.tsx', import.meta.url), 'utf8');
 const icons = readFileSync(new URL('../src/Icon.tsx', import.meta.url), 'utf8');
+const stories = readFileSync(new URL('../src/components.stories.tsx', import.meta.url), 'utf8');
 
 const checks = [
   ['canonical neutral palette', () => {
@@ -29,6 +30,11 @@ const checks = [
     assert.ok(shell.includes('<Icon name={item.icon}'));
     assert.ok(catalog.includes('<Icon name="chevron-left"'));
     assert.ok(catalog.includes('<Icon name="chevron-right"'));
+  }],
+  ['storybook shares typed SVG icon vocabulary', () => {
+    assert.ok(stories.includes('icon="services"'));
+    assert.doesNotMatch(stories, /[◇▦▤▣▥⚙✎]/);
+    assert.ok(stories.includes('<Icon name={name}'));
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
