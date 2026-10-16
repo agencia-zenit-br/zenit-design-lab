@@ -1114,3 +1114,13 @@ Aprobación del usuario («ok») de la corrección conceptual: retirar «Padding
 ## V4.5.1 — aprobación visual
 
 El usuario aprobó visualmente («ok») el prototipo corregido V4.5.1 — Product Consistency. Instrumentación de laboratorio separada de la interfaz de producto; navegación horizontal, tokens, componentes y márgenes compartidos entre Platform, Media Core, Commerce y Creative; reflujo móvil sin scroll horizontal. Aprobación exclusivamente visual; no implica funcionalidad de backend. Siguiente versión V4.6 — Unified Component Specifications.
+
+## 2026-10-16 — Select, header, and contextual sidebar implementation requirements
+
+User review of the deployed integrated prototype confirmed that the visual direction improved and identified three remaining nonconformities to correct **without designing a different visual system**:
+
+- **Custom dropdowns (03.14):** When opened, every Zenit Select must render as an aesthetic, compact floating overlay with consistent rounded corners, internal option spacing, hover/selected states and keyboard accessibility. Never expose browser-native popup lists as the application UI. The initial standalone implementation can be single-select, but must explicitly distinguish future grouped, searchable and multi-select variants.
+- **Persistent application header (03.35):** The global header must remain visible at the top during ordinary vertical page scrolling. Preserve the V3.0 horizontal-pill global navigation, and do not allow overlays or dropdowns to push content down. Keep the same appearance in light and dark modes.
+- **Visible collapsible contextual sidebar (03.34 + V3.0):** When the sidebar is present, it must be expanded and visible by default on desktop, with a clearly available collapse/expand control and icon-only collapsed navigation. The sidebar is **contextual** to the active module, not a replacement for the approved global horizontal navigation. In mobile, show a dismissible overlay drawer instead of compressing or horizontally scrolling the workspace. Preserve user preference when possible; accessibility, keyboard and LTR/RTL remain binding requirements.
+
+These are clarifications and continuity requirements on existing approved decisions, not acceptance of any specific new React implementation. Implemented status, QA and incomplete Select modes must be recorded separately in [implementation-conformance.md](implementation-conformance.md).
