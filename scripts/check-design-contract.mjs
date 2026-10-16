@@ -7,6 +7,8 @@ const catalog = readFileSync(new URL('../src/ComponentCatalog.tsx', import.meta.
 const icons = readFileSync(new URL('../src/Icon.tsx', import.meta.url), 'utf8');
 const stories = readFileSync(new URL('../src/components.stories.tsx', import.meta.url), 'utf8');
 const select = readFileSync(new URL('../src/ZenitSelect.tsx', import.meta.url), 'utf8');
+const multiSelect = readFileSync(new URL('../src/ZenitMultiSelect.tsx', import.meta.url), 'utf8');
+const selectStories = readFileSync(new URL('../src/select.stories.tsx', import.meta.url), 'utf8');
 const sidebar = readFileSync(new URL('../src/LabSidebar.tsx', import.meta.url), 'utf8');
 
 const checks = [
@@ -48,6 +50,29 @@ const checks = [
     assert.ok(select.includes('role="listbox"'));
     assert.ok(select.includes('aria-activedescendant'));
     for (const key of ['ArrowDown', 'ArrowUp', 'Escape', 'Enter', 'Home', 'End']) assert.ok(select.includes(key));
+  }],
+  ['approved single and multiple select modes remain coherent', () => {
+    assert.ok(catalog.includes('<ZenitSelect<DemoFilter>'));
+    assert.ok(catalog.includes('<ZenitMultiSelect<DemoModule>'));
+    assert.ok(select.includes('searchable = false'));
+    assert.ok(select.includes('onClear'));
+    assert.ok(select.includes('option.group'));
+    assert.ok(select.includes('Sin resultados'));
+    assert.ok(multiSelect.includes('aria-multiselectable="true"'));
+    assert.ok(multiSelect.includes('className="zenit-select__chips"'));
+    assert.ok(multiSelect.includes('changeSelection'));
+    assert.ok(multiSelect.includes('Listo'));
+    assert.ok(multiSelect.includes('Sin resultados'));
+    assert.ok(multiSelect.includes('onChange([])'));
+    assert.ok(selectStories.includes('<ZenitSelect<ReviewStatus>'));
+    assert.ok(selectStories.includes('<ZenitMultiSelect<Module>'));
+  }],
+  ['select demos adapt without sideways scroll', () => {
+    assert.match(css, /\.catalog__select-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,minmax\(0,1fr\)\)/is);
+    assert.match(css, /@media\(max-width:700px\)\s*\{\s*\.catalog__select-grid\s*\{grid-template-columns:minmax\(0,1fr\)/is);
+    assert.match(css, /\.zenit-select__chips\s*\{[^}]*flex-wrap:\s*wrap/is);
+    assert.doesNotMatch(multiSelect, /<select[\s>]/i);
+    assert.doesNotMatch(select, /<select[\s>]/i);
   }],
   ['sticky global header with no navigation fragmentation', () => {
     assert.match(css, /\.app-chrome\s*\{[^}]*position\s*:\s*sticky/is);
