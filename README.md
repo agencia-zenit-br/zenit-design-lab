@@ -22,9 +22,16 @@ The current preview has three interactive sections:
 - **Componentes:** typography, vector icons, buttons, states and a *partial* editable table.
 - **Redacción:** purely local editorial flow simulation, not connected to production.
 
-The navigation uses the **approved horizontal pill pattern**, not the older
-exploratory left sidebar. Mobile navigation and records must reflow without
-horizontal scrolling; the same tokens and components apply across products.
+The **approved horizontal pill pattern** remains the global navigation.
+A **separate contextual sidebar** is expanded by default on desktop, may be
+collapsed to accessible icons, and opens as an overlay drawer on mobile.
+Mobile navigation and records must reflow without horizontal scrolling;
+the same tokens and components apply across products.
+
+The global header stays sticky while the page scrolls. Product and appearance
+controls use the shared **Zenit Select** rounded anchored popup (03.14),
+not visible browser-native selects. Only the single-selection mode is
+currently implemented; advanced modes remain tracked as pending.
 
 ## Local verification
 
