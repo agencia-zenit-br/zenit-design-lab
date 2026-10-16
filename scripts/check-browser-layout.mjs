@@ -162,6 +162,11 @@ try {
       await evaluate(`document.querySelector('.lab-sidebar__backdrop')?.click(); true`);
       await waitFor('!document.querySelector(".lab-sidebar--mobile-open")', 'Mobile sidebar did not close');
       process.stdout.write('PASS mobile sidebar overlay open/close\n');
+      await evaluate('window.scrollTo(0, 500); true');
+      await sleep(100);
+      const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
+      assert.ok(stickyAfterScroll.scrollY > 0 && Math.abs(stickyAfterScroll.top) <= 1, `Header not fixed at top while scrolling: ${JSON.stringify(stickyAfterScroll)}`);
+      process.stdout.write('PASS sticky header remains at top during real scrolling\n');
     }
     if (width === 1024) {
       await evaluate(`document.querySelector('.lab-sidebar__collapse')?.click(); true`);
