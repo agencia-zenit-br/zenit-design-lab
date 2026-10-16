@@ -31,12 +31,12 @@ Earlier prototypes and the current React demo do not override approved decisions
 
 | Review requirement | Approved source | Implementation in this branch | Validation status |
 |---|---|---|---|
-| Consistent rounded dropdown menus | 03.14 custom Zenit Select | `src/ZenitSelect.tsx`: non-native anchored popover, 12px rounded corners, hover/selection, Escape/Enter/arrows/Home/End, keyboard focused combobox, outside-click dismissal | **Static checks pending CI**; visual/browser keyboard QA pending. Single-select search, grouping and clearing plus multi-select chips, search, grouping and explicit Done have since been added in the preview branch; remote search, virtualization and browser assistive-technology QA remain pending |
-| Header remains fixed while scrolling | 03.35 and user review 2026-10-16 | `.app-chrome { position: sticky; top: 0 }` wraps global header and horizontal pills | **Static checks pending CI**; browser scrolling QA pending |
-| Sidebar visible and collapsible | 03.34, V3.0, 2026-10-16 review | `LabSidebar.tsx`: expanded default desktop, icon-only collapsed mode, local preference, contextual real-page anchors | **Static checks pending CI**; screen-reader/browser QA pending. Desktop splitter resizing and flyout submenu behaviour remain unimplemented |
-| Mobile sidebar without horizontal scroll | 03.34, V3.1.2, V4.5.1 | Overlay drawer with backdrop, Escape close, keyboard focus loop and restore | **Static checks pending CI**; responsive/browser QA pending |
+| Consistent rounded dropdown menus | 03.14 custom Zenit Select | `src/ZenitSelect.tsx`: non-native anchored popover, 12px rounded corners, hover/selection, Escape/Enter/arrows/Home/End, keyboard focused combobox, outside-click dismissal | **CI green**. Chromium verifies rounded popup, live single-search and Enter, clear, multi-choice chip add/remove and Done; remote search, virtualization, cross-browser/screen-reader and screenshot parity still pending |
+| Header remains fixed while scrolling | 03.35 and user review 2026-10-16 | `.app-chrome { position: sticky; top: 0 }` wraps global header and horizontal pills | **CI green**. Chromium confirms header remains at top after real page scrolling; multi-browser QA pending |
+| Sidebar visible and collapsible | 03.34, V3.0, 2026-10-16 review | `LabSidebar.tsx`: expanded default desktop, icon-only collapsed mode, local preference, contextual real-page anchors | **CI green**. Chromium verifies desktop collapse/expand state; screen-reader QA, desktop splitter resizing and flyout submenu behaviour remain pending |
+| Mobile sidebar without horizontal scroll | 03.34, V3.1.2, V4.5.1 | Overlay drawer with backdrop, Escape close, keyboard focus loop and restore | **CI green**. Chromium checks 320/375/390/768/1024/1440 widths in both themes and mobile overlay open/close; device-specific touch/RTL QA pending |
 
-**Important:** no independent visual comparison to the original V3.0 screenshot has yet been completed, and compilation has not yet been confirmed for this revision.
+**Important:** compilation, Storybook and Chromium viewport checks are green for the preview branch, but no independent pixel-level comparison with the original V3.0 screenshot or screen-reader certification has been completed.
 
 ## Next implementation milestone — approved Zenit Select 03.14
 
@@ -51,7 +51,13 @@ The approved universal selection family is now represented by two **shared React
 
 ## Automated preview verification
 
-`.github/workflows/verify-design-lab.yml` runs only read-only npm install, static design checks, TypeScript/Vite build, and Storybook build on preview branch pushes/PRs, without Cloud authentication, secrets, deploy, or production changes. A successful run is evidence of compilation only; viewport/browser checks must still be performed independently. The existing deployment workflow remains a **separate explicit action** for preview changes.
+`.github/workflows/verify-design-lab.yml` runs only read-only npm install, static design checks, TypeScript/Vite build, and Storybook build on preview branch pushes/PRs, without Cloud authentication, secrets, deploy, or production changes. CI now also runs `scripts/check-browser-layout.mjs` using real headless Chromium across six viewport widths and two themes: page overflow, sticky header, mobile table reflow, rounded popup, keyboard single-select, multi-select chips/Done, and contextual desktop/mobile sidebar behavior. This does **not** replace original-V3.0 screenshot comparison, physical-device tests or screen-reader QA. The existing deployment workflow remains a **separate explicit action** for preview changes.
+
+## Green verification evidence — 2026-10-16
+
+- [Design Lab CI, run 38954034166](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/38954034166): **success** (TypeScript/Vite and Storybook).
+- [Verify Design Lab, run 38954034151](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/38954034151): **success** (14 static guards, TypeScript/Vite, Storybook, Chromium responsive/behavioral checks).
+- The underlying build stays isolated: no private APIs, credential exchange, Cloud Run deployment, production tenant data or deployment side effect.
 
 ## Non-negotiable workflow
 
