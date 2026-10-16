@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, StatusPill } from './components';
 import { Icon, type IconName } from './Icon';
+import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -10,6 +11,8 @@ const sampleRows:Row[]=[
   {id:2,name:'Biblioteca visual',category:'Recursos',status:'En revisión'},
   {id:3,name:'Plantilla social',category:'Distribución',status:'Activo'},
 ];
+type DemoFilter = 'all'|'active'|'review';
+const demoFilterOptions:readonly ZenitOption<DemoFilter>[]=[{value:'all',label:'Todos'},{value:'active',label:'Activos'},{value:'review',label:'En revisión'}];
 const iconExamples:{name:IconName;title:string}[]=[
   {name:'dashboard',title:'Panel'}, {name:'editorial',title:'Editorial'}, {name:'services',title:'Módulos'},
   {name:'search',title:'Buscar'}, {name:'filter',title:'Filtros'}, {name:'settings',title:'Ajustes'},
@@ -23,6 +26,7 @@ export function ComponentCatalog() {
   const [selected,setSelected]=useState<number[]>([]);
   const [filter,setFilter]=useState('');
   const [compact,setCompact]=useState(false);
+  const [demoFilter,setDemoFilter]=useState<DemoFilter>('all');
   const [notice,setNotice]=useState('');
   const [confirmDelete,setConfirmDelete]=useState(false);
   const filtered=rows.filter(row=>Object.values(row).some(value=>String(value).toLocaleLowerCase().includes(filter.toLocaleLowerCase())));
@@ -71,6 +75,10 @@ export function ComponentCatalog() {
       <div className="catalog__row">
         <StatusPill tone="success">Activo</StatusPill><StatusPill tone="warning">En revisión</StatusPill>
         <StatusPill tone="danger">Error</StatusPill><StatusPill>Neutral</StatusPill>
+      </div>
+      <div className="catalog__select-demo">
+        <ZenitSelect<DemoFilter> label="Zenit Select" value={demoFilter} options={demoFilterOptions} onChange={setDemoFilter}/>
+        <p>Desplegable universal de selección única: opciones con bordes redondeados, menú flotante y navegación por teclado. Modo múltiple, grupos y búsqueda avanzada todavía pendientes.</p>
       </div>
       <div className="catalog__message" role="status">{notice}</div>
     </section>
