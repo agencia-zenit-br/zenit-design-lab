@@ -135,7 +135,28 @@ try {
       assert.ok(popupCheck.shown && popupCheck.radius === '12px', 'Rounded custom dropdown geometry differs from approved design');
       process.stdout.write('PASS accessible custom dropdown surface with rounded corners\n');
 
-      await evaluate(`document.querySelector('.catalog__select-example .zenit-select__trigger')?.click(); true`);
+      await waitFor('document.activeElement?.matches(".catalog__select-example .zenit-select__search input")', 'Searchable dropdown did not focus its search input');
+      await send('Input.insertText', { text:'revisión' });
+      await waitFor('document.querySelectorAll(".catalog__select-example:first-child .zenit-select__list .zenit-select__option").length === 1', 'Search did not filter grouped single-select options');
+      await send('Input.dispatchKeyEvent', { type:'rawKeyDown', key:'Enter', code:'Enter', windowsVirtualKeyCode:13 });
+      await send('Input.dispatchKeyEvent', { type:'keyUp', key:'Enter', code:'Enter', windowsVirtualKeyCode:13 });
+      await waitFor('document.querySelector(".catalog__select-example:first-child .zenit-select__value")?.textContent === "En revisión"', 'Keyboard Enter did not choose the filtered single selection');
+      await waitFor('!document.querySelector(".catalog__select-example:first-child .zenit-select__popover")', 'Single-select did not close on choice');
+      await evaluate(`document.querySelector('.catalog__select-example:first-child .zenit-select__clear')?.click(); true`);
+      await waitFor('document.querySelector(".catalog__select-example:first-child .zenit-select__value")?.textContent === "Seleccionar"', 'Single-select clear did not reset the choice');
+      process.stdout.write('PASS grouped single selection, live search, keyboard choice and clear\n');
+
+      await evaluate(`document.querySelector('.catalog__select-example:nth-child(2) .zenit-select__trigger')?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".catalog__select-example:nth-child(2) .zenit-select__popover"))', 'Multi-select popup did not open');
+      await evaluate(`Array.from(document.querySelectorAll('.catalog__select-example:nth-child(2) .zenit-select__option')).find(element=>element.textContent?.includes('Analítica'))?.click(); true`);
+      await waitFor('Array.from(document.querySelectorAll(".catalog__select-example:nth-child(2) .zenit-select__chip")).some(element=>element.textContent?.includes("Analítica"))', 'Multi-select did not add a selected chip');
+      assert.ok(await evaluate('Boolean(document.querySelector(".catalog__select-example:nth-child(2) .zenit-select__popover"))'), 'Multi-select closed before explicit Done');
+      await evaluate(`document.querySelector('.catalog__select-example:nth-child(2) .zenit-select__footer button')?.click(); true`);
+      await waitFor('!document.querySelector(".catalog__select-example:nth-child(2) .zenit-select__popover")', 'Multi-select Done did not close the menu');
+      await evaluate(`Array.from(document.querySelectorAll('.catalog__select-example:nth-child(2) .zenit-select__chip')).find(element=>element.textContent?.includes('Analítica'))?.querySelector('button')?.click(); true`);
+      await waitFor('!Array.from(document.querySelectorAll(".catalog__select-example:nth-child(2) .zenit-select__chip")).some(element=>element.textContent?.includes("Analítica"))', 'Multi-select chip removal failed');
+      process.stdout.write('PASS grouped multiple selection, chip removal and explicit Done\n');
+
       await evaluate(`document.querySelector('.mobile-nav-toggle')?.click(); true`);
       await waitFor('Boolean(document.querySelector(".lab-sidebar--mobile-open") && document.querySelector(".lab-sidebar__backdrop"))', 'Mobile sidebar overlay did not open');
       await evaluate(`document.querySelector('.lab-sidebar__backdrop')?.click(); true`);
