@@ -1,18 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, MetricCard, StatusPill } from './components';
 import { Icon, type IconName } from './Icon';
 import { EditorialPreview } from './EditorialPreview';
 import { ComponentCatalog } from './ComponentCatalog';
+import { ZenitSelect, type ZenitOption } from './ZenitSelect';
+import { LabSidebar, type LabSection } from './LabSidebar';
 
 type Mode = 'light' | 'dark' | 'system';
 type Product = 'platform' | 'media' | 'cms';
-type Section = 'Resumen' | 'Componentes' | 'Redacción';
+type Section = LabSection;
 const navigation: {label:Section;icon:IconName}[] = [
   {label:'Resumen',icon:'dashboard'},
   {label:'Componentes',icon:'components'},
   {label:'Redacción',icon:'editorial'},
 ];
 const products: Record<Product,string> = {platform:'Zenit Platform',media:'Zenit Media Core',cms:'Zenit CMS'};
+const productOptions: readonly ZenitOption<Product>[] = [{value:'platform',label:'Platform'},{value:'media',label:'Media Core'},{value:'cms',label:'CMS'}];
+const modeOptions: readonly ZenitOption<Mode>[] = [{value:'light',label:'Claro'},{value:'dark',label:'Oscuro'},{value:'system',label:'Sistema'}];
 const services: {name:string;detail:string;status:string;icon:IconName}[] = [
   {name:'Media Core',detail:'Producción editorial',status:'Activo',icon:'editorial'},
   {name:'CMS',detail:'Contenidos y sitios',status:'Activo',icon:'components'},
@@ -23,6 +27,8 @@ function initialMode(): Mode {
   try {const value = localStorage.getItem('zenit-design-lab-theme');return value === 'dark'||value === 'light'||value === 'system' ? value : 'light';}
   catch{return 'light';}
 }
+
+function initialSidebarCollapsed():boolean { try { return localStorage.getItem('zenit-design-lab-sidebar') === 'collapsed'; } catch { return false; } }
 
 function Overview({showNotice}:{showNotice:(message:string)=>void}) {
   return <>
@@ -70,8 +76,13 @@ export function DesignLab() {
   const [product,setProduct] = useState<Product>('platform');
   const [active,setActive] = useState<Section>('Resumen');
   const [notice,setNotice] = useState('');
+  const [sidebarCollapsed,setSidebarCollapsed] = useState(initialSidebarCollapsed);
+  const [mobileOpen,setMobileOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLButtonElement>(null);
+  const closeMobile = useCallback(() => { setMobileOpen(false); mobileMenuRef.current?.focus(); },[]);
   const effective = mode==='system'?(systemDark?'dark':'light'):mode;
   useEffect(()=>{try{localStorage.setItem('zenit-design-lab-theme',mode);}catch{/* storage unavailable */}},[mode]);
+  useEffect(()=>{try{localStorage.setItem('zenit-design-lab-sidebar',sidebarCollapsed?'collapsed':'expanded');}catch{/* storage unavailable */}},[sidebarCollapsed]);
   useEffect(()=>{
     const mq=window.matchMedia('(prefers-color-scheme: dark)');
     const onChange=(event:MediaQueryListEvent)=>setSystemDark(event.matches);
@@ -80,16 +91,12 @@ export function DesignLab() {
   },[]);
   return <div className="lab" data-theme={effective} data-product={product}>
     <a className="skip" href="#main">Ir al contenido</a>
-    <header className="app-header">
+    <div className="app-chrome"><header className="app-header">
       <div className="app-header__inner">
-        <div className="brand"><span className="brand__symbol" aria-hidden="true"><Icon name="components" size={21}/></span><span><strong>ZENIT</strong><small>DESIGN LAB</small></span></div>
+        <div className="brand"><button ref={mobileMenuRef} type="button" className="icon-button mobile-nav-toggle" aria-label="Abrir navegación lateral" aria-controls="zenit-lab-sidebar" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(true)}><Icon name="menu" size={20}/></button><span className="brand__symbol" aria-hidden="true"><Icon name="components" size={21}/></span><span><strong>ZENIT</strong><small>DESIGN LAB</small></span></div>
         <div className="header-controls">
-          <label className="field-inline"><span>Producto</span><select aria-label="Producto de referencia" value={product} onChange={e=>setProduct(e.target.value as Product)}>
-            <option value="platform">Platform</option><option value="media">Media Core</option><option value="cms">CMS</option>
-          </select></label>
-          <label className="field-inline"><span>Apariencia</span><select aria-label="Apariencia" value={mode} onChange={e=>setMode(e.target.value as Mode)}>
-            <option value="light">Claro</option><option value="dark">Oscuro</option><option value="system">Sistema</option>
-          </select></label>
+          <ZenitSelect<Product> label="Producto" value={product} options={productOptions} onChange={setProduct}/>
+          <ZenitSelect<Mode> label="Apariencia" value={mode} options={modeOptions} onChange={setMode}/>
           <span className="avatar" aria-label="Perfil de demostración"><Icon name="user" size={17}/></span>
         </div>
       </div>
@@ -98,7 +105,9 @@ export function DesignLab() {
       {navigation.map(item=><button key={item.label} type="button" className={`nav-item ${active===item.label?'nav-item--active':''}`} aria-current={active===item.label?'page':undefined} onClick={()=>{setActive(item.label);setNotice('');}}>
         <Icon name={item.icon} size={16}/><span>{item.label}</span>
       </button>)}
-    </nav></div>
+    </nav></div></div>
+    <div className={`app-body ${sidebarCollapsed?'app-body--sidebar-collapsed':''}`}>
+      <LabSidebar section={active} collapsed={sidebarCollapsed} onToggle={()=>setSidebarCollapsed(value=>!value)} mobileOpen={mobileOpen} onCloseMobile={closeMobile}/>
     <div className="workspace">
       <div className="context-bar"><div className="breadcrumbs"><span>{products[product]}</span><Icon name="chevron-right" size={13}/><span>Design Lab</span><Icon name="chevron-right" size={13}/><strong>{active}</strong></div><span className="context-bar__demo"><Icon name="shield" size={14}/> Entorno de demostración</span></div>
       <main id="main" className="content">
@@ -106,6 +115,6 @@ export function DesignLab() {
         {active==='Componentes'?<ComponentCatalog/>:active==='Redacción'?<EditorialPreview/>:<Overview showNotice={setNotice}/>}
         <footer className="lab-footer">Sistema visual Zenit · Referencia aprobada V3.0–V4.5.1 · Datos sintéticos · Sin conexión al backend</footer>
       </main>
-    </div>
+    </div></div>
   </div>;
 }
