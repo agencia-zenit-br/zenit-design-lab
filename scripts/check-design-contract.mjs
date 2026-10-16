@@ -6,6 +6,8 @@ const shell = readFileSync(new URL('../src/DesignLab.tsx', import.meta.url), 'ut
 const catalog = readFileSync(new URL('../src/ComponentCatalog.tsx', import.meta.url), 'utf8');
 const icons = readFileSync(new URL('../src/Icon.tsx', import.meta.url), 'utf8');
 const stories = readFileSync(new URL('../src/components.stories.tsx', import.meta.url), 'utf8');
+const select = readFileSync(new URL('../src/ZenitSelect.tsx', import.meta.url), 'utf8');
+const sidebar = readFileSync(new URL('../src/LabSidebar.tsx', import.meta.url), 'utf8');
 
 const checks = [
   ['canonical neutral palette', () => {
@@ -35,6 +37,35 @@ const checks = [
     assert.ok(stories.includes('icon="services"'));
     assert.doesNotMatch(stories, /[◇▦▤▣▥⚙✎]/);
     assert.ok(stories.includes('<Icon name={name}'));
+  }],
+  ['custom rounded selects without browser-native options', () => {
+    assert.doesNotMatch(shell, /<select[\s>]/i);
+    assert.doesNotMatch(catalog, /<select[\s>]/i);
+    assert.ok(shell.includes('ZenitSelect<Product>'));
+    assert.ok(shell.includes('ZenitSelect<Mode>'));
+    assert.match(css, /\.zenit-select__popover\s*\{[^}]*border-radius\s*:\s*12px/is);
+    assert.ok(select.includes('role="combobox"'));
+    assert.ok(select.includes('role="listbox"'));
+    assert.ok(select.includes('aria-activedescendant'));
+    for (const key of ['ArrowDown', 'ArrowUp', 'Escape', 'Enter', 'Home', 'End']) assert.ok(select.includes(key));
+  }],
+  ['sticky global header with no navigation fragmentation', () => {
+    assert.match(css, /\.app-chrome\s*\{[^}]*position\s*:\s*sticky/is);
+    assert.ok(shell.includes('className="app-chrome"'));
+    assert.ok(shell.includes('className="app-nav"'));
+  }],
+  ['sidebar is visible, collapsible, and mobile overlay is focus-managed', () => {
+    assert.ok(shell.includes('<LabSidebar'));
+    assert.ok(shell.includes('useState(initialSidebarCollapsed)'));
+    assert.ok(sidebar.includes('data-sidebar-state='));
+    assert.ok(sidebar.includes('onToggle'));
+    assert.ok(sidebar.includes('mobileOpen'));
+    assert.ok(sidebar.includes('aria-modal={mobileOpen'));
+    assert.ok(sidebar.includes("event.key==='Escape'"));
+    assert.ok(sidebar.includes("event.key!=='Tab'"));
+    assert.match(css, /\.lab-sidebar\s*\{[^}]*position\s*:\s*sticky/is);
+    assert.match(css, /\.lab-sidebar--mobile-open\s*\{/);
+    assert.match(css, /\.app-body--sidebar-collapsed\s*\{/);
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
