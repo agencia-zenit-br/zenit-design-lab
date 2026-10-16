@@ -97,6 +97,10 @@ export function ZenitSelect<Value extends string>({
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
     const typing = event.target instanceof HTMLInputElement;
+    if (event.target instanceof HTMLButtonElement && event.target !== trigger.current) {
+      if (event.key === 'Escape' && open) { event.preventDefault(); close(true); }
+      return;
+    }
     if (event.key === 'Escape') {
       if (open) { event.preventDefault(); event.stopPropagation(); close(true); }
     } else if (event.key === 'Tab') {
@@ -122,7 +126,7 @@ export function ZenitSelect<Value extends string>({
     <span className="zenit-select__label" id={`${id}-label`}>{label}</span>
     <div className="zenit-select__control">
       <button type="button" ref={trigger}
-        role="combobox" aria-labelledby={`${id}-label ${id}-value`} aria-haspopup="listbox"
+        role={searchable ? undefined : 'combobox'} aria-labelledby={`${id}-label ${id}-value`} aria-haspopup="listbox"
         aria-controls={popup} aria-expanded={open} aria-activedescendant={!searchable ? activeOptionId : undefined}
         className="zenit-select__trigger" disabled={disabled} onClick={() => open ? close() : openPopup()}>
         <span id={`${id}-value`} className="zenit-select__value">{selected?.label ?? placeholder}</span>
