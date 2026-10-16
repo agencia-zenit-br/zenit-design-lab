@@ -359,3 +359,18 @@ button:disabled { cursor: not-allowed; }
 @media (prefers-reduced-motion:reduce) {
   .app-body,.lab-sidebar,.zenit-select__trigger,.zenit-select__chevron { transition:none; }
 }
+
+
+/* Lab-only select specimen and bidirectional mobile sidebar behaviour. */
+.catalog__select-demo { display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 0 2px; }
+.catalog__select-demo>p { flex:1 1 230px;margin:0;font-size:11px;line-height:1.55;color:var(--muted); }
+@media(max-width:700px) {
+  .catalog__select-demo { align-items:stretch;flex-direction:column; }
+  .catalog__select-demo .zenit-select { flex:initial;min-width:0;align-items:stretch; }
+  .catalog__select-demo>p { flex:initial; }
+  .catalog__select-demo .zenit-select__popover { inset-inline-start:0;inset-inline-end:auto; }
+}
+@media(max-width:900px) {
+  [dir="rtl"] .lab-sidebar { transform:translateX(110%); }
+  [dir="rtl"] .lab-sidebar--mobile-open { transform:translateX(0); }
+}
