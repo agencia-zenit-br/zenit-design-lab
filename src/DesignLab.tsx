@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Button, MetricCard, StatusPill } from './components';
 import { EditorialPreview } from './EditorialPreview';
+import { ComponentCatalog } from './ComponentCatalog';
 
 type Mode = 'light' | 'dark' | 'system';
 type Product = 'platform' | 'media' | 'cms';
 const productLabels: Record<Product, string> = { platform: 'Platform', media: 'Media Core', cms: 'CMS' };
-const navigation = ['Resumen', 'Redacción', 'Organizaciones', 'Servicios', 'Almacenamiento', 'Consumo', 'Configuración'];
+const navigation = ['Resumen', 'Componentes', 'Redacción', 'Organizaciones', 'Servicios', 'Almacenamiento', 'Consumo', 'Configuración'];
 const services = [
   { name: 'Media Core', detail: 'Edición y producción', status: 'Activo' },
   { name: 'CMS', detail: 'Contenido y sitios', status: 'Activo' },
@@ -26,13 +27,13 @@ export function DesignLab() {
     <aside className="sidebar" aria-label="Navegación principal">
       <div className="brand"><span className="brand__symbol" aria-hidden="true">◈</span><span>DESIGN LAB<small>Identidad provisional</small></span></div>
       <div className="sidebar__caption">ESPACIO DE TRABAJO</div>
-      <nav aria-label="Secciones del laboratorio">{navigation.map((item, index) => <button key={item} type="button" className={`nav-item ${active === item ? 'nav-item--active' : ''}`} aria-current={active === item ? 'page' : undefined} onClick={() => { setActive(item); if (item !== 'Resumen' && item !== 'Redacción') setNotice(`Vista «${item}» pendiente de desarrollo; se mantiene el panel de referencia.`); else setNotice(''); }}><span className="nav-icon" aria-hidden="true">{['▦','✎','▤','◇','▣','▥','⚙'][index]}</span>{item}</button>)}</nav>
+      <nav aria-label="Secciones del laboratorio">{navigation.map((item, index) => <button key={item} type="button" className={`nav-item ${active === item ? 'nav-item--active' : ''}`} aria-current={active === item ? 'page' : undefined} onClick={() => { setActive(item); if (item !== 'Resumen' && item !== 'Redacción' && item !== 'Componentes') setNotice(`Vista «${item}» pendiente de desarrollo; se mantiene el panel de referencia.`); else setNotice(''); }}><span className="nav-icon" aria-hidden="true">{['▦','▧','✎','▤','◇','▣','▥','⚙'][index]}</span>{item}</button>)}</nav>
       <div className="sidebar__footer">Vista conceptual · Datos sintéticos<br/>No conectada a Platform</div>
     </aside>
     <div className="workspace">
       <header className="topbar"><div className="breadcrumbs">Familia SaaS <span>/</span> {productLabels[product]} <span>/</span> Vista previa</div><div className="topbar__actions"><label className="field-inline">Producto <select aria-label="Producto de referencia" value={product} onChange={e => setProduct(e.target.value as Product)}><option value="platform">Platform</option><option value="media">Media Core (exploración)</option><option value="cms">CMS (exploración)</option></select></label><label className="field-inline">Apariencia <select aria-label="Apariencia" value={mode} onChange={e => setMode(e.target.value as Mode)}><option value="light">Claro</option><option value="dark">Oscuro</option><option value="system">Sistema</option></select></label><span className="avatar" aria-label="Perfil de demostración">D</span></div></header>
       <main id="main" className="content">
-        {active === 'Redacción' ? <EditorialPreview /> : <>
+        {active === 'Redacción' ? <EditorialPreview /> : active === 'Componentes' ? <ComponentCatalog /> : <>
         <div className="eyebrow">DESIGN LAB / PRECISION</div>
         <div className="hero"><div><h1>Tu espacio de trabajo,<br/>en un solo lugar.</h1><p>Una experiencia clara para administrar servicios, recursos y operaciones.</p></div><Button onClick={() => setNotice('Acción de demostración: ninguna operación real ha sido creada.')}>+ Nueva operación</Button></div>
         {notice && <div className="notice" role="status">{notice}<button onClick={() => setNotice('')} aria-label="Cerrar aviso">×</button></div>}
