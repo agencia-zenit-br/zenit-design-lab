@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, StatusPill } from './components';
 import { Icon, type IconName } from './Icon';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
+import { ZenitMultiSelect } from './ZenitMultiSelect';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -11,8 +12,23 @@ const sampleRows:Row[]=[
   {id:2,name:'Biblioteca visual',category:'Recursos',status:'En revisión'},
   {id:3,name:'Plantilla social',category:'Distribución',status:'Activo'},
 ];
-type DemoFilter = 'all'|'active'|'review';
-const demoFilterOptions:readonly ZenitOption<DemoFilter>[]=[{value:'all',label:'Todos'},{value:'active',label:'Activos'},{value:'review',label:'En revisión'}];
+type DemoFilter = 'all'|'active'|'review'|'paused';
+type DemoModule = 'articles'|'columns'|'media'|'social'|'metrics'|'users'|'storage';
+const demoFilterOptions:readonly ZenitOption<DemoFilter>[]=[
+  {value:'all',label:'Todos',group:'Visibilidad'},
+  {value:'active',label:'Activos',group:'Estado'},
+  {value:'review',label:'En revisión',group:'Estado'},
+  {value:'paused',label:'Suspendidos',group:'Estado',disabled:true},
+];
+const demoModules:readonly ZenitOption<DemoModule>[]=[
+  {value:'articles',label:'Noticias',group:'Editorial'},
+  {value:'columns',label:'Columnas',group:'Editorial'},
+  {value:'media',label:'Biblioteca visual',group:'Editorial'},
+  {value:'social',label:'Redes sociales',group:'Distribución'},
+  {value:'metrics',label:'Métricas',group:'Operaciones'},
+  {value:'users',label:'Usuarios',group:'Operaciones'},
+  {value:'storage',label:'Almacenamiento',group:'Operaciones'},
+];
 const iconExamples:{name:IconName;title:string}[]=[
   {name:'dashboard',title:'Panel'}, {name:'editorial',title:'Editorial'}, {name:'services',title:'Módulos'},
   {name:'search',title:'Buscar'}, {name:'filter',title:'Filtros'}, {name:'settings',title:'Ajustes'},
@@ -26,7 +42,8 @@ export function ComponentCatalog() {
   const [selected,setSelected]=useState<number[]>([]);
   const [filter,setFilter]=useState('');
   const [compact,setCompact]=useState(false);
-  const [demoFilter,setDemoFilter]=useState<DemoFilter>('all');
+  const [demoFilter,setDemoFilter]=useState<DemoFilter|null>('all');
+  const [selectedModules,setSelectedModules]=useState<DemoModule[]>(['articles','media']);
   const [notice,setNotice]=useState('');
   const [confirmDelete,setConfirmDelete]=useState(false);
   const filtered=rows.filter(row=>Object.values(row).some(value=>String(value).toLocaleLowerCase().includes(filter.toLocaleLowerCase())));
@@ -76,11 +93,28 @@ export function ComponentCatalog() {
         <StatusPill tone="success">Activo</StatusPill><StatusPill tone="warning">En revisión</StatusPill>
         <StatusPill tone="danger">Error</StatusPill><StatusPill>Neutral</StatusPill>
       </div>
-      <div className="catalog__select-demo">
-        <ZenitSelect<DemoFilter> label="Zenit Select" value={demoFilter} options={demoFilterOptions} onChange={setDemoFilter}/>
-        <p>Desplegable universal de selección única: opciones con bordes redondeados, menú flotante y navegación por teclado. Modo múltiple, grupos y búsqueda avanzada todavía pendientes.</p>
-      </div>
       <div className="catalog__message" role="status">{notice}</div>
+    </section>
+
+    <section className="panel catalog__section" aria-labelledby="catalog-select">
+      <div className="panel__head">
+        <div><h2 id="catalog-select">Zenit Select</h2><p>Desplegables universales: bordes redondeados, búsqueda, grupos, selección múltiple y estados vacíos.</p></div>
+        <StatusPill tone="warning">Validación visual pendiente</StatusPill>
+      </div>
+      <div className="catalog__select-grid">
+        <div className="catalog__select-example">
+          <ZenitSelect<DemoFilter> label="Selección única" value={demoFilter}
+            options={demoFilterOptions} onChange={setDemoFilter} onClear={()=>setDemoFilter(null)} searchable
+            searchPlaceholder="Buscar estados…"/>
+          <p>Buscar por texto, abrir grupos, seleccionar con teclado o limpiar la selección.</p>
+        </div>
+        <div className="catalog__select-example">
+          <ZenitMultiSelect<DemoModule> label="Selección múltiple" values={selectedModules}
+            options={demoModules} onChange={setSelectedModules}/>
+          <p>Seleccionar varias opciones, retirar chips, limpiar todo y cerrar con «Listo».</p>
+        </div>
+      </div>
+      <p className="catalog__footnote">El prototipo usa datos sintéticos. La virtualización, carga remota de grandes catálogos y validación integral con lectores de pantalla siguen pendientes.</p>
     </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-table">
