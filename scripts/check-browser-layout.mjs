@@ -126,33 +126,25 @@ try {
       process.stdout.write(`PASS viewport ${width}px / ${theme}; no horizontal overflow\n`);
     }
     if (width === 375) {
+      await evaluate(`document.querySelector('.catalog__select-example .zenit-select__trigger')?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".catalog__select-example .zenit-select__popover"))', 'Custom dropdown did not open');
       const popupCheck = await evaluate(`(() => {
-        const trigger = document.querySelector('.catalog__select-example .zenit-select__trigger');
-        trigger?.click();
         const popup = document.querySelector('.catalog__select-example .zenit-select__popover');
         return {shown:!!popup, radius:popup ? getComputedStyle(popup).borderTopLeftRadius : null};
       })()`);
-      assert.ok(popupCheck.shown && popupCheck.radius === '12px', 'Rounded custom dropdown did not open');
+      assert.ok(popupCheck.shown && popupCheck.radius === '12px', 'Rounded custom dropdown geometry differs from approved design');
       process.stdout.write('PASS accessible custom dropdown surface with rounded corners\n');
 
       await evaluate(`document.querySelector('.catalog__select-example .zenit-select__trigger')?.click(); true`);
-      const sidebarCheck = await evaluate(`(() => {
-        const button=document.querySelector('.mobile-nav-toggle');
-        button?.click();
-        return {open:!!document.querySelector('.lab-sidebar--mobile-open'),backdrop:!!document.querySelector('.lab-sidebar__backdrop')};
-      })()`);
-      assert.ok(sidebarCheck.open && sidebarCheck.backdrop, 'Mobile sidebar overlay did not open');
+      await evaluate(`document.querySelector('.mobile-nav-toggle')?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".lab-sidebar--mobile-open") && document.querySelector(".lab-sidebar__backdrop"))', 'Mobile sidebar overlay did not open');
       await evaluate(`document.querySelector('.lab-sidebar__backdrop')?.click(); true`);
       await waitFor('!document.querySelector(".lab-sidebar--mobile-open")', 'Mobile sidebar did not close');
       process.stdout.write('PASS mobile sidebar overlay open/close\n');
     }
     if (width === 1024) {
-      const state = await evaluate(`(() => {
-        const button=document.querySelector('.lab-sidebar__collapse');
-        button?.click();
-        return document.querySelector('.lab-sidebar')?.dataset.sidebarState;
-      })()`);
-      assert.equal(state, 'collapsed', 'Desktop sidebar did not collapse');
+      await evaluate(`document.querySelector('.lab-sidebar__collapse')?.click(); true`);
+      await waitFor('document.querySelector(".lab-sidebar")?.dataset.sidebarState === "collapsed"', 'Desktop sidebar did not collapse');
       process.stdout.write('PASS desktop collapsible contextual sidebar\n');
     }
   }
