@@ -27,6 +27,17 @@ Earlier prototypes and the current React demo do not override approved decisions
 | Unified rich media editor | V16 plus editors 03.50–03.53 | **Not in this demo** | Separate implementation required |
 | Product-specific functional applications | Platform and ZMC | Simulated demonstration only | Not connected to backend |
 
+## Review corrections of 2026-10-16 — code implemented, CI pending
+
+| Review requirement | Approved source | Implementation in this branch | Validation status |
+|---|---|---|---|
+| Consistent rounded dropdown menus | 03.14 custom Zenit Select | `src/ZenitSelect.tsx`: non-native anchored popover, 12px rounded corners, hover/selection, Escape/Enter/arrows/Home/End, keyboard focused combobox, outside-click dismissal | **Static checks pending CI**; visual/browser keyboard QA pending. Only single-select supported so far; search, grouping, chips and virtualization remain pending |
+| Header remains fixed while scrolling | 03.35 and user review 2026-10-16 | `.app-chrome { position: sticky; top: 0 }` wraps global header and horizontal pills | **Static checks pending CI**; browser scrolling QA pending |
+| Sidebar visible and collapsible | 03.34, V3.0, 2026-10-16 review | `LabSidebar.tsx`: expanded default desktop, icon-only collapsed mode, local preference, contextual real-page anchors | **Static checks pending CI**; screen-reader/browser QA pending. Desktop splitter resizing and flyout submenu behaviour remain unimplemented |
+| Mobile sidebar without horizontal scroll | 03.34, V3.1.2, V4.5.1 | Overlay drawer with backdrop, Escape close, keyboard focus loop and restore | **Static checks pending CI**; responsive/browser QA pending |
+
+**Important:** no independent visual comparison to the original V3.0 screenshot has yet been completed, and compilation has not yet been confirmed for this revision.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
