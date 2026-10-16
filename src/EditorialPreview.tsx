@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, StatusPill } from './components';
+import { Icon } from './Icon';
 
 type Article = { id: number; title: string; summary: string; body: string; status: 'Borrador' | 'En revisión' | 'Aprobado'; revision: number };
 const initialArticles: Article[] = [
@@ -31,9 +32,9 @@ export function EditorialPreview() {
   }
   return <section className="editorial-preview" aria-label="Vista previa editorial">
     <div className="eyebrow">MEDIA CORE / REDACCIÓN · DEMOSTRACIÓN</div>
-    <div className="hero"><div><h1>Producción editorial</h1><p>Una primera exploración del flujo de noticias, borradores y aprobaciones.</p></div><Button onClick={() => { const id = Math.max(0, ...articles.map(item => item.id)) + 1; setArticles(items => [...items, { id, title: 'Nuevo borrador', summary: '', body: '', status: 'Borrador', revision: 1 }]); setSelected(id); setReturnReason(''); setNotice('Borrador de demostración creado en memoria, sin conexión al servidor.'); }}>+ Nuevo artículo</Button></div>
+    <div className="hero"><div><h1>Producción editorial</h1><p>Una primera exploración del flujo de noticias, borradores y aprobaciones.</p></div><Button onClick={() => { const id = Math.max(0, ...articles.map(item => item.id)) + 1; setArticles(items => [...items, { id, title: 'Nuevo borrador', summary: '', body: '', status: 'Borrador', revision: 1 }]); setSelected(id); setReturnReason(''); setNotice('Borrador de demostración creado en memoria, sin conexión al servidor.'); }}><Icon name="plus" size={14}/> Nuevo artículo</Button></div>
     <p className="editorial-disclaimer">Prototipo interactivo con datos sintéticos. No conectado a la API, permisos ni almacenamiento de Zenit Platform.</p>
-    {notice && <div className="notice" role="status">{notice}<button type="button" aria-label="Cerrar aviso" onClick={() => setNotice('')}>×</button></div>}
+    {notice && <div className="notice" role="status">{notice}<button type="button" aria-label="Cerrar aviso" onClick={() => setNotice('')} className="icon-button"><Icon name="x" size={16}/></button></div>}
     <div className="editorial-layout">
       <section className="panel editorial-list" aria-label="Lista de artículos"><div className="panel__head"><div><h2>Artículos</h2><p>{articles.length} elementos de muestra</p></div></div>
         {articles.map(item => <button type="button" key={item.id} className={`editorial-item ${selected === item.id ? 'editorial-item--selected' : ''}`} onClick={() => { setSelected(item.id); setReturnReason(''); setNotice(''); }} aria-pressed={selected === item.id}><strong>{item.title}</strong><span>{item.status} · Revisión {item.revision}</span></button>)}
