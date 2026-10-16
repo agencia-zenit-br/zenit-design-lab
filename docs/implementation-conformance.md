@@ -31,12 +31,27 @@ Earlier prototypes and the current React demo do not override approved decisions
 
 | Review requirement | Approved source | Implementation in this branch | Validation status |
 |---|---|---|---|
-| Consistent rounded dropdown menus | 03.14 custom Zenit Select | `src/ZenitSelect.tsx`: non-native anchored popover, 12px rounded corners, hover/selection, Escape/Enter/arrows/Home/End, keyboard focused combobox, outside-click dismissal | **Static checks pending CI**; visual/browser keyboard QA pending. Only single-select supported so far; search, grouping, chips and virtualization remain pending |
+| Consistent rounded dropdown menus | 03.14 custom Zenit Select | `src/ZenitSelect.tsx`: non-native anchored popover, 12px rounded corners, hover/selection, Escape/Enter/arrows/Home/End, keyboard focused combobox, outside-click dismissal | **Static checks pending CI**; visual/browser keyboard QA pending. Single-select search, grouping and clearing plus multi-select chips, search, grouping and explicit Done have since been added in the preview branch; remote search, virtualization and browser assistive-technology QA remain pending |
 | Header remains fixed while scrolling | 03.35 and user review 2026-10-16 | `.app-chrome { position: sticky; top: 0 }` wraps global header and horizontal pills | **Static checks pending CI**; browser scrolling QA pending |
 | Sidebar visible and collapsible | 03.34, V3.0, 2026-10-16 review | `LabSidebar.tsx`: expanded default desktop, icon-only collapsed mode, local preference, contextual real-page anchors | **Static checks pending CI**; screen-reader/browser QA pending. Desktop splitter resizing and flyout submenu behaviour remain unimplemented |
 | Mobile sidebar without horizontal scroll | 03.34, V3.1.2, V4.5.1 | Overlay drawer with backdrop, Escape close, keyboard focus loop and restore | **Static checks pending CI**; responsive/browser QA pending |
 
 **Important:** no independent visual comparison to the original V3.0 screenshot has yet been completed, and compilation has not yet been confirmed for this revision.
+
+## Next implementation milestone — approved Zenit Select 03.14
+
+The approved universal selection family is now represented by two **shared React components** that consume the same `ZenitOption` model and visual tokens: `ZenitSelect` for single-choice and `ZenitMultiSelect` for multi-choice. The latter is not a divergent product-specific design.
+
+- **Single:** optional searchable grouped list, clear action, disabled choices, empty-results state, Escape/arrows/Enter, selection closes on choice.
+- **Multiple:** selected chips with individual removal, clear-all, grouped options, live search, disabled choices, selection stays open, explicit **Listo** closes.
+- **Demonstration:** `ComponentCatalog.tsx` exposes both modes and `select.stories.tsx` contains independent interactive examples. No real customer data or backend persistence.
+- **Styles:** shared rounded floating menus, density and semantics in `styles.css`; responsive wrapping and no sideways navigation/table scrolling.
+
+**Not yet certified:** browser behavior, screen-reader interaction, cross-browser/touch QA, long-list virtualization, remote search and any production-scale caching. These must remain explicitly pending.
+
+## Automated preview verification
+
+`.github/workflows/verify-design-lab.yml` runs only read-only npm install, static design checks, TypeScript/Vite build, and Storybook build on preview branch pushes/PRs, without Cloud authentication, secrets, deploy, or production changes. A successful run is evidence of compilation only; viewport/browser checks must still be performed independently. The existing deployment workflow remains a **separate explicit action** for preview changes.
 
 ## Non-negotiable workflow
 
