@@ -47,3 +47,5 @@ jobs:
         run: npm run build
       - name: Build Storybook reference catalog
         run: npm run build-storybook -- --quiet
+      - name: Verify actual Chromium viewport layout and interactions
+        run: npm run check:browser
