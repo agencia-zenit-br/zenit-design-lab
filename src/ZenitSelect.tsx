@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Icon } from './Icon';
 
 export type ZenitOption<Value extends string> = { value: Value; label: string; disabled?: boolean };
@@ -79,7 +79,7 @@ export function ZenitSelect<Value extends string>({ label, value, options, onCha
     }
   }, [open, activeIndex]);
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return;
     if (event.key === 'Escape') {
       if (open) { event.preventDefault(); closePopup(); }
@@ -112,7 +112,7 @@ export function ZenitSelect<Value extends string>({ label, value, options, onCha
     <span className="zenit-select__label" id={`${id}-label`}>{label}</span>
     <button
       type="button" ref={trigger} role="combobox" aria-labelledby={`${id}-label ${id}-value`}
-      aria-haspopup="listbox" aria-controls={`${id}-list`} aria-expanded={open}
+      aria-haspopup="listbox" aria-controls={open ? `${id}-list` : undefined} aria-expanded={open}
       aria-activedescendant={open ? `${id}-option-${activeIndex}` : undefined}
       className="zenit-select__trigger"
       disabled={disabled}
