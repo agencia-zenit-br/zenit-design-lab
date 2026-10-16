@@ -32,16 +32,26 @@ export function LabSidebar({ section, collapsed, onToggle, mobileOpen, onCloseMo
   onCloseMobile:()=>void;
 }) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   useEffect(() => { if (mobileOpen) closeRef.current?.focus(); }, [mobileOpen]);
   useEffect(() => {
     if (!mobileOpen) return;
-    const onKeyDown = (event:KeyboardEvent) => { if (event.key==='Escape') onCloseMobile(); };
+    const onKeyDown = (event:KeyboardEvent) => {
+      if (event.key==='Escape') { event.preventDefault(); onCloseMobile(); return; }
+      if (event.key!=='Tab' || !sidebarRef.current) return;
+      const focusable=Array.from(sidebarRef.current.querySelectorAll<HTMLButtonElement|HTMLAnchorElement>('button:not([disabled]),a[href]'))
+        .filter(item=>item.getClientRects().length>0);
+      if (!focusable.length) return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if (event.shiftKey && document.activeElement===first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement===last) { event.preventDefault(); first.focus(); }
+    };
     window.addEventListener('keydown',onKeyDown);
     return () => window.removeEventListener('keydown',onKeyDown);
   }, [mobileOpen,onCloseMobile]);
   return <>
     {mobileOpen && <button type="button" className="lab-sidebar__backdrop" aria-label="Cerrar menú lateral" onClick={onCloseMobile}/>}
-    <aside id="zenit-lab-sidebar" className={`lab-sidebar ${collapsed ? 'lab-sidebar--collapsed' : ''} ${mobileOpen ? 'lab-sidebar--mobile-open' : ''}`}
+    <aside ref={sidebarRef} role={mobileOpen ? 'dialog' : undefined} aria-modal={mobileOpen ? true : undefined} id="zenit-lab-sidebar" className={`lab-sidebar ${collapsed ? 'lab-sidebar--collapsed' : ''} ${mobileOpen ? 'lab-sidebar--mobile-open' : ''}`}
       aria-label="Navegación contextual" data-sidebar-state={collapsed?'collapsed':'expanded'}>
       <div className="lab-sidebar__header">
         <span className="lab-sidebar__heading">Navegación</span>
