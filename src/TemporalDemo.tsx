@@ -4,7 +4,7 @@ import { ContextHelp } from './ContextHelp';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { Icon } from './Icon';
 import {
-  countdownSnapshot,makeTimer,pauseTimer,resetTimer,startTimer,timerSnapshot,
+  countdownSnapshot,parseExplicitInstant,makeTimer,pauseTimer,resetTimer,startTimer,timerSnapshot,
   type DurationParts,type TimerSession,
 } from './temporal/core';
 
@@ -58,11 +58,12 @@ function CountdownDemo({now,display,showSeconds}:{
 }) {
   const [target,setTarget]=useState(initialTarget);
   const [base,setBase]=useState(()=>Date.now());
-  const valid=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/.test(target)&&
-    Number.isFinite(Date.parse(target));
-  const result=countdownSnapshot(valid?Date.parse(target):NaN,now);
-  const baseTotal=valid?Math.max(0,Date.parse(target)-base):0;
-  const remainingMs=valid?Math.max(0,Date.parse(target)-now):0;
+  const parsed=parseExplicitInstant(target);
+  const valid=parsed.ok;
+  const targetMs=parsed.ok?parsed.value:NaN;
+  const result=countdownSnapshot(targetMs,now);
+  const baseTotal=valid?Math.max(0,targetMs-base):0;
+  const remainingMs=valid?Math.max(0,targetMs-now):0;
   const progress=baseTotal===0?(result.state==='expired'?100:0):(1-remainingMs/baseTotal)*100;
   const quickSet=(hours:number)=>{
     setBase(Date.now());
