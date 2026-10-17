@@ -150,6 +150,18 @@ Browser verification on the code change (before this documentation commit):
 
 **Concrete future conformance fixture:** universal Calendar rendered with its Zenit skin and a clearly distinct fictitious client skin, in an independent host app, with identical controlled selection behavior. A second fixture should compose optional ZMC multi-day selection without introducing ZMC-specific state into generic calendar core. Continue to treat hotel availability/inventory, airline ticketing, Hijri/Hebrew calendar engines and discontiguous multi-date selection as future extensions.
 
+
+## Universal time-selection adapter gate — APPROVED 2026-10-17
+
+**Binding decision:** time selection is a *functional/headless* capability with interchangeable visual presentations, not a permanent commitment to the current three-value wheel. Approved interface candidates include wheel, analog clock face with hands, direct editable text input and hybrid controls. All share time-only representation, configurable precision and range/step validation, independently configurable 12/24-hour locale display, accessibility contract and consistent user events.
+
+**Implementation/certification checklist for future iterations:**
+1. Publish an adapter-agnostic `TimeValue`/parsing/formatting/validation contract with explicit granularity, date/timezone boundaries and semantic error states.
+2. Prove at least two distinct interaction renderers can read/edit the same controlled value without duplicating validation or product policies. Writing direct values must remain possible when supported by the product.
+3. Ensure changes of rendering mode preserve selection, error state, locale, min/max/step rules, accessibility and screen-size behavior.
+4. Validate timeranges across midnight and distinguish wall-clock arithmetic from elapsed time across DST boundaries.
+5. Mark wheel/analog/text/hybrid as **planned**, **implemented**, **tested** or **certified** individually; the existing Zenit DateTimeDemo currently uses select menus and therefore does **not** satisfy these future adapter gates yet.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
