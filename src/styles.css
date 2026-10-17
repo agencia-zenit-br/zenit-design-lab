@@ -259,8 +259,8 @@ button:disabled { cursor: not-allowed; }
 .zenit-select__chevron { transform:rotate(90deg);transition:transform .14s; }
 .zenit-select--open .zenit-select__chevron { transform:rotate(-90deg); }
 .zenit-select__popover {
-  position:absolute;inset-block-start:calc(100% + 7px);inset-inline-end:0;
-  z-index:100;min-width:100%;width:max(100%,180px);max-width:min(270px,calc(100vw - 32px));
+  position:absolute;inset-block-start:calc(100% + 5px);inset-inline-start:0;inset-inline-end:auto;
+  z-index:100;min-width:0;width:100%;max-width:100%;
   background:var(--surface);border:1px solid var(--border);
   border-radius:12px;padding:5px;
   box-shadow:0 14px 36px rgba(0,0,0,.14),0 3px 9px rgba(0,0,0,.04);
@@ -449,7 +449,7 @@ button:disabled { cursor: not-allowed; }
   color:var(--muted);
 }
 .zenit-select--multiple {flex-wrap:wrap;}
-.zenit-select--multiple .zenit-select__multi-control {flex:1 1 155px;}
+.zenit-select--multiple .zenit-select__multi-control {flex:none;width:100%;}
 .zenit-select__chips {
   display:flex;
   flex-wrap:wrap;
@@ -512,7 +512,7 @@ button:disabled { cursor: not-allowed; }
 .catalog__select-example .zenit-select__popover {
   inset-inline-start:0;
   inset-inline-end:auto;
-  width:min(100%,320px);
+  width:100%;
   min-width:0;
 }
 .catalog__select-example>p {
@@ -526,4 +526,138 @@ button:disabled { cursor: not-allowed; }
   .zenit-select--multiple {align-items:stretch;}
   .zenit-select--multiple .zenit-select__multi-control {flex:initial;width:100%;}
   .zenit-select__popover {max-width:min(300px,calc(100vw - 32px));}
+}
+
+
+/* UI correction 2026-10-17: popovers anchor to the closed field, never to chips.
+   Global header selectors are the explicit wide-menu exception. */
+.zenit-select__control,.zenit-select__multi-control {
+  position:relative;
+  isolation:isolate;
+}
+.zenit-select--open { z-index:70; }
+.catalog__select-example:has(.zenit-select--open) { position:relative;z-index:72; }
+.catalog__select-example .zenit-select__control,
+.catalog__select-example .zenit-select__multi-control { width:100%;flex:none; }
+.zenit-select__control:has(.zenit-select__clear) .zenit-select__popover,
+.zenit-select__multi-control:has(.zenit-select__clear) .zenit-select__popover {
+  width:calc(100% - 34px);
+}
+.header-controls .zenit-select__popover {
+  inset-inline-end:0;
+  inset-inline-start:auto;
+  width:max(100%,180px);
+  max-width:min(270px,calc(100vw - 32px));
+}
+.zenit-select__sheet-head,.zenit-select__backdrop { display:none; }
+
+/* Actionable copy belongs in contextual help, not permanent editorial paragraphs. */
+.editorial-hero { margin-bottom:16px; }
+.editorial-title { display:flex;align-items:center;gap:8px;min-width:0; }
+.editorial-title h1 { margin:0; }
+.editorial-count {
+  border-radius:8px;padding:5px 8px;
+  color:var(--muted);background:var(--surface-muted);
+  font-size:11px;font-variant-numeric:tabular-nums;
+}
+.context-help { position:relative;flex:none;z-index:12; }
+.context-help__trigger { width:28px;height:28px;border-radius:50%; }
+.context-help__popover {
+  position:absolute;inset-block-start:calc(100% + 8px);inset-inline-start:0;
+  width:min(295px,calc(100vw - 48px));
+  padding:12px 14px;background:var(--surface);color:var(--text);
+  border:1px solid var(--border);border-radius:12px;
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+  font-size:12px;line-height:1.6;
+}
+.context-help__popover strong { display:block;margin-bottom:4px; }
+.context-help__popover p { margin:0;color:var(--muted); }
+
+/* Preserve keyboard outlines while removing blue Android/iOS tap flash. */
+button,a,[role="option"],summary {
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.zenit-select__trigger:focus:not(:focus-visible),.icon-button:focus:not(:focus-visible),
+.nav-item:focus:not(:focus-visible),.button:focus:not(:focus-visible) {
+  outline:none;
+}
+.zenit-select__option:focus-visible,.zenit-select__chip-remove:focus-visible {
+  outline:2px solid var(--focus);
+  outline-offset:2px;
+}
+.catalog__table input[type="checkbox"] {
+  accent-color:var(--brand);
+  width:17px;height:17px;margin:0;
+}
+
+/* Mobile menus are purpose-built bottom sheets; they never push or widen a card. */
+@media (max-width:700px) {
+  .zenit-select--mobile-sheet .zenit-select__backdrop {
+    display:block;position:fixed;inset:0;z-index:98;
+    width:100vw;height:100dvh;padding:0;border:0;border-radius:0;
+    background:rgba(0,0,0,.36);
+  }
+  .zenit-select--mobile-sheet .zenit-select__popover,
+  .catalog__select-example .zenit-select--mobile-sheet .zenit-select__popover {
+    position:fixed;
+    inset-block-start:auto;inset-block-end:0;
+    inset-inline-start:0;inset-inline-end:0;
+    width:100%;max-width:100%;min-width:0;
+    max-height:min(80dvh,660px);
+    display:flex;flex-direction:column;
+    padding:12px 12px max(12px,env(safe-area-inset-bottom));
+    border-radius:18px 18px 0 0;
+    box-shadow:0 -8px 35px rgba(0,0,0,.14);
+    z-index:99;
+  }
+  .zenit-select--mobile-sheet .zenit-select__sheet-head {
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;min-height:38px;padding:2px 2px 10px;
+    font-size:14px;
+  }
+  .zenit-select--mobile-sheet .zenit-select__list {
+    flex:1 1 auto;min-height:0;
+    max-height:none;overflow-y:auto;
+  }
+  .zenit-select--mobile-sheet .zenit-select__option {
+    min-height:46px;padding:12px 13px;font-size:14px;
+  }
+  .zenit-select--mobile-sheet .zenit-select__group {padding:14px 12px 7px;}
+  .zenit-select--mobile-sheet .zenit-select__footer {
+    flex:none;padding:12px 2px 0;
+  }
+  .zenit-select--mobile-sheet .zenit-select__footer .button {min-height:42px;padding-inline:18px;}
+  .zenit-select--mobile-sheet .zenit-select__search input,
+  .catalog__field input,.catalog__table td input:not([type="checkbox"]),
+  .editorial-field input,.editorial-field textarea {font-size:16px;}
+  .zenit-select--mobile-sheet .zenit-select__search {min-height:44px;}
+  .zenit-select__chip-remove {width:32px;height:32px;border-radius:7px;}
+  .zenit-select__chip {padding-block:2px;min-height:36px;}
+  .catalog__select-example .zenit-select__trigger,
+  .catalog__select-example .zenit-select__clear {min-height:44px;}
+  .catalog__toolbar-actions .button {min-height:40px;}
+  .context-help__popover {inset-inline-start:auto;inset-inline-end:0;}
+  /* Checkbox belongs to the upper corner of the record card, not a solitary row. */
+  .catalog__table .catalog__data-row {
+    position:relative;padding:12px 44px 12px 12px;
+  }
+  .catalog__table .catalog__data-row td:first-child {
+    display:flex;position:absolute;inset-block-start:10px;inset-inline-end:9px;
+    width:30px;min-height:30px;padding:0;
+    align-items:center;justify-content:center;
+  }
+  .catalog__table .catalog__data-row td:first-child::before {content:none;}
+  .catalog__table .catalog__data-row td:not(:first-child) {
+    display:flex;flex-direction:column;align-items:stretch;gap:5px;
+    padding:7px 0;border:0;
+    min-width:0;
+  }
+  .catalog__table .catalog__data-row td:not(:first-child)::before {
+    font-size:10px;font-weight:600;color:var(--muted);
+  }
+  .catalog__table .catalog__data-row input[type="checkbox"] {width:19px;height:19px;}
+  .catalog__table .catalog__data-row td[data-label="Elemento"] {
+    padding-block-start:0;
+  }
 }
