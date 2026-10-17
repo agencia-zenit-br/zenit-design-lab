@@ -19,6 +19,8 @@ const contextLinks: Record<LabSection,ContextLink[]> = {
     {label:'Preferencias',target:'catalog-preferences',icon:'globe'},
     {label:'Calendario',target:'catalog-calendar',icon:'calendar'},
     {label:'Fecha y hora',target:'catalog-datetime',icon:'clock'},
+    {label:'Temporizadores',target:'catalog-temporal',icon:'clock'},
+    {label:'Skins',target:'catalog-portability',icon:'components'},
     {label:'Formularios',target:'catalog-forms',icon:'edit'},
     {label:'Tablas',target:'catalog-table',icon:'list'},
   ],
