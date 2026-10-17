@@ -120,13 +120,28 @@ export function timeRangeDuration(start:TimeOfDay,end:TimeOfDay,allowNextDay=fal
   if(delta<0)return failure('La hora final es anterior; confirma que el intervalo cruza medianoche.');
   return secondsToDuration(delta);
 }
+/** Parse only a timezone-explicit ISO instant, rejecting browser Date.parse overflow normalization. */
+export function parseExplicitInstant(input:string):TemporalResult<number> {
+  const parts=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|[+-]\d{2}:\d{2})$/i.exec(input);
+  if(!parts)return failure('El instante requiere fecha, hora y zona explícita (Z o ±HH:MM).');
+  const civil=`${parts[1]}-${parts[2]}-${parts[3]}`;
+  if(!validateCivilDate(civil).ok)return failure('La fecha del instante no existe.');
+  const hour=Number(parts[4]),minute=Number(parts[5]),second=Number(parts[6]??0);
+  if(!validateTimeOfDay({hour,minute,second}).ok)return failure('La hora del instante no es válida.');
+  const tz=parts[8].toUpperCase();
+  if(tz!=='Z') {
+    const hh=Number(tz.slice(1,3)),mm=Number(tz.slice(4,6));
+    if(hh>23||mm>59)return failure('El desplazamiento de zona horaria no es válido.');
+  }
+  const epoch=Date.parse(input);
+  return Number.isFinite(epoch)?success(epoch):failure('El instante no se puede interpretar.');
+}
 export function instantIntervalDuration(startISO:string,endISO:string):TemporalResult<DurationParts> {
-  // Require an explicit UTC designator or offset; no browser-local interpretation.
-  const pattern=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})$/i;
-  if(!pattern.test(startISO)||!pattern.test(endISO))return failure('Los instantes requieren zona explícita, como Z o +03:00.');
-  const start=Date.parse(startISO),end=Date.parse(endISO);
-  if(!Number.isFinite(start)||!Number.isFinite(end)||end<start)return failure('El intervalo de instantes es inválido.');
-  return secondsToDuration(Math.floor((end-start)/1000));
+  const first=parseExplicitInstant(startISO),last=parseExplicitInstant(endISO);
+  if(!first.ok)return first;
+  if(!last.ok)return last;
+  if(last.value<first.value)return failure('El instante final es anterior al inicial.');
+  return secondsToDuration(Math.floor((last.value-first.value)/1000));
 }
 export function countdownSnapshot(targetEpochMs:number,nowEpochMs:number):{
   state:'pending'|'expired'|'invalid';remaining:DurationParts;
