@@ -17,6 +17,12 @@ const regional = readFileSync(new URL('../src/RegionalWorkbench.tsx', import.met
 const datetime = readFileSync(new URL('../src/DateTimeDemo.tsx', import.meta.url), 'utf8');
 const form = readFileSync(new URL('../src/FormSpecimen.tsx', import.meta.url), 'utf8');
 const mobileModal = readFileSync(new URL('../src/mobileModal.ts', import.meta.url), 'utf8');
+const temporalCore = readFileSync(new URL('../src/temporal/core.ts', import.meta.url), 'utf8');
+const timeInput = readFileSync(new URL('../src/temporal/TimeInput.tsx', import.meta.url), 'utf8');
+const dateInput = readFileSync(new URL('../src/temporal/CivilDateField.tsx', import.meta.url), 'utf8');
+const liveTemporal = readFileSync(new URL('../src/TemporalDemo.tsx', import.meta.url), 'utf8');
+const portability = readFileSync(new URL('../src/temporal/PortabilityDemo.tsx', import.meta.url), 'utf8');
+const temporalStories = readFileSync(new URL('../src/temporal.stories.tsx', import.meta.url), 'utf8');
 
 const checks = [
   ['canonical neutral palette', () => {
@@ -179,12 +185,52 @@ const checks = [
     assert.ok(calendar.includes('resolveDirection(settings)'));
     assert.ok(calendar.includes('Motor de fechas pendiente de implementación'));
   }],
-  ['date and time modes share the universal Gregorian component', () => {
-    for(const mode of ["'date'","'range'","'datetime'","'time'"])assert.ok(datetime.includes(mode));
+  ['date/time/multidate/time range share the headless Temporal Core', () => {
+    for(const mode of ["'date'","'range'","'multidate'","'datetime'","'time'","'timerange'"])
+      assert.ok(datetime.includes(mode), `Missing picker mode ${mode}`);
     assert.ok(datetime.includes('<CalendarSpecimen settings={settings}'));
-    assert.ok(datetime.includes("settings.hourCycle==='h12'"));
-    assert.ok(datetime.includes('formatHour(hour,minute,settings)'));
+    assert.ok(datetime.includes('<CivilDateField'));
+    assert.ok(datetime.includes('<TimeInput'));
+    assert.ok(datetime.includes('dateRangeMetrics('));
+    assert.ok(datetime.includes('timeRangeDuration('));
     assert.ok(datetime.includes("No se ha guardado ni programado ningún evento"));
+    assert.ok(timeInput.includes('parseTimeOfDay(draft,hourCycle)'));
+    assert.ok(dateInput.includes('parseCivilDate(draft,locale)'));
+    assert.ok(temporalCore.includes('export function dateRangeMetrics'));
+  }],
+  ['time renderers share one controlled value and no horizontal wheel scrollbar', () => {
+    assert.ok(timeInput.includes('presentation!==\'wheel\''));
+    assert.ok(timeInput.includes('presentation!==\'text\''));
+    assert.ok(timeInput.includes('function TimeWheel('));
+    assert.ok(timeInput.includes('aria-valuetext='));
+    assert.ok(timeInput.includes('onTouchEnd='));
+    assert.ok(css.includes('.temporal-wheel__track'));
+    assert.doesNotMatch(css, /\\.temporal-wheel[^}]*overflow-x\\s*:\\s*(auto|scroll)/s);
+  }],
+  ['countdown derives time from target and timer stores pause/resume state', () => {
+    assert.ok(temporalCore.includes('export function countdownSnapshot'));
+    assert.ok(temporalCore.includes('export function timerSnapshot'));
+    assert.ok(temporalCore.includes('export function pauseTimer'));
+    assert.ok(temporalCore.includes('export function startTimer'));
+    assert.ok(liveTemporal.includes('countdownSnapshot('));
+    assert.ok(liveTemporal.includes('timerSnapshot('));
+    assert.ok(liveTemporal.includes("document.addEventListener('visibilitychange',refresh)"));
+    assert.ok(liveTemporal.includes('aria-live="off"'));
+    assert.ok(regional.includes('<TemporalDemo/>'));
+  }],
+  ['operational copy is contextual and intro uses available width', () => {
+    assert.ok(catalog.includes('<ContextHelp label="Acerca del catálogo'));
+    assert.doesNotMatch(catalog, /<p>Pruebas del lenguaje visual aprobado para toda la familia/);
+    assert.ok(css.includes('.catalog__intro p {max-width:none;}'));
+  }],
+  ['portable time renderer has two independent consumers and distinct scoped skins', () => {
+    assert.ok(portability.includes('<ZenitTimeConsumer'));
+    assert.ok(portability.includes('<ClientTimeConsumer'));
+    assert.ok(portability.includes('<TimeInput label='));
+    assert.ok(css.includes('.temporal-host--client {'));
+    assert.ok(css.includes('.temporal-host--zenit'));
+    assert.ok(temporalStories.includes('SkinsSinCambiarMotor'));
+    assert.ok(regional.includes('<PortabilityDemo settings={draft}/>'));
   }],
   ['form fields expose errors without backend submission', () => {
     assert.ok(form.includes('onSubmit={validate}'));
