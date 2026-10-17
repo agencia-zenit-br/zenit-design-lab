@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, StatusPill } from './components';
 import { Icon } from './Icon';
+import { ContextHelp } from './ContextHelp';
 
 type Article = { id: number; title: string; summary: string; body: string; status: 'Borrador' | 'En revisión' | 'Aprobado'; revision: number };
 const initialArticles: Article[] = [
@@ -31,16 +32,14 @@ export function EditorialPreview() {
     setNotice('Cambio simulado localmente. No se ha modificado ningún artículo real.');
   }
   return <section className="editorial-preview" aria-label="Vista previa editorial">
-    <div className="eyebrow">MEDIA CORE / REDACCIÓN · DEMOSTRACIÓN</div>
-    <div className="hero"><div><h1>Producción editorial</h1><p>Una primera exploración del flujo de noticias, borradores y aprobaciones.</p></div><Button onClick={() => { const id = Math.max(0, ...articles.map(item => item.id)) + 1; setArticles(items => [...items, { id, title: 'Nuevo borrador', summary: '', body: '', status: 'Borrador', revision: 1 }]); setSelected(id); setReturnReason(''); setNotice('Borrador de demostración creado en memoria, sin conexión al servidor.'); }}><Icon name="plus" size={14}/> Nuevo artículo</Button></div>
-    <p className="editorial-disclaimer">Prototipo interactivo con datos sintéticos. No conectado a la API, permisos ni almacenamiento de Zenit Platform.</p>
+    <div className="hero editorial-hero"><div className="editorial-title"><h1>Producción editorial</h1><ContextHelp label="Información sobre esta demostración"><strong>Vista de demostración</strong><p>Explora el flujo de borradores, revisión y aprobación con datos sintéticos. No está conectada a la API ni modifica contenido real.</p></ContextHelp></div><Button onClick={() => { const id = Math.max(0, ...articles.map(item => item.id)) + 1; setArticles(items => [...items, { id, title: 'Nuevo borrador', summary: '', body: '', status: 'Borrador', revision: 1 }]); setSelected(id); setReturnReason(''); setNotice('Borrador de demostración creado en memoria, sin conexión al servidor.'); }}><Icon name="plus" size={14}/> Nuevo artículo</Button></div>
     {notice && <div className="notice" role="status">{notice}<button type="button" aria-label="Cerrar aviso" onClick={() => setNotice('')} className="icon-button"><Icon name="x" size={16}/></button></div>}
     <div className="editorial-layout">
-      <section id="editorial-list" className="panel editorial-list" aria-label="Lista de artículos"><div className="panel__head"><div><h2>Artículos</h2><p>{articles.length} elementos de muestra</p></div></div>
+      <section id="editorial-list" className="panel editorial-list" aria-label="Lista de artículos"><div className="panel__head"><div><h2>Artículos</h2></div><span className="editorial-count" aria-label="Total de artículos">{articles.length}</span></div>
         {articles.map(item => <button type="button" key={item.id} className={`editorial-item ${selected === item.id ? 'editorial-item--selected' : ''}`} onClick={() => { setSelected(item.id); setReturnReason(''); setNotice(''); }} aria-pressed={selected === item.id}><strong>{item.title}</strong><span>{item.status} · Revisión {item.revision}</span></button>)}
       </section>
       <section id="editorial-editor" className="panel editorial-editor" aria-label="Editor de artículo">
-        {article ? <><div className="panel__head"><div><h2>Editor</h2><p>Revisión {article.revision} · Cambios locales</p></div><StatusPill>{article.status}</StatusPill></div>
+        {article ? <><div className="panel__head"><div><h2>Editor</h2><p>Revisión {article.revision}</p></div><StatusPill>{article.status}</StatusPill></div>
           <label className="editorial-field">Título<input value={article.title} disabled={article.status !== 'Borrador'} onChange={event => update({ title: event.target.value })}/></label>
           <label className="editorial-field">Resumen<textarea rows={3} value={article.summary} disabled={article.status !== 'Borrador'} onChange={event => update({ summary: event.target.value })}/></label>
           <label className="editorial-field">Cuerpo<textarea rows={9} value={article.body} disabled={article.status !== 'Borrador'} onChange={event => update({ body: event.target.value })}/></label>
