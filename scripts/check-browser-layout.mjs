@@ -133,6 +133,16 @@ try {
         assert.equal(state.mobileRecordsDisplay, 'none', 'Dedicated mobile cards must remain hidden on desktop and tablet');
       }
       if (width <= 700) {
+        const alignment=await evaluate(`(() => {
+          const root=document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen')?.getBoundingClientRect();
+          const grid=document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .zenit-calendar')?.getBoundingClientRect();
+          return {offset:root&&grid?Math.abs((root.left+root.right)-(grid.left+grid.right)):null,
+            gridWidth:grid?.width,rootWidth:root?.width};
+        })()`);
+        assert.ok(alignment.offset!==null && alignment.offset<=2,
+          `Mobile calendar must be visually centered: ${JSON.stringify(alignment)}`);
+      }
+      if (width <= 700) {
         const cards=await evaluate(`[...document.querySelectorAll('.catalog__mobile-card')].map(card=>{
           const rect=card.getBoundingClientRect();
           return {left:rect.left,right:rect.right,width:rect.width};
@@ -481,5 +491,7 @@ try {
   if (ws && ws.readyState === WebSocket.OPEN) ws.close();
   browser.kill('SIGTERM');
   server.close();
-  await rm(profile, { recursive: true, force: true });
+  // Chromium may still flush profile state after SIGTERM. Cleanup must not
+  // mask passing browser assertions because Windows/Linux runners differ.
+  await rm(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
 }
