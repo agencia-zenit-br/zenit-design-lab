@@ -1136,3 +1136,16 @@ Source: user's explicit review of the deployed Design Lab in desktop and mobile,
 - **Mobile record cards:** when tabular data converts to a card, the row-selection checkbox must belong visually to the card header/corner and must not become an isolated centered line. Maintain an accessible checkbox label, adequate hit area, semantic fields and 12/16px container padding.
 - **Verification required:** test popup anchor widths and positions in real desktop browser, mobile overlay geometry, responsive cards, focus/tap states, dark/light variants and information density; incorporate tests in the preview-only CI. No pixel-parity or physical-device certification is inferred from source-only guards.
 
+## 2026-10-17 — Mobile UX refinement APPROVED; no visual redesign
+
+The user positively validated the **desktop** visual language and explicitly approved improving **mobile UX only**, while retaining the same V3.0–V4.5.1 design foundations and component family.
+
+**Mobile decisions superseding mobile-specific prototypes from the earlier 2026-10-17 corrections:**
+
+- **All mobile dropdowns use a familiar popup/dialog interaction**, including Product and Appearance in the application header and content Select controls. Replace the previous bottom-docked sheet pattern with an accessible centered popup using the same typography, borders, roundness, colors, iconography and spacing as desktop. Single-choice, grouped/searchable and multi-choice controls keep their established functions; the virtual keyboard should not appear merely because a selection dialog is opened. Search activates on intentional user focus. Prevent background scroll and manage focus/return.
+- **Mobile contextual navigation occupies the full screen while open**, instead of a partial-width side drawer. It must retain the existing section hierarchy, SVG icon family and neutral palette, with an obvious close control, keyboard focus management, Escape support and background scroll lock. Desktop stays expanded/collapsible and unchanged.
+- **Mobile record checkbox sits immediately BEFORE its record name**, aligned on the same line with little separation and an adequate touch target. This replaces the earlier "upper card corner" placement, which the user found detached from the text being selected. Preserve the compact mobile cards and accessibility semantics.
+- **Tablet:** the user has not reviewed a physical tablet. Add automated viewport checks around the responsive breakpoint and document the lack of physical validation rather than claiming tablet acceptance.
+- **Strict scope restriction:** no new visual branding, palettes, component geometry or typographic hierarchy for desktop. This iteration is a behavioural and layout improvement for mobile only; original desktop dropdown anchoring/width and navigation must continue to pass regression tests.
+
+Follow this user's explicit refinement over older mobile-only screenshots/rules when they differ. Record implementation versus tested/approved status in the [conformance matrix](implementation-conformance.md). An automated browser pass is not final acceptance on actual iOS/Android or a pixel-level comparison of the accepted screenshot.
