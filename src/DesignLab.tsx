@@ -5,6 +5,8 @@ import { EditorialPreview } from './EditorialPreview';
 import { ComponentCatalog } from './ComponentCatalog';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { LabSidebar, type LabSection } from './LabSidebar';
+import { ProfileMenu } from './ProfileMenu';
+import { calendarWeekdays } from './calendarLocale';
 
 type Mode = 'light' | 'dark' | 'system';
 type Product = 'platform' | 'media' | 'cms';
@@ -17,6 +19,7 @@ const navigation: {label:Section;icon:IconName}[] = [
 const products: Record<Product,string> = {platform:'Zenit Platform',media:'Zenit Media Core',cms:'Zenit CMS'};
 const productOptions: readonly ZenitOption<Product>[] = [{value:'platform',label:'Platform'},{value:'media',label:'Media Core'},{value:'cms',label:'CMS'}];
 const modeOptions: readonly ZenitOption<Mode>[] = [{value:'light',label:'Claro'},{value:'dark',label:'Oscuro'},{value:'system',label:'Sistema'}];
+const chartWeekdays = calendarWeekdays('es-ES', 1);
 const services: {name:string;detail:string;status:string;icon:IconName}[] = [
   {name:'Media Core',detail:'Producción editorial',status:'Activo',icon:'editorial'},
   {name:'CMS',detail:'Contenidos y sitios',status:'Activo',icon:'components'},
@@ -48,7 +51,7 @@ function Overview({showNotice}:{showNotice:(message:string)=>void}) {
       <section className="panel" aria-labelledby="activity">
         <div className="panel__head"><div><h2 id="activity">Actividad reciente</h2><p>Últimos siete días</p></div><StatusPill>7 días</StatusPill></div>
         <div className="chart" role="img" aria-label="Gráfico ilustrativo de actividad de lunes a domingo">
-          <div className="chart__bars">{[43,63,55,77,89,71,84].map((height,index)=><div key={index} className="chart__column"><div className="chart__bar" style={{height:`${height}%`}}/><span>{['L','M','X','J','V','S','D'][index]}</span></div>)}</div>
+          <div className="chart__bars">{[43,63,55,77,89,71,84].map((height,index)=><div key={index} className="chart__column"><div className="chart__bar" style={{height:`${height}%`}}/><span title={chartWeekdays[index].full} aria-label={chartWeekdays[index].full}>{chartWeekdays[index].short}</span></div>)}</div>
         </div>
       </section>
       <section className="panel" aria-labelledby="service-list">
@@ -97,7 +100,9 @@ export function DesignLab() {
         <div className="header-controls">
           <ZenitSelect<Product> label="Producto" value={product} options={productOptions} onChange={setProduct}/>
           <ZenitSelect<Mode> label="Apariencia" value={mode} options={modeOptions} onChange={setMode}/>
-          <span className="avatar" aria-label="Perfil de demostración"><Icon name="user" size={17}/></span>
+          <ProfileMenu onAction={action=>setNotice(action==='Cerrar sesión'
+            ? 'Demostración: no se ha cerrado ninguna sesión.'
+            : `Vista de ${action.toLowerCase()} disponible como muestra del menú de perfil; sin conexión a cuentas reales.`)}/>
         </div>
       </div>
     </header>
