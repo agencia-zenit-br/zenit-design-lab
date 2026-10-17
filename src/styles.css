@@ -748,7 +748,7 @@ button,a,[role="option"],summary {
   }
   .catalog__table .catalog__data-row {
     display:grid;
-    grid-template-columns:36px minmax(0,1fr);
+    grid-template-columns:44px minmax(0,1fr);
     gap:0 8px;
     align-items:center;
     padding:12px;
@@ -760,7 +760,7 @@ button,a,[role="option"],summary {
     display:flex;
     align-items:center;
     justify-content:flex-start;
-    width:36px;
+    width:44px;
     min-height:44px;
     padding:0;
   }
@@ -792,5 +792,22 @@ button,a,[role="option"],summary {
   .catalog__table .catalog__data-row td:not(:first-child):not([data-label="Elemento"]) {
     grid-template-columns:minmax(0,1fr);
     gap:4px;
+  }
+}
+
+
+/* Hit target and glyph remain aligned immediately before the record name. */
+.catalog__row-select {
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:32px;min-height:32px;
+  cursor:pointer;
+}
+@media(max-width:700px){
+  .catalog__table .catalog__data-row td:first-child {
+    justify-content:flex-end;
+  }
+  .catalog__table .catalog__data-row .catalog__row-select {
+    width:44px;height:44px;min-width:44px;min-height:44px;
+    justify-content:flex-end;
   }
 }
