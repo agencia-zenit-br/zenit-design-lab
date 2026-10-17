@@ -95,8 +95,8 @@ export function DesignLab() {
       <div className="app-header__inner">
         <div className="brand"><button ref={mobileMenuRef} type="button" className="icon-button mobile-nav-toggle" aria-label="Abrir navegación lateral" aria-controls="zenit-lab-sidebar" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(true)}><Icon name="menu" size={20}/></button><span className="brand__symbol" aria-hidden="true"><Icon name="components" size={21}/></span><span><strong>ZENIT</strong><small>DESIGN LAB</small></span></div>
         <div className="header-controls">
-          <ZenitSelect<Product> mobileSheet={false} label="Producto" value={product} options={productOptions} onChange={setProduct}/>
-          <ZenitSelect<Mode> mobileSheet={false} label="Apariencia" value={mode} options={modeOptions} onChange={setMode}/>
+          <ZenitSelect<Product> label="Producto" value={product} options={productOptions} onChange={setProduct}/>
+          <ZenitSelect<Mode> label="Apariencia" value={mode} options={modeOptions} onChange={setMode}/>
           <span className="avatar" aria-label="Perfil de demostración"><Icon name="user" size={17}/></span>
         </div>
       </div>
