@@ -147,7 +147,10 @@ try {
       assert.ok(popupCheck.bodyLocked,'Mobile dropdown should lock background page scroll');
       process.stdout.write('PASS centered mobile popup, focus dialog and background scroll lock\n');
 
-      await waitFor('document.activeElement?.matches(".catalog__select-example .zenit-select__search input")', 'Searchable dropdown did not focus its search input');
+      const mobileInitialFocus = await evaluate('document.activeElement?.classList.contains("zenit-select__popover")');
+      assert.ok(mobileInitialFocus, 'Mobile popup must initially focus its dialog without showing the on-screen keyboard');
+      await evaluate(`document.querySelector('.catalog__select-example .zenit-select__search input')?.focus();true`);
+      await waitFor('document.activeElement?.matches(".catalog__select-example .zenit-select__search input")', 'Search must be focusable when the user elects to search');
       await send('Input.insertText', { text:'revisión' });
       await waitFor('document.querySelectorAll(".catalog__select-example:first-child .zenit-select__list .zenit-select__option").length === 1', 'Search did not filter grouped single-select options');
       await send('Input.dispatchKeyEvent', { type:'rawKeyDown', key:'Enter', code:'Enter', windowsVirtualKeyCode:13 });
@@ -186,6 +189,25 @@ try {
       await waitFor('!document.querySelector(".lab-sidebar--mobile-open")', 'Full-screen navigation did not close');
       await waitFor('document.body.style.overflow!== "hidden"', 'Mobile menu failed to restore background scrolling');
       process.stdout.write('PASS full-screen mobile navigation open/close, focus and scroll lock\n');
+      for (const title of ['Producto','Apariencia']) {
+        await evaluate(`Array.from(document.querySelectorAll('.header-controls .zenit-select')).find(el=>el.textContent.includes('${title}'))?.querySelector('.zenit-select__trigger')?.click();true`);
+        await waitFor(`Boolean(Array.from(document.querySelectorAll('.header-controls .zenit-select')).find(el=>el.textContent.includes('${title}'))?.querySelector('.zenit-select__popover'))`,
+          'Header selector failed to open as a modal');
+        const headerPopup=await evaluate(`(() => {
+          const p=Array.from(document.querySelectorAll('.header-controls .zenit-select')).find(el=>el.textContent.includes('${title}'));
+          const d=p?.querySelector('.zenit-select__popover'),r=d?.getBoundingClientRect();
+          return {left:r?.left,right:r?.right,top:r?.top,bottom:r?.bottom,
+            modal:d?.getAttribute('aria-modal'),radius:d?getComputedStyle(d).borderTopLeftRadius:null};
+        })()`);
+        assert.ok(headerPopup.modal==='true' && headerPopup.radius==='16px' &&
+          Math.abs(headerPopup.left-16)<=2 && Math.abs(headerPopup.right-(375-16))<=2,
+          `Header mobile selector is not consistent with other popups: ${JSON.stringify(headerPopup)}`);
+        await evaluate(`Array.from(document.querySelectorAll('.header-controls .zenit-select')).find(el=>el.textContent.includes('${title}'))?.querySelector('.zenit-select__sheet-head button')?.click();true`);
+        await waitFor(`!Array.from(document.querySelectorAll('.header-controls .zenit-select')).find(el=>el.textContent.includes('${title}'))?.querySelector('.zenit-select__popover')`,
+          'Header mobile selector failed to dismiss');
+      }
+      process.stdout.write('PASS product and appearance selectors use the same centered mobile popup\n');
+
       await evaluate('window.scrollTo(0, 500); true');
       await sleep(100);
       const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
