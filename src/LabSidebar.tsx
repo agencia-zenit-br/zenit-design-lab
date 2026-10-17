@@ -16,6 +16,7 @@ const contextLinks: Record<LabSection,ContextLink[]> = {
     {label:'Iconografía',target:'catalog-icons',icon:'components'},
     {label:'Controles',target:'catalog-buttons',icon:'settings'},
     {label:'Desplegables',target:'catalog-select',icon:'filter'},
+    {label:'Calendario',target:'catalog-calendar',icon:'chart'},
     {label:'Tablas',target:'catalog-table',icon:'list'},
   ],
   Redacción: [
