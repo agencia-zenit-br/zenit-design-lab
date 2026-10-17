@@ -162,6 +162,32 @@ Browser verification on the code change (before this documentation commit):
 4. Validate timeranges across midnight and distinguish wall-clock arithmetic from elapsed time across DST boundaries.
 5. Mark wheel/analog/text/hybrid as **planned**, **implemented**, **tested** or **certified** individually; the existing Zenit DateTimeDemo currently uses select menus and therefore does **not** satisfy these future adapter gates yet.
 
+
+## Next-delivery conformance matrix: Zenit universal temporal capabilities — APPROVED
+
+**Approval:** 2026-10-17, ecosystem-wide foundation. **Current status:** approved and scheduled for next Design Lab iteration; NOT implemented/tested/deployed by this documentation commit. The current preview has Gregorian date/range and simple select-based time controls but no validated universal time input, multi-date, time-range duration, clock-driven countdown or pause/resume timer.
+
+| Package / item | Next deliverable / pass condition | Evidence gate | Status now |
+|---|---|---|---|
+| A — Remove excess copy | Operational pages show actionable essentials; contextual help exposes details by click/tap, keyboard, and hover as enhancement. No unnecessary text height. | Human visual review in mobile/desktop; accessibility focus and no hidden task-critical messages | **Approved / pending** |
+| A — Use available width | Remove unnecessary 740/780px text constraints in introductory UI, preserve readable line length on true long-form text and 12/16/24px margins. | Browser geometry at 320–1440px and chosen desktop screenshot | **Approved / pending** |
+| B — Date entry | Parse/format/validate locale-specific manual input, selection and accessible clear/reset; ambiguous dates never silently normalized. | Unit and browser tests (ES/PT/EN, RTL); invalid and out-of-bounds values | **Approved / pending** |
+| B — Date range | Inclusive calendar-day count, elapsed date-boundary count, number of hotel nights as *optional product-specific display*, min/max bounds. Edit each endpoint. | Unit tests including same day, reversed range, month/year/leap and checkout semantics | **Approved / pending** |
+| B — Multi-date selection | Select discontiguous civil dates, toggle, count, and expose controlled data with no product-specific state. | Unit tests and browser keyboard/touch editing | **Approved / pending** |
+| B — Time entry | Controlled text and three-visible-number wheel sharing core `TimeOfDay`, 12/24h and minutes/seconds precision/step, no needless horizontal bar. | Swapping renderer preserves value, same validation, phone and keyboard checks | **Approved / pending** |
+| B — Time intervals | Start/end in minutes/seconds with explicit next-day policy; hours/minutes/seconds duration. | Unit tests for midnight, invalid endpoints, 00:00, AM/PM, DST policy boundaries | **Approved / pending** |
+| B — Analog clock | Extension interface for analog face; rendering implementation *not in this next delivery by default*. | API contract and mock/harness; separately track actual implementation | **Approved architecture / renderer deferred** |
+| C — Headless domain | Pure civil dates vs clock time vs instants/durations, time arithmetic, typed results and semantic errors; UI/domain separate. | Pure unit tests, no Zenit product or React imports in core | **Approved / pending** |
+| C — Portability | Two consumer harnesses, Zenit and a distinct client skin; semantic scoped tokens; documented API/versions. | Independent integration, visuals, keyboard/RTL, regression, honest L1/L2/L3 classification | **Approved / pending** |
+| D — Durations | Calculate days vs nights vs elapsed hours/minutes/seconds, avoid conflating calendar days and fixed 24h durations. | Test exact endpoints, day boundary, leap year and zoned DST situations | **Approved / pending** |
+| D — Countdown | Reference instant-based days/hours/minutes/seconds, compact and prominent presentations, end/overdue and tab-resume behavior. | Fake-clock tests, past/zero/future, pause page/resume, timezone independent formatting | **Approved / pending** |
+| D — Timer | Set duration, start/pause/resume/reset, stable elapsed time, clear idle/running/paused/completed states. | Deterministic fake time tests and browser interactions; no business side effects | **Approved / pending** |
+| Cross-cutting | No mobile horizontal overflow, accessible labels/focus, localizable error/help text, dark/light and RTL/LTR; avoid countdown screen-reader spam. | Build+Storybook+Chromium, snapshots where source exists, real phone QA separately | **Approved / pending** |
+
+**Constraints:** Universal capability (not ZMC feature), no live hotel/airline inventory, no scheduled billing/publication, no actual booking engine, no Hebrew/Hijri arithmetic, no authoritative clock synchronization or cross-device timer state in this preview. The frontend must never treat an expired countdown as authorization to execute a consequential operation. Prefer incremental, compatible improvements and documented regression gates.
+
+**References:** binding [next-delivery architecture section](design-decisions.md), prior [portability gate](design-decisions.md), and Zenit Platform [cross-product modularity issue #323](https://github.com/agencia-zenit-br/zenit-platform/issues/323).
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
