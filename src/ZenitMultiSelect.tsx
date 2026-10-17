@@ -126,14 +126,6 @@ export function ZenitMultiSelect<Value extends string>({
         aria-label={`Limpiar selección de ${label}`} title="Limpiar selección" onClick={()=>onChange([])}>
         <Icon name="x" size={13}/>
       </button>}
-    </div>
-    {!!selected.length && <div className="zenit-select__chips" aria-label={`Seleccionados en ${label}`}>
-      {selected.map(option=><span key={option.value} className="zenit-select__chip">
-        <span>{option.label}</span>
-        {!disabled && <button type="button" className="zenit-select__chip-remove" aria-label={`Quitar ${option.label}`}
-          onClick={()=>changeSelection(option.value)}><Icon name="x" size={12}/></button>}
-      </span>)}
-    </div>}
     {open && <div className="zenit-select__popover">
       {searchable && <div className="zenit-select__search">
         <Icon name="search" size={15}/>
@@ -167,6 +159,14 @@ export function ZenitMultiSelect<Value extends string>({
         <button type="button" className="button button--primary button--compact"
           onClick={()=>close(true)}>Listo</button>
       </div>
+    </div>}
+    </div>
+    {!!selected.length && <div className="zenit-select__chips" aria-label={`Seleccionados en ${label}`}>
+      {selected.map(option=><span key={option.value} className="zenit-select__chip">
+        <span>{option.label}</span>
+        {!disabled && <button type="button" className="zenit-select__chip-remove" aria-label={`Quitar ${option.label}`}
+          onClick={()=>changeSelection(option.value)}><Icon name="x" size={12}/></button>}
+      </span>)}
     </div>}
   </div>;
 }
