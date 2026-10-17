@@ -1262,6 +1262,11 @@ button,a,[role="option"],summary {
 }
 .temporal-host h3 {font-size:14px;line-height:1.4;margin:8px 0 14px;}
 .temporal-host__brand {font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--brand);}
+.temporal-host--zenit {
+  --surface:#ffffff;--surface-muted:#f8f8f8;--text:#191919;--muted:#696969;
+  --border:#e1e1e1;--border-strong:#cfcfcf;--active:#111111;--active-text:#ffffff;
+  --brand:#476b59;--focus:#476b59;--hover:#f0f0f0;--danger-text:#a52e2b;
+}
 .temporal-host--client {
   --surface:#203c59;--surface-muted:#2b4a6a;--text:#f5f6fb;--muted:#c9d8e7;
   --border:#375673;--border-strong:#6684a0;--active:#e9bd7a;--active-text:#1a3047;
