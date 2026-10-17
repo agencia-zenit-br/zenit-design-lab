@@ -113,6 +113,21 @@ Browser verification on the code change (before this documentation commit):
 
 **Deployment:** no deployment of this revision at the time of authoring; Cloud Run continues serving the previous successful version until the dedicated preview deployment workflow runs. **PR #8 stays in draft.** No Zenit Platform/ZMC production files or services changed.
 
+## A–D phase: regional preferences, Gregorian calendar and universal forms — 2026-10-17
+
+**Implementation:** integrated in preview only; no merge or service deployment. This is **not** a finished ZMC/Platform feature or a working Hebrew/Hijri scheduling engine. It follows the user's explicit approval of the four A–D blocks without changing the V3.0–V4.5.1 visual language.
+
+| Approved workstream | Implemented in this preview | Browser evidence and remaining limits |
+|---|---|---|
+| A. Calendar layout and casing | `CalendarSpecimen.tsx` uses a centered 298px max-width grid independent of LTR/RTL direction, inherited neutral tokens and unchanged compact 7-day grid; `text-transform:none` preserves `octubre de 2026` / `noviembre de 2026`. Main catalog heading now **Calendario**. | Chromium verifies centering in mobile and RTL/LTR, lowercase month, full weekday names and locale changes |
+| B. Region preferences | `calendarLocale.ts` defines independent UI locale, week start `auto/monday/saturday/sunday`, calendar system, 12/24 hour cycle, IANA timezone and writing direction. `RegionalWorkbench.tsx` gives live unsaved preview, explicit Save, Reset and safe validation of timezone and localStorage. | Tests vary Saturday/Sunday/Monday origin independently from Spanish locale; PT-BR/EN-US/HE/AR localizations; 12/24-hour switching, Hebrew/Arabic RTL, demo-only persistence/reset. No real user/account preference backend |
+| C. Date and time modes | `DateTimeDemo.tsx` demonstrates single date, inclusive date range, date+time and time-only control with custom Zenit Select hour/minute/AM-PM controls, bounds and local validation. Reuses Gregorian `CalendarSpecimen`; prints a separately formatted real reference instant for selected IANA timezone in preferences. | Browser checks AM/PM mode, range selection, validation and access labels. Gregorian civil dates remain timezone-independent; real DST-disambiguated wall time scheduling, non-Gregorian arithmetic and user event persistence are **not implemented** |
+| D. Forms and validation | `FormSpecimen.tsx` demonstrates required/optional fields, inline accessible errors, checkbox consent, reset, success state and local-only feedback. | Browser submits invalid then valid data and checks rendered errors/success. **No server submission or production validation** |
+
+**Verified code commit `fc38fa5`:** [Design Lab CI #39051226141](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39051226141) **SUCCESS** (TypeScript/Vite + Storybook). [Verify Design Lab #39051226126](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39051226126) **SUCCESS** (24 source guards, actual Chromium checks at 320/375/390/600/700/701/768/820/900/1024/1440px in light and dark mode). Screenshots, actual phone/tablet, screen reader, and cross-browser certification still pending.
+
+**Intentionally deferred to later phases:** independent Hebrew/Hijri civil calendar engines, observational Hijri convention, approved event planner month/week/day/agenda and holiday jurisdictions, server-backed account preferences, DST-safe timezone conversion of ambiguous or nonexistent local wall times, backend form validation/authorization and extensive pointer/touch device audit. **Do not describe these as implemented.**
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
