@@ -17,6 +17,7 @@ export type ZenitSelectProps<Value extends string> = {
   searchable?: boolean;
   disabled?: boolean;
   className?: string;
+  mobileSheet?: boolean;
   placeholder?: string;
   searchPlaceholder?: string;
 };
@@ -28,7 +29,7 @@ const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036
 /** Approved Zenit Select 03.14: native-free single-choice combobox with groups and optional search. */
 export function ZenitSelect<Value extends string>({
   label, value, options, onChange, onClear, searchable = false, disabled = false,
-  className = '', placeholder = 'Seleccionar', searchPlaceholder = 'Buscar opciones…',
+  className = '', mobileSheet = true, placeholder = 'Seleccionar', searchPlaceholder = 'Buscar opciones…',
 }: ZenitSelectProps<Value>) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(-1);
@@ -122,7 +123,7 @@ export function ZenitSelect<Value extends string>({
     }
   };
 
-  return <div ref={root} className={`zenit-select ${open ? 'zenit-select--open' : ''} ${className}`.trim()} onKeyDown={onKeyDown}>
+  return <div ref={root} className={`zenit-select ${open ? 'zenit-select--open' : ''} ${mobileSheet?'zenit-select--mobile-sheet':''} ${className}`.trim()} onKeyDown={onKeyDown}>
     <span className="zenit-select__label" id={`${id}-label`}>{label}</span>
     <div className="zenit-select__control">
       <button type="button" ref={trigger}
@@ -137,7 +138,12 @@ export function ZenitSelect<Value extends string>({
         onClick={event => { event.stopPropagation(); onClear(); close(); }}>
         <Icon name="x" size={13}/>
       </button>}
+    {open && mobileSheet && <button type="button" className="zenit-select__backdrop" tabIndex={-1}
+      aria-label={`Cerrar ${label}`} onClick={() => close(true)}/>}
     {open && <div className="zenit-select__popover">
+      <div className="zenit-select__sheet-head"><strong>{label}</strong>
+        <button type="button" className="icon-button" aria-label={`Cerrar ${label}`} onClick={() => close(true)}><Icon name="x" size={19}/></button>
+      </div>
       {searchable && <div className="zenit-select__search">
         <Icon name="search" size={15}/>
         <input ref={search} type="text" value={query} placeholder={searchPlaceholder}
