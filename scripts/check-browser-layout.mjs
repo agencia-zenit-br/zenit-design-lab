@@ -499,6 +499,68 @@ try {
         'Reset preferences could not be persisted');
       process.stdout.write('PASS locale/week-start/calendar-system/hour-cycle, centered LTR/RTL dates, native lowercase months, form validation and demo preference save/reset\\n');
 
+      const skinGeometry=await evaluate(`(() => {
+        const a=document.querySelector('[data-temporal-host="zenit"]');
+        const b=document.querySelector('[data-temporal-host="client"]');
+        const zi=a?.querySelector('.temporal-time-input__field input');
+        const ci=b?.querySelector('.temporal-time-input__field input');
+        return {zenitBackground:a?getComputedStyle(a).backgroundColor:null,
+          clientBackground:b?getComputedStyle(b).backgroundColor:null,
+          zenitField:zi?.value,clientField:ci?.value,
+          zenitWidth:a?.getBoundingClientRect().width,clientWidth:b?.getBoundingClientRect().width};
+      })()`);
+      assert.notEqual(skinGeometry.zenitBackground,skinGeometry.clientBackground,
+        'Two independent consumers must render genuinely different semantic skins');
+      assert.equal(skinGeometry.zenitField,skinGeometry.clientField,
+        'Different skins must initially reflect exactly the same time');
+      await evaluate(`(() => {
+        const input=document.querySelector('[data-temporal-host="client"] .temporal-time-input__field input');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        input.focus();setter.call(input,'17:20');input.dispatchEvent(new Event('input',{bubbles:true}));input.blur();
+        return true;
+      })()`);
+      await waitFor('document.querySelector("[data-temporal-host=zenit] .temporal-time-input__field input")?.value==="17:20"',
+        'Independent client-skinned renderer failed to synchronize shared controlled time');
+      assert.equal(await evaluate('document.querySelector(".temporal-portability__value strong")?.textContent'),'17:20',
+        'Product-neutral shared time contract did not update');
+      process.stdout.write('PASS two independent host skins share the exact same functional controlled time\\n');
+      await evaluate(`document.querySelector('[data-temporal-counter="countdown"] .temporal-live-demo__quick button:first-child')?.click();true`);
+      const countdown=await evaluate(`(() => {
+        const root=document.querySelector('[data-temporal-counter="countdown"]');
+        const field=root.querySelector('input'),status=root.querySelector('.temporal-live-demo__state')?.textContent;
+        return {field:field?.value,status,unitCount:root.querySelectorAll('.temporal-duration__cell').length};
+      })()`);
+      assert.ok(countdown.field.includes('T')&&countdown.field.endsWith('Z')&&countdown.status==='Tiempo restante'&&countdown.unitCount===4,
+        'Countdown needs explicit UTC instant, days/hours/minutes/seconds and active state');
+      const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Duración del temporizador en segundos"]';
+      await evaluate(`(() => {
+        const input=document.querySelector('${timerFieldSelector}');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'6');input.dispatchEvent(new Event('input',{bubbles:true}));
+        return true;
+      })()`);
+      await evaluate(`[...document.querySelectorAll('[data-temporal-counter="timer"] button')].find(el=>el.textContent.includes('Aplicar duración'))?.click();true`);
+      await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-duration__cell:nth-child(4) strong")?.textContent==="06"',
+        'Timer could not accept a new duration');
+      await evaluate(`[...document.querySelectorAll('[data-temporal-counter="timer"] button')].find(el=>el.textContent.includes('Iniciar'))?.click();true`);
+      await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-live-demo__state")?.textContent==="En curso"',
+        'Timer failed to start');
+      await sleep(1150);
+      await evaluate(`[...document.querySelectorAll('[data-temporal-counter="timer"] button')].find(el=>el.textContent.includes('Pausar'))?.click();true`);
+      await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-live-demo__state")?.textContent==="En pausa"',
+        'Timer failed to pause');
+      const pauseValue=await evaluate('document.querySelector("[data-temporal-counter=timer] .temporal-duration__cell:nth-child(4) strong")?.textContent');
+      await sleep(700);
+      assert.equal(await evaluate('document.querySelector("[data-temporal-counter=timer] .temporal-duration__cell:nth-child(4) strong")?.textContent'),pauseValue,
+        'Paused timer must not consume remaining time');
+      await evaluate(`[...document.querySelectorAll('[data-temporal-counter="timer"] button')].find(el=>el.textContent.includes('Reanudar'))?.click();true`);
+      await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-live-demo__state")?.textContent==="En curso"',
+        'Timer failed to resume');
+      await evaluate(`[...document.querySelectorAll('[data-temporal-counter="timer"] button')].find(el=>el.textContent.includes('Restablecer'))?.click();true`);
+      await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-live-demo__state")?.textContent==="Listo"',
+        'Timer failed to reset');
+      process.stdout.write('PASS active countdown, configurable timer, start/pause/resume/reset with stable pause\\n');
+
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
         const appearance=document.querySelector('.header-controls .zenit-select:nth-child(2) .zenit-select__trigger').getBoundingClientRect();
