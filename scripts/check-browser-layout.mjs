@@ -171,6 +171,8 @@ try {
 
       await evaluate(`document.querySelector('.mobile-nav-toggle')?.click(); true`);
       await waitFor('Boolean(document.querySelector(".lab-sidebar--mobile-open"))', 'Mobile navigation did not open');
+      await waitFor('Math.abs(document.querySelector(".lab-sidebar").getBoundingClientRect().left) < 1',
+        'Full-screen mobile navigation did not settle at the viewport edge');
       const menu=await evaluate(`(() => {
         const panel=document.querySelector('.lab-sidebar'),rect=panel.getBoundingClientRect();
         return {left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,
