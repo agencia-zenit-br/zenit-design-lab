@@ -78,6 +78,23 @@ Browser verification on the code change (before this documentation commit):
 - **Not yet deployed** from this round of corrections. The currently published Design Lab revision is unchanged pending explicit preview deployment.
 - **Still pending:** original approved V3.0 screenshot pixel comparison, mobile Safari/Android physical touch, assistive-technology review and RTL visual acceptance.
 
+## Mobile UX refinement approved 2026-10-17 — desktop visual system preserved
+
+**Implementation:** complete for this isolated demo; browser verification successful; physical-device UX and assistive-technology validation remain pending. These mobile-specific decisions supersede the previous bottom sheet and upper-corner checkbox patterns, not the V3.0–V4.5.1 desktop visual design.
+
+| Required behaviour | Implementation | Evidence |
+|---|---|---|
+| Consistent mobile popup for all Select variants | `ZenitSelect` and `ZenitMultiSelect` now open as centered 16px-rounded modal popups on widths <=700px; Product and Appearance use the same pattern. No automatic keyboard when opening a popup; search focuses only on interaction. Desktop popovers retain original field-width anchoring. | Chromium verifies modal role, symmetric margins, scroll lock, single/multiple selection, keyboard operations and header selectors |
+| Full-screen contextual navigation in mobile / narrow tablet | `LabSidebar` occupies the whole viewport at <=900px with close control, focus handling and blocked background scrolling. Desktop collapsible sidebar unchanged. | Chromium checks full-viewport menu geometry, dismiss, lock and desktop collapsed mode |
+| Checkbox immediately before record title | Responsive table uses a two-column grid: accessible 44x44px checkbox label and adjacent editable element name, vertically aligned. Other data stays within compact card. | Chromium compares checkbox/title horizontal separation and vertical centers |
+| No horizontal overflow or palette fragmentation | Mobile-only CSS media rules reuse approved tokens. | Chromium at 320/375/390/600/700/701/768/820/900/1024/1440px in light and dark themes; 17 static contract checks |
+
+**Successful CI on code/docs commit `42cd2a1`:**
+- [Design Lab CI #39044766618](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39044766618): success (TypeScript/Vite + Storybook).
+- [Verify Design Lab #39044766728](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39044766728): success (17 static controls and real Chromium viewport / interaction tests).
+
+**Pending:** real device verification in mobile Safari and Android Chrome, landscape and on-screen keyboard behaviour, RTL parity, screen-reader experience, original approved V3.0 screenshot comparison, user visual acceptance. **Not yet deployed**; existing Cloud Run revision remains unchanged until separate explicit preview workflow.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
