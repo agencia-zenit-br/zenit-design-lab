@@ -5,6 +5,9 @@ import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { CalendarSpecimen } from './CalendarSpecimen';
 import { DateTimeDemo } from './DateTimeDemo';
 import { FormSpecimen } from './FormSpecimen';
+import { TemporalDemo } from './TemporalDemo';
+import { ContextHelp } from './ContextHelp';
+import { PortabilityDemo } from './temporal/PortabilityDemo';
 import {
   defaultRegionalSettings, formatInstantInZone, localeOptions,
   resolveDirection, resolveWeekStart, validRegionalSettings,
@@ -72,7 +75,7 @@ export function RegionalWorkbench() {
     <section className="panel catalog__section" aria-labelledby="catalog-preferences">
       <div className="panel__head">
         <div><h2 id="catalog-preferences">Preferencias regionales</h2>
-          <p>Idioma, calendario, semana, reloj, zona horaria y dirección se configuran por separado.</p></div>
+<ContextHelp label="Sobre las preferencias regionales">El idioma, la dirección, el sistema de calendario, el inicio de semana y la zona horaria son configuraciones independientes. Se guarda únicamente la demostración en este navegador.</ContextHelp></div>
         <StatusPill tone={changed?'warning':'success'}>{changed?'Cambios sin guardar':'Sin cambios'}</StatusPill>
       </div>
       <div className="regional-prefs__grid">
@@ -114,13 +117,13 @@ export function RegionalWorkbench() {
         </Button>
       </div>
       <div className="regional-prefs__notice" role="status">{notice}</div>
-      <p className="catalog__footnote">Configuración local del prototipo. No modifica perfiles reales ni políticas de una organización.</p>
+      <ContextHelp label="Privacidad de estas preferencias">La configuración se guarda solamente en el almacenamiento local de este navegador. Las políticas reales de una organización deberán gestionarse desde la plataforma.</ContextHelp>
     </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-calendar">
       <div className="panel__head">
         <div><h2 id="catalog-calendar">Calendario</h2>
-          <p>Cuadrícula centrada, iniciales locales y comienzo de semana configurable.</p></div>
+<ContextHelp label="Cómo funciona el calendario">Las iniciales se adaptan al idioma; la semana comienza según la región o según tu elección. Las fechas y los cálculos gregorianos todavía no son equivalentes a motores calendáricos hebreo o Hijri.</ContextHelp></div>
       </div>
       <CalendarSpecimen settings={draft}/>
     </section>
@@ -128,16 +131,28 @@ export function RegionalWorkbench() {
     <section className="panel catalog__section" aria-labelledby="catalog-datetime">
       <div className="panel__head">
         <div><h2 id="catalog-datetime">Fecha y hora</h2>
-          <p>Fecha, rango, fecha y hora, y reloj; mismas preferencias regionales.</p></div>
+<ContextHelp label="Cómo utilizar fechas y horas">Puedes seleccionar o escribir fechas y horas. Los modos ofrecen períodos, días separados, precisión de segundos y cálculo de intervalos. La conversión de horarios reales con zona horaria se valida aparte.</ContextHelp></div>
         <StatusPill tone="warning">Prototipo funcional</StatusPill>
       </div>
       <DateTimeDemo settings={draft}/>
     </section>
 
+    <section className="panel catalog__section" aria-labelledby="catalog-temporal">
+      <div className="panel__head"><div><h2 id="catalog-temporal">Cuentas regresivas y temporizadores</h2>
+        <ContextHelp label="Sobre los contadores">El temporizador es local a esta demostración y no puede cancelar ni ejecutar operaciones. En producción los vencimientos críticos necesitan reloj de servidor y reglas autorizadas.</ContextHelp></div></div>
+      <TemporalDemo/>
+    </section>
+
+    <section className="panel catalog__section" aria-labelledby="catalog-portability">
+      <div className="panel__head"><div><h2 id="catalog-portability">Componentes y skins</h2>
+        <ContextHelp label="Qué se comprueba en esta sección">Los dos ejemplos consumen el mismo componente de hora. Las skins cambian sus tokens sin modificar el motor. No constituye certificación de integración externa en WordPress.</ContextHelp></div></div>
+      <PortabilityDemo settings={draft}/>
+    </section>
+
     <section className="panel catalog__section" aria-labelledby="catalog-forms">
       <div className="panel__head">
         <div><h2 id="catalog-forms">Formularios y validación</h2>
-          <p>Campos coherentes, errores accesibles y confirmación local sin enviar datos.</p></div>
+<ContextHelp label="Qué valida este formulario">Los datos son ficticios. Este formulario comprueba campos localmente y no se conecta a cuentas ni servicios reales.</ContextHelp></div>
       </div>
       <FormSpecimen/>
     </section>
