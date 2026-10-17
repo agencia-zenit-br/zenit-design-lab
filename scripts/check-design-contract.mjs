@@ -10,6 +10,7 @@ const select = readFileSync(new URL('../src/ZenitSelect.tsx', import.meta.url), 
 const multiSelect = readFileSync(new URL('../src/ZenitMultiSelect.tsx', import.meta.url), 'utf8');
 const selectStories = readFileSync(new URL('../src/select.stories.tsx', import.meta.url), 'utf8');
 const sidebar = readFileSync(new URL('../src/LabSidebar.tsx', import.meta.url), 'utf8');
+const mobileModal = readFileSync(new URL('../src/mobileModal.ts', import.meta.url), 'utf8');
 
 const checks = [
   ['canonical neutral palette', () => {
@@ -91,6 +92,29 @@ const checks = [
     assert.match(css, /\.lab-sidebar\s*\{[^}]*position\s*:\s*sticky/is);
     assert.match(css, /\.lab-sidebar--mobile-open\s*\{/);
     assert.match(css, /\.app-body--sidebar-collapsed\s*\{/);
+  }],
+  ['mobile popup uses same palette and geometry without changing desktop', () => {
+    assert.doesNotMatch(shell, /mobileSheet=\{false\}/);
+    assert.ok(select.includes('useMobileModal('));
+    assert.ok(multiSelect.includes('useMobileModal('));
+    assert.ok(select.includes("role={modalActive ? 'dialog' : undefined}"));
+    assert.ok(multiSelect.includes("role={modalActive ? 'dialog' : undefined}"));
+    assert.ok(mobileModal.includes("document.body.style.overflow = 'hidden'"));
+    assert.ok(mobileModal.includes("event.key !== 'Tab'"));
+    assert.match(css, /border-radius:16px;\s*box-shadow:0 18px 55px/s);
+    assert.match(css, /transform:translate\(-50%,-50%\)/);
+  }],
+  ['mobile navigation is full-screen without affecting desktop collapse', () => {
+    assert.ok(sidebar.includes("document.body.style.overflow = 'hidden'"));
+    assert.match(css, /\.lab-sidebar\s*\{\s*inset:0;\s*width:100%;\s*max-width:none;\s*height:100dvh/s);
+    assert.ok(sidebar.includes('role={mobileOpen ?'));
+    assert.ok(css.includes('.app-body--sidebar-collapsed'));
+  }],
+  ['mobile checkbox immediately precedes title with 44px touch target', () => {
+    assert.ok(catalog.includes('className="catalog__row-select"'));
+    assert.match(css, /\.catalog__table \.catalog__data-row\s*\{\s*display:grid;\s*grid-template-columns:44px minmax\(0,1fr\)/s);
+    assert.ok(css.includes('td[data-label="Elemento"]'));
+    assert.ok(css.includes('width:44px;height:44px'));
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
