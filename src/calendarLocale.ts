@@ -43,7 +43,8 @@ const compactLabels: Record<string, readonly string[]> = {
 
 export function defaultWeekStart(locale: string): WeekStart {
   try {
-    const day = new Intl.Locale(locale).weekInfo.firstDay;
+    const regionalLocale = new Intl.Locale(locale) as Intl.Locale & { weekInfo?: { firstDay?: number } };
+    const day = regionalLocale.weekInfo?.firstDay;
     if (day === 1 || day === 6 || day === 7) return day;
   } catch { /* The runtime may not support weekInfo; use safe fallback. */ }
   return /^(en-US|pt-BR|he-IL|ar-SA|ar-EG)/i.test(locale) ? 7 : 1;
