@@ -37,6 +37,12 @@ export function LabSidebar({ section, collapsed, onToggle, mobileOpen, onCloseMo
   useEffect(() => { if (mobileOpen) closeRef.current?.focus(); }, [mobileOpen]);
   useEffect(() => {
     if (!mobileOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = originalOverflow; };
+  }, [mobileOpen]);
+  useEffect(() => {
+    if (!mobileOpen) return;
     const onKeyDown = (event:KeyboardEvent) => {
       if (event.key==='Escape') { event.preventDefault(); onCloseMobile(); return; }
       if (event.key!=='Tab' || !sidebarRef.current) return;
