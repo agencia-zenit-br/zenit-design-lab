@@ -1160,3 +1160,30 @@ Following review of Cloud Run revision `zenit-design-lab-00165-6dc`, the user co
 - **Scope:** this iteration preserves canonical **V3.0–V4.5.1 appearance**. Existing desktop table and header styles should not be redesigned. Tablet physical review remains pending and CI viewports are not substitute for device QA.
 
 All changes require verified static design contract, TypeScript/Vite, Storybook, Chromium mobile/desktop geometry and accessibility smoke checks before preview deployment. Screenshot parity and genuine mobile-device testing remain separate gates.
+
+## 2026-10-17 — Next phase approved: Calendario, Regional Preferences, Date/Time and Forms (A–D)
+
+The user reviewed the published Design Lab on a physical phone and explicitly **approved** bundling the four previously proposed tracks, while maintaining the unified visual baseline V3.0–V4.5.1. This is approval to implement those tracks as Design Lab previews, **not** production deployment, PR merge, finished Hebrew/Hijri engines or event-planning software.
+
+**A. Calendar visual corrections and naming**
+- The Gregorian 7-column calendar grid must be horizontally **centered** within its container in both LTR and RTL. A change of text direction must not move the whole grid to a leading/trailing edge.
+- Use the catalog heading **"Calendario"**. "Compacto" is a density variation, not the product-facing universal component name.
+- Do not apply blanket `text-transform:capitalize` to localized month/year labels. Spanish output must be natural lowercase, e.g. **"noviembre de 2026"**, including **de**.
+- Preserve compact approved spacing (approx. 2px day gaps, accessible day targets) and responsive width without horizontal page scroll.
+
+**B. Independent regional preferences**
+- The following are **separate configuration dimensions**: interface language/locale, week start (regional default plus manual Monday, Saturday or Sunday), calendar system (Gregorian, Hebrew, Islamic/Hijri), 12/24-hour display, IANA timezone and LTR/RTL direction. Locale may suggest sensible defaults, never irrevocably force them.
+- Distinguish **preview/draft**, explicit save and reset. In the Lab, local-only browser persistence demonstrates UX; actual per-user/organization policies, permissions and backend storage are future integration.
+- User regional preferences must be governed by already approved hierarchy 03.37 and should not override organization or security rules.
+
+**C. Universal date/time picker**
+- Illustrate modes for a single date, date range, combined date-time and time-only using the shared Date & Time Picker 03.15. Provide explicit bounds and validation in the demo, keyboard labels and localized visible formatting.
+- Gregorian civil dates do not represent UTC timestamps. Displaying a timezone-aware **known instant** may use a real IANA formatter; converting arbitrary local wall times at DST overlaps/gaps into scheduled instants requires a separate validated engine. Do not claim unsupported conversion.
+- Hebrew/Hijri engines **remain future work**. User can see architecture configuration but must receive an honest unavailable state rather than disguised Gregorian dates. Observational Hijri rules and locale/calendar independence remain mandatory.
+
+**D. Shared form and validation patterns**
+- Build interactive form examples demonstrating consistent fields, required/optional states, accessible error text, reset, and success/confirmation without backend side effects.
+- Preserve spacing, focus, contrast and mobile touch semantics and avoid product-specific visual fragmentation.
+- All code and preview documentation must label illustrative data/actions as demonstrations; no actual account changes or scheduling.
+
+**Deferred to later phases:** complete Hebrew and Islamic/Hijri date arithmetic, jurisdictional holidays, event planning with month/week/day/agenda, scheduling/drag-drop, critical DST resolution, real preference/profile persistence in Platform, server validation/permissions, and physical iOS/Android/tablet acceptance. This package is a reusable foundation, not a feature-completeness claim.
