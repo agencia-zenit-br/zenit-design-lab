@@ -128,6 +128,28 @@ Browser verification on the code change (before this documentation commit):
 
 **Intentionally deferred to later phases:** independent Hebrew/Hijri civil calendar engines, observational Hijri convention, approved event planner month/week/day/agenda and holiday jurisdictions, server-backed account preferences, DST-safe timezone conversion of ambiguous or nonexistent local wall times, backend form validation/authorization and extensive pointer/touch device audit. **Do not describe these as implemented.**
 
+
+## Universal module certification gate — APPROVED 2026-10-17; implementation pending
+
+**Normative source:** [design-decisions.md — UNIVERSAL ARCHITECTURE PRINCIPLE](design-decisions.md). This is an approved *architecture requirement*, **not evidence that every existing widget already complies**. It applies across Zenit Platform products, services, APIs and frontend/UI assets. Refine and extend this matrix as modules are prepared for use outside Design Lab.
+
+| Certification criterion | Definition of done / evidence | Current Design Lab status |
+|---|---|---|
+| Stable public API/contract | Document props/configuration, outputs/events, error states, lifecycle, and semantic versioning | **Partial:** internal TS component props; published package/API contract absent |
+| Separation of responsibilities | Core behavior decoupled from application service, product rule, tenant, persistence and presentation | **Partial:** some shared utilities; direct state/local browser storage and `.lab` host styling exist |
+| Versioned extension strategy | Document slots/strategies/adapters; demonstrate future capability without core forking | **Pending** |
+| Skin/theme portability | Design tokens + scoped styles; same behavior under at least two distinct client skins | **Pending:** existing Zenit light/dark themes are not proof of independent client skins |
+| Multi-product portability | Consume component in two independent app harnesses without source copying | **Pending** |
+| External integration | Certified independent bundle/adapter (e.g. WordPress) with style isolation/dependencies | **Pending** |
+| Accessibility/localization | Keyboard, screen reader, touch, mobile/tablet, RTL/LTR and theme contrast in supported variants | **Partial:** Chromium smoke checks; real-device/screen-reader certification pending |
+| Safe updates & reversibility | Compatibility/version matrix, tested migration and rollback; deprecation policy | **Pending** |
+| Multi-tenant security | Permissions, entitlement and tenant isolation at backend adapter boundary; audit | **N/A for Lab mocks; required before platform deployment** |
+| Capability honesty | Planned, implemented, tested, portable and certified statuses distinct | **Implemented in docs; requires ongoing review** |
+
+**Levels:** L1 = reusable internally across Zenit products; L2 = externally embeddable with an adapter; L3 = independently packaged and licensable. None of the current Design Lab samples are certified L2 or L3 by this decision alone. Do not upgrade status based solely on successful Vite/Storybook, cloud deploy or Chromium checks.
+
+**Concrete future conformance fixture:** universal Calendar rendered with its Zenit skin and a clearly distinct fictitious client skin, in an independent host app, with identical controlled selection behavior. A second fixture should compose optional ZMC multi-day selection without introducing ZMC-specific state into generic calendar core. Continue to treat hotel availability/inventory, airline ticketing, Hijri/Hebrew calendar engines and discontiguous multi-date selection as future extensions.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
