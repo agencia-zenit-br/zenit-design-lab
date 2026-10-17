@@ -360,7 +360,7 @@ try {
         spanish.names[2].toLowerCase().includes('miércoles'),'Distinct accessible names required for repeated M initials');
       assert.ok(spanish.centerDelta<=2,`Calendar not centered in LTR container: ${JSON.stringify(spanish)}`);
       assert.ok(spanish.label==='octubre de 2026',`Spanish month casing must remain native: ${JSON.stringify(spanish)}`);
-      await evaluate(`document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen__month-control button:last-child')?.click();true`);
+      await evaluate(`document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen__month-control button[aria-label="Mes siguiente"]')?.click();true`);
       const november=await getCalendar();
       assert.equal(november.label,'noviembre de 2026','Month name and "de" must remain lowercase');
       await selectRegional('week','Domingo');
@@ -392,25 +392,84 @@ try {
       await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
       await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))','DateTime mode did not open');
       await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Hora')?.click();true`);
-      await waitFor('Boolean(document.querySelector(".datetime-demo__clock .zenit-select__trigger"))','Clock mode was not rendered');
+      await waitFor('Boolean(document.querySelector(".datetime-demo__clock .temporal-wheel__track"))','Time wheel did not render');
       const clock=await evaluate(`(() => ({
-        period:!![...document.querySelectorAll('.datetime-demo__clock .zenit-select__label')].find(el=>el.textContent.includes('Período')),
-        text:document.querySelector('.datetime-demo__summary')?.textContent
+        period:!!document.querySelector('.datetime-demo__clock .temporal-wheel__period'),
+        wheelUnits:document.querySelectorAll('.datetime-demo__clock .temporal-wheel__unit').length,
+        wheelCells:document.querySelectorAll('.datetime-demo__clock .temporal-wheel__unit:first-child button').length,
+        text:document.querySelector('.datetime-demo__summary')?.textContent,
+        writable:!!document.querySelector('.datetime-demo__clock .temporal-time-input__field input')
       }))()`);
-      assert.ok(clock.period && clock.text.includes('12 h'),'AM/PM mode did not appear');
+      assert.ok(clock.period && clock.wheelUnits===2 && clock.wheelCells===3 && clock.writable &&
+        clock.text.includes('PM'),'AM/PM mode must provide 3-value wheel plus writable field');
       await selectRegional('hours','24 horas');
-      await waitFor('!document.querySelector(".datetime-demo__clock .zenit-select__label")?.textContent?.includes("Período")',
+      await waitFor('!document.querySelector(".datetime-demo__clock .temporal-wheel__period")',
         'Hour-cycle change did not remove AM/PM control');
+      const typeTime=async (selector,value)=>{
+        await evaluate(`(() => {
+          const input=document.querySelector('${selector}');
+          input.focus();
+          const set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+          set.call(input,'${value}');
+          input.dispatchEvent(new Event('input',{bubbles:true}));
+          input.blur();
+          return true;
+        })()`);
+      };
+      await typeTime('.datetime-demo__clock .temporal-time-input__field input','16:45');
+      await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("16:45")',
+        'Direct time entry must commit one shared controlled time value');
+      await evaluate(`document.querySelector('.datetime-demo__presentation .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__presentation .zenit-select__popover"))',
+        'Time renderer selector did not open');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__presentation .zenit-select__option')].find(el=>el.textContent.trim()==='Solo escritura')?.click();true`);
+      await waitFor('!document.querySelector(".datetime-demo__clock .temporal-wheel")','Text-only renderer failed to replace wheel');
+      assert.equal(await evaluate('document.querySelector(".datetime-demo__clock .temporal-time-input__field input")?.value'),'16:45',
+        'Time value must remain unchanged when renderer changes');
+      await evaluate(`document.querySelector('.datetime-demo__presentation .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__presentation .zenit-select__popover"))','Renderer menu did not reopen');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__presentation .zenit-select__option')].find(el=>el.textContent.trim()==='Selector y escritura')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__clock .temporal-wheel__track"))','Hybrid renderer did not restore wheel');
       await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
       await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))','Picker mode selector did not reopen');
       await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Rango de fechas')?.click();true`);
       await waitFor('Boolean(document.querySelector(".datetime-demo__calendar [data-calendar-day]"))','Range calendar failed to render');
       await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="12"]')?.click();true`);
       await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="16"]')?.click();true`);
-      await waitFor('Boolean(document.querySelector(".datetime-demo__actions button:not(:disabled)"))','Date range did not complete');
-      await evaluate(`document.querySelector('.datetime-demo__actions button')?.click();true`);
+      await waitFor('document.querySelector(".datetime-demo__metrics")?.textContent?.includes("noches")',
+        'Selected calendar date range did not compute days and nights');
+      const counts=await evaluate(`[...document.querySelectorAll('.datetime-demo__metrics>span strong')].map(el=>el.textContent.trim())`);
+      assert.deepEqual(counts,['5','4','4'],'Four nights must differ from five inclusive calendar days');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__actions button')].find(el=>el.textContent.includes('Validar selección'))?.click();true`);
       await waitFor('document.querySelector(".datetime-demo__message")?.textContent?.includes("Selección validada")',
         'Valid date range failed local validation');
+      await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))',
+        'Picker mode unavailable for multiple dates');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Varios días')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__calendar [data-calendar-day]"))',
+        'Multi-date calendar did not render');
+      await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="12"]')?.click();true`);
+      await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="16"]')?.click();true`);
+      await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("2 días individuales")',
+        'Non-consecutive day selection did not count both days');
+      await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="16"]')?.click();true`);
+      await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("1 días individuales")',
+        'Non-consecutive day toggling did not deselect previous day');
+      await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))','Time range mode selector unavailable');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Intervalo horario')?.click();true`);
+      await waitFor('document.querySelectorAll(".datetime-demo__time-range .temporal-time-input__field input").length===2',
+        'Time range must have two editable endpoints');
+      await typeTime('.datetime-demo__time-range .temporal-time-input:first-child input','22:30');
+      await typeTime('.datetime-demo__time-range .temporal-time-input:last-child input','02:15');
+      await waitFor('document.querySelector(".datetime-demo__duration")?.textContent?.includes("cruza medianoche")',
+        'Cross-midnight should require explicit authorization');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__checkbox input')].find(el=>el.parentElement.textContent.includes('día siguiente'))?.click();true`);
+      await waitFor('document.querySelector(".datetime-demo__duration")?.textContent?.includes("3 h 45 min")',
+        'Cross-midnight duration must compute 3h 45min');
+      process.stdout.write('PASS editable date/time, 3-value wheel, renderer switching, range/nights, multi-date and midnight duration\\n');
+
       await evaluate(`document.querySelector('.forms-demo button[type="submit"]')?.click();true`);
       await waitFor('document.querySelectorAll(".forms-demo__error").length===3','Form did not flag required fields');
       await evaluate(`(() => {
