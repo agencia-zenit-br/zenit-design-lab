@@ -74,7 +74,7 @@ export function ProfileMenu({ onAction }: {onAction: (action:AccountAction)=>voi
             onClick={()=>act(action.label)}>
             <Icon name={action.icon} size={17}/>
             <span>{action.label}</span>
-            {action.label==='Idioma'&&<Icon name="chevron-right" size={14} className="profile-menu__next"/>}
+
           </button>
         </div>)}
       </div>
