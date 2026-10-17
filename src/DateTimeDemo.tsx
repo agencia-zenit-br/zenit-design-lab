@@ -2,111 +2,162 @@ import { useState } from 'react';
 import { Button } from './components';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { CalendarSpecimen } from './CalendarSpecimen';
-import { formatCivilDate, formatHour, type RegionalSettings } from './calendarLocale';
+import { ContextHelp } from './ContextHelp';
+import { CivilDateField } from './temporal/CivilDateField';
+import { TimeInput, type TimePresentation } from './temporal/TimeInput';
+import { formatCivilDate, type RegionalSettings } from './calendarLocale';
+import {
+  dateRangeMetrics,formatEditableTime,normalizeMultiDates,timeRangeDuration,
+  type CivilDate,type TimeOfDay,
+} from './temporal/core';
 
-type PickerMode = 'date' | 'range' | 'datetime' | 'time';
+type PickerMode = 'date'|'range'|'multidate'|'datetime'|'time'|'timerange';
 const pickerOptions: readonly ZenitOption<PickerMode>[] = [
   {value:'date',label:'Fecha'},
   {value:'range',label:'Rango de fechas'},
+  {value:'multidate',label:'Varios días'},
   {value:'datetime',label:'Fecha y hora'},
   {value:'time',label:'Hora'},
+  {value:'timerange',label:'Intervalo horario'},
 ];
-const pad = (value: number) => String(value).padStart(2,'0');
-const minutes: readonly ZenitOption<string>[] = Array.from({length:12},(_,i)=>{
-  const val=pad(i*5);
-  return {value:val,label:val};
-});
-const periodOptions: readonly ZenitOption<'AM'|'PM'>[] = [
-  {value:'AM',label:'AM'},{value:'PM',label:'PM'}
+const presentationOptions:readonly ZenitOption<TimePresentation>[]=[
+  {value:'hybrid',label:'Selector y escritura'},
+  {value:'wheel',label:'Selector vertical'},
+  {value:'text',label:'Solo escritura'},
 ];
+const defaultTime:TimeOfDay={hour:14,minute:30,second:0};
+const defaultEnd:TimeOfDay={hour:16,minute:0,second:0};
+const exampleStart='2026-10-17';
+const startBounds='2026-01-01',endBounds='2028-12-31';
 
-/** Date-only values are civil dates. Clock fields store wall time, not unvalidated instants.
- *  Scheduled timezone conversion, ambiguous DST and non-Gregorian engines remain future work. */
+/** Product-neutral controlled date/time showcase: calendar, wheel and manual input
+ * consume one pure validation core. Business use cases interpret its results. */
 export function DateTimeDemo({settings}:{settings:RegionalSettings}) {
-  const [mode,setMode] = useState<PickerMode>('date');
-  const [date,setDate] = useState('2026-10-17');
-  const [rangeStart,setRangeStart] = useState<string|null>(null);
-  const [rangeEnd,setRangeEnd] = useState<string|null>(null);
-  const [hour,setHour] = useState(14);
-  const [minute,setMinute] = useState(30);
-  const [notice,setNotice] = useState('');
-  const isCalendar = mode!=='time';
-  const usesClock = mode==='datetime'||mode==='time';
-  const isGregorian = settings.calendarSystem==='gregory';
-  const isRange=mode==='range';
-  const period: 'AM'|'PM' = hour>=12?'PM':'AM';
-  const hourValue=settings.hourCycle==='h12'?pad((hour%12)||12):pad(hour);
-  const hourOptions:readonly ZenitOption<string>[] =
-    Array.from({length:settings.hourCycle==='h12'?12:24},(_,i)=>{
-      const v=pad(settings.hourCycle==='h12'?i+1:i);
-      return {value:v,label:v};
-    });
-  const pickHour=(value:string)=>{
-    const n=Number(value);
-    setHour(settings.hourCycle==='h12'?(n%12)+(period==='PM'?12:0):n);
+  const [mode,setMode]=useState<PickerMode>('date');
+  const [date,setDate]=useState<CivilDate>(exampleStart);
+  const [rangeStart,setRangeStart]=useState<CivilDate|null>(null);
+  const [rangeEnd,setRangeEnd]=useState<CivilDate|null>(null);
+  const [dates,setDates]=useState<readonly CivilDate[]>([]);
+  const [time,setTime]=useState<TimeOfDay>(defaultTime);
+  const [endTime,setEndTime]=useState<TimeOfDay>(defaultEnd);
+  const [presentation,setPresentation]=useState<TimePresentation>('hybrid');
+  const [seconds,setSeconds]=useState(false);
+  const [allowNextDay,setAllowNextDay]=useState(false);
+  const [notice,setNotice]=useState('');
+  const isRange=mode==='range',isMultiple=mode==='multidate';
+  const isCalendar=mode==='date'||isRange||isMultiple||mode==='datetime';
+  const isClock=mode==='time'||mode==='datetime'||mode==='timerange';
+  const isTimeRange=mode==='timerange';
+  const calendarSupported=settings.calendarSystem==='gregory';
+  const rangeMetrics=rangeStart&&rangeEnd?dateRangeMetrics(rangeStart,rangeEnd):null;
+  const timeMetrics=isTimeRange?timeRangeDuration(time,endTime,allowNextDay):null;
+  const selectDate=(iso:string)=>{
     setNotice('');
-  };
-  const pickPeriod=(p:'AM'|'PM')=>{
-    setHour(current=>(current%12)+(p==='PM'?12:0));
-    setNotice('');
-  };
-  const selectDate=(value:string)=>{
-    setNotice('');
-    if (!isRange){setDate(value);return;}
-    if(!rangeStart||rangeEnd||value<rangeStart){
-      setRangeStart(value);setRangeEnd(null);
-    } else {
-      setRangeEnd(value);
+    if(isMultiple){
+      setDates(previous=>{
+        const result=normalizeMultiDates(previous.includes(iso)?previous.filter(item=>item!==iso):[...previous,iso]);
+        return result.ok?result.value:previous;
+      });
+      return;
     }
+    if(!isRange){setDate(iso);return;}
+    if(!rangeStart||rangeEnd||iso<rangeStart){setRangeStart(iso);setRangeEnd(null);}
+    else setRangeEnd(iso);
   };
-  const dateText=isRange?
-    (rangeStart?formatCivilDate(rangeStart,settings.locale):'Sin fecha inicial')+
-    ' — '+(rangeEnd?formatCivilDate(rangeEnd,settings.locale):'Seleccione la fecha final')
-    :formatCivilDate(date,settings.locale);
-  const clockText=formatHour(hour,minute,settings);
-  const validSelection=(!isCalendar||isGregorian)&&(!isRange||Boolean(rangeStart&&rangeEnd));
+  const clearSelection=()=>{
+    setNotice('');
+    if(isRange){setRangeStart(null);setRangeEnd(null);}
+    else if(isMultiple)setDates([]);
+    else if(isTimeRange){setTime(defaultTime);setEndTime(defaultEnd);setAllowNextDay(false);}
+    else {setDate(exampleStart);setTime(defaultTime);}
+  };
+  const selectionError=isCalendar&&!calendarSupported?'Motor de calendario no implementado':
+    isRange&&!rangeStart||isRange&&!rangeEnd?'Selecciona ambas fechas del rango':
+    isRange&&rangeMetrics&&!rangeMetrics.ok?rangeMetrics.error:
+    isMultiple&&dates.length===0?'Selecciona uno o más días':
+    isTimeRange&&timeMetrics&&!timeMetrics.ok?timeMetrics.error:'';
   const validate=()=>{
-    if(!isGregorian&&isCalendar){
-      setNotice('No es posible seleccionar fechas: el motor del calendario elegido está pendiente.');
-      return;
-    }
-    if(isRange&&(!rangeStart||!rangeEnd)){
-      setNotice('Selecciona ambas fechas para completar el rango.');
-      return;
-    }
+    if(selectionError){setNotice(selectionError);return;}
     setNotice('Selección validada en el laboratorio. No se ha guardado ni programado ningún evento.');
   };
-
-  return <div className="datetime-demo">
+  const dateText=isRange ?
+    (rangeStart?formatCivilDate(rangeStart,settings.locale):'Sin fecha inicial')+' — '+
+    (rangeEnd?formatCivilDate(rangeEnd,settings.locale):'Sin fecha final'):
+    isMultiple?dates.map(value=>formatCivilDate(value,settings.locale)).join(' · ')||'Sin selección':
+    formatCivilDate(date,settings.locale);
+  const showHour=()=>{
+    const props={hourCycle:settings.hourCycle,showSeconds:seconds,presentation};
+    if(isTimeRange)return <div className="datetime-demo__time-range">
+      <TimeInput label="Hora inicial" value={time} onChange={setTime} {...props}/>
+      <TimeInput label="Hora final" value={endTime} onChange={setEndTime} {...props}/>
+    </div>;
+    return <TimeInput label="Hora" value={time} onChange={setTime} {...props}/>;
+  };
+  const total=timeMetrics&&timeMetrics.ok?timeMetrics.value:null;
+  const durationText=total?
+    [total.days?total.days+' d':null,total.hours+' h',total.minutes+' min',seconds?total.seconds+' s':null]
+      .filter(Boolean).join(' '):null;
+  return <div className="datetime-demo" data-temporal-mode={mode}>
     <div className="datetime-demo__controls">
       <ZenitSelect<PickerMode> label="Modo del selector" className="datetime-demo__mode"
-        value={mode} options={pickerOptions} onChange={value=>{setMode(value);setNotice('');}}/>
-      {usesClock&&<div className="datetime-demo__clock">
-        <ZenitSelect<string> label="Hora" value={hourValue} options={hourOptions} onChange={pickHour}/>
-        <span className="datetime-demo__colon" aria-hidden="true">:</span>
-        <ZenitSelect<string> label="Minuto" value={pad(minute)} options={minutes}
-          onChange={value=>{setMinute(Number(value));setNotice('');}}/>
-        {settings.hourCycle==='h12'&&
-          <ZenitSelect<'AM'|'PM'> label="Período" value={period} options={periodOptions} onChange={pickPeriod}/>}
+        value={mode} options={pickerOptions}
+        onChange={value=>{setMode(value);setNotice('');}}/>
+      {isClock&&<div className="datetime-demo__preferences">
+        <ZenitSelect<TimePresentation> label="Presentación" className="datetime-demo__presentation"
+          value={presentation} options={presentationOptions} onChange={setPresentation}/>
+        <label className="datetime-demo__checkbox">
+          <input type="checkbox" checked={seconds}
+            onChange={event=>setSeconds(event.target.checked)}/> Segundos
+        </label>
+        {isTimeRange&&<label className="datetime-demo__checkbox">
+          <input type="checkbox" checked={allowNextDay}
+            onChange={event=>setAllowNextDay(event.target.checked)}/> Termina al día siguiente
+        </label>}
+        <ContextHelp label="Cómo se calculan los intervalos horarios">
+          El intervalo usa horas de reloj. Para eventos programados con zonas horarias y cambios de horario de verano será necesaria una conversión validada a instantes reales.
+        </ContextHelp>
       </div>}
     </div>
-    {isCalendar&&
-      <div className="datetime-demo__calendar">
-        <CalendarSpecimen settings={settings}
-          selectedDate={isRange?null:date} startDate={isRange?rangeStart:null}
-          endDate={isRange?rangeEnd:null} onSelectDate={selectDate}
-          minDate="2026-01-01" maxDate="2027-12-31"/>
-        {isGregorian&&<small>Demostración: selección entre enero de 2026 y diciembre de 2027.</small>}
+    {isCalendar&&calendarSupported&&
+      <div className="datetime-demo__date-fields">
+        {isRange?<>
+          <CivilDateField label="Fecha inicial" value={rangeStart} locale={settings.locale}
+            minDate={startBounds} maxDate={endBounds} nullable onChange={setRangeStart}/>
+          <CivilDateField label="Fecha final" value={rangeEnd} locale={settings.locale}
+            minDate={startBounds} maxDate={endBounds} nullable onChange={setRangeEnd}/>
+        </>:!isMultiple?
+          <CivilDateField label="Fecha" value={date} locale={settings.locale}
+            minDate={startBounds} maxDate={endBounds}
+            onChange={value=>{if(value)setDate(value);}}/>:null}
       </div>}
+    {isCalendar&&<div className="datetime-demo__calendar">
+      <CalendarSpecimen settings={settings} selectedDate={isRange||isMultiple?null:date}
+        selectedDates={isMultiple?dates:[]} startDate={isRange?rangeStart:null}
+        endDate={isRange?rangeEnd:null} onSelectDate={selectDate}
+        minDate={startBounds} maxDate={endBounds}/>
+    </div>}
+    {isClock&&<div className="datetime-demo__clock">{showHour()}</div>}
     <div className="datetime-demo__summary" role="status" aria-live="polite">
       <strong>Resultado de la selección</strong>
-      {isCalendar&&
-        <p>{isGregorian?dateText:'No disponible hasta implementar el motor de fechas seleccionado.'}</p>}
-      {usesClock&&<p>{clockText} · Formato {settings.hourCycle==='h12'?'12 h':'24 h'}</p>}
-      <small>Zona horaria preferida: {settings.timeZone}. Esta demostración maneja fechas civiles y horas de pared, no convierte automáticamente horarios de eventos entre zonas.</small>
+      {isCalendar&&<p>{calendarSupported?dateText:'Calendario pendiente de implementación'}</p>}
+      {isRange&&rangeMetrics?.ok&&<div className="datetime-demo__metrics">
+        <span><strong>{rangeMetrics.value.inclusiveDays}</strong> días incluidos</span>
+        <span><strong>{rangeMetrics.value.elapsedDays}</strong> días transcurridos</span>
+        <span><strong>{rangeMetrics.value.nights}</strong> noches (ejemplo alojamiento)</span>
+      </div>}
+      {isMultiple&&<p><strong>{dates.length}</strong> días individuales seleccionados</p>}
+      {isClock&&<p>{formatEditableTime(time,settings.hourCycle,seconds)}
+        {isTimeRange&&' — '+formatEditableTime(endTime,settings.hourCycle,seconds)}</p>}
+      {isTimeRange&&<p className="datetime-demo__duration">
+        {durationText?'Duración: '+durationText:(timeMetrics&&!timeMetrics.ok?timeMetrics.error:'')}
+      </p>}
+      <ContextHelp label="Acerca de fechas civiles y tiempo real">
+        Las fechas civiles no son instantes UTC. Los intervalos horarios mostrados son horas de reloj; horarios de verano, eventos reales y reglas comerciales requieren validación específica del producto.
+      </ContextHelp>
     </div>
     <div className="datetime-demo__actions">
-      <Button size="standard" disabled={!validSelection} onClick={validate}>Validar selección</Button>
+      <Button variant="secondary" onClick={clearSelection}>Limpiar selección</Button>
+      <Button size="standard" disabled={Boolean(selectionError)} onClick={validate}>Validar selección</Button>
       <span role="status" className="datetime-demo__message">{notice}</span>
     </div>
   </div>;
