@@ -3,6 +3,7 @@ import { Button, StatusPill } from './components';
 import { Icon, type IconName } from './Icon';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { ZenitMultiSelect } from './ZenitMultiSelect';
+import { CalendarSpecimen } from './CalendarSpecimen';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -117,6 +118,11 @@ export function ComponentCatalog() {
       <p className="catalog__footnote">El prototipo usa datos sintéticos. La virtualización, carga remota de grandes catálogos y validación integral con lectores de pantalla siguen pendientes.</p>
     </section>
 
+    <section className="panel catalog__section" aria-labelledby="catalog-calendar">
+      <div className="panel__head"><div><h2 id="catalog-calendar">Calendario compacto</h2></div></div>
+      <CalendarSpecimen/>
+    </section>
+
     <section className="panel catalog__section" aria-labelledby="catalog-table">
       <div className="panel__head">
         <div><h2 id="catalog-table">Tabla y registros</h2><p>Selección, edición, orden de columnas y conversión a tarjetas en móvil. Sin barra de desplazamiento horizontal.</p></div>
@@ -152,6 +158,42 @@ export function ComponentCatalog() {
           {!filtered.length&&<tr><td className="catalog__empty" colSpan={columns.length+1}>No hay registros que coincidan con la búsqueda.</td></tr>}
         </tbody>
       </table></div>
+      <div className="catalog__mobile-records" role="list" aria-label="Registros">
+        {!!filtered.length && <label className="catalog__mobile-select-all">
+          <input type="checkbox" aria-label="Seleccionar todos los registros visibles"
+            checked={filtered.every(row=>selected.includes(row.id))}
+            onChange={event=>setSelected(previous=>event.target.checked
+              ? [...new Set([...previous,...filtered.map(row=>row.id)])]
+              : previous.filter(id=>!filtered.some(row=>row.id===id)))}/>
+          <span>Seleccionar todos</span>
+          <span className="catalog__mobile-count">{filtered.length}</span>
+        </label>}
+        {filtered.map(row=><article role="listitem" data-mobile-record={row.id}
+          className={`catalog__mobile-card ${selected.includes(row.id)?'catalog__mobile-card--selected':''}`} key={row.id}>
+          <div className="catalog__mobile-card-head">
+            <label className="catalog__mobile-card-select">
+              <input type="checkbox" aria-label={`Seleccionar ${row.name}`}
+                checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/>
+            </label>
+            <label className="catalog__mobile-card-title">
+              <span className="sr-only">Nombre del elemento</span>
+              <input aria-label={`Nombre de ${row.name}`} value={row.name}
+                onChange={event=>change(row.id,'name',event.target.value)}/>
+            </label>
+          </div>
+          <div className="catalog__mobile-card-fields">
+            <label className="catalog__mobile-card-field"><span>Categoría</span>
+              <input aria-label={`Categoría de ${row.name}`} value={row.category}
+                onChange={event=>change(row.id,'category',event.target.value)}/>
+            </label>
+            <label className="catalog__mobile-card-field"><span>Estado</span>
+              <input aria-label={`Estado de ${row.name}`} value={row.status}
+                onChange={event=>change(row.id,'status',event.target.value)}/>
+            </label>
+          </div>
+        </article>)}
+        {!filtered.length && <div className="catalog__mobile-empty">No hay registros coincidentes.</div>}
+      </div>
       <p className="catalog__footnote">Pendiente de implementación y pruebas: arrastre de columnas, redimensionamiento, selección rectangular de celdas, portapapeles Excel, deshacer/rehacer y navegación avanzada. No se declara conformidad funcional completa.</p>
     </section>
   </div>;
