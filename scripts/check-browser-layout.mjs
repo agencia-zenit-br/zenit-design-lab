@@ -99,7 +99,9 @@ try {
       navIconCount: document.querySelectorAll('.nav-item svg').length,
       sidebarVisible: !!sidebar && getComputedStyle(sidebar).visibility !== 'hidden',
       sidebarState: sidebar?.dataset.sidebarState,
-      tableDisplay: document.querySelector('.catalog__table') ? getComputedStyle(document.querySelector('.catalog__table')).display : null,
+      desktopTableDisplay: document.querySelector('.catalog__table-scroll') ? getComputedStyle(document.querySelector('.catalog__table-scroll')).display : null,
+      mobileRecordsDisplay: document.querySelector('.catalog__mobile-records') ? getComputedStyle(document.querySelector('.catalog__mobile-records')).display : null,
+      mobileCardCount: document.querySelectorAll('.catalog__mobile-card').length,
     };
   })()`);
   await send('Page.enable');
@@ -122,7 +124,14 @@ try {
       assert.ok(state.bodyWidth <= width + 1, `Horizontal body overflow at ${width}px ${theme}: ${JSON.stringify(state)}`);
       assert.equal(state.headerPosition, 'sticky', 'Header must remain sticky');
       assert.ok(state.navIconCount >= 3, 'Vector icons must remain in the top navigation');
-      if (width <= 700) assert.equal(state.tableDisplay, 'block', 'Mobile table must reflow into cards');
+      if (width <= 700) {
+        assert.equal(state.desktopTableDisplay, 'none', 'Mobile must not inherit desktop table layout');
+        assert.equal(state.mobileRecordsDisplay, 'grid', 'Mobile must show dedicated responsive record cards');
+        assert.equal(state.mobileCardCount, 3, 'Mobile list should show every sample record');
+      } else {
+        assert.notEqual(state.desktopTableDisplay, 'none', 'Desktop table must remain available');
+        assert.equal(state.mobileRecordsDisplay, 'none', 'Dedicated mobile cards must remain hidden on desktop and tablet');
+      }
       process.stdout.write(`PASS viewport ${width}px / ${theme}; no horizontal overflow\n`);
     }
     if (width === 375) {
@@ -213,25 +222,67 @@ try {
       const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
       assert.ok(stickyAfterScroll.scrollY > 0 && Math.abs(stickyAfterScroll.top) <= 1, `Header not fixed at top while scrolling: ${JSON.stringify(stickyAfterScroll)}`);
       process.stdout.write('PASS sticky header remains at top during real scrolling\n');
-      const cardCheckbox = await evaluate(`(() => {
-        const row=document.querySelector('.catalog__data-row');
-        const cell=row?.querySelector('td:first-child');
-        const checkbox=cell?.querySelector('input[type="checkbox"]');
-        const title=row?.querySelector('td[data-label="Elemento"] input');
-        const r=row?.getBoundingClientRect(),c=checkbox?.getBoundingClientRect(),
-          t=title?.getBoundingClientRect();
-        return {rowTop:r?.top,rowRight:r?.right,checkTop:c?.top,checkRight:c?.right,
-          checkMidY:c?(c.top+c.bottom)/2:null,
-          titleLeft:t?.left,titleMidY:t?(t.top+t.bottom)/2:null,
-          position:cell?getComputedStyle(cell).position:null};
+      const cardLayout = await evaluate(`(() => {
+        const card=document.querySelector('.catalog__mobile-card');
+        const box=card?.querySelector('.catalog__mobile-card-select input[type="checkbox"]');
+        const title=card?.querySelector('.catalog__mobile-card-title input');
+        const category=card?.querySelector('.catalog__mobile-card-field:first-child input');
+        const status=card?.querySelector('.catalog__mobile-card-field:last-child input');
+        const r=card?.getBoundingClientRect(),b=box?.getBoundingClientRect(),
+          t=title?.getBoundingClientRect(),c=category?.getBoundingClientRect(),s=status?.getBoundingClientRect();
+        return {cardLeft:r?.left,cardRight:r?.right,
+          checkRight:b?.right,checkCenterY:b?(b.top+b.bottom)/2:null,
+          titleLeft:t?.left,titleCenterY:t?(t.top+t.bottom)/2:null,
+          categoryWidth:c?.width,statusWidth:s?.width,
+          categoryTop:c?.top,statusTop:s?.top,categoryHeight:c?.height,statusHeight:s?.height};
       })()`);
-      assert.equal(cardCheckbox.position,'static','Mobile checkbox must use the row grid, not a distant overlay');
-      assert.ok(cardCheckbox.checkRight <= cardCheckbox.titleLeft &&
-        cardCheckbox.titleLeft-cardCheckbox.checkRight <= 24,
-        `Mobile checkbox must immediately precede the corresponding title: ${JSON.stringify(cardCheckbox)}`);
-      assert.ok(Math.abs(cardCheckbox.checkMidY-cardCheckbox.titleMidY)<=8,
-        `Mobile checkbox and corresponding title must align vertically: ${JSON.stringify(cardCheckbox)}`);
-      process.stdout.write('PASS mobile checkbox precedes record title with close visual alignment\n');
+      assert.ok(cardLayout.checkRight<=cardLayout.titleLeft &&
+        cardLayout.titleLeft-cardLayout.checkRight<=25,
+        `Mobile checkbox must be next to its own record title: ${JSON.stringify(cardLayout)}`);
+      assert.ok(Math.abs(cardLayout.checkCenterY-cardLayout.titleCenterY)<=9,
+        `Checkbox and record name must share visual center: ${JSON.stringify(cardLayout)}`);
+      assert.ok(Math.abs(cardLayout.categoryWidth-cardLayout.statusWidth)<2 &&
+        Math.abs(cardLayout.categoryHeight-cardLayout.statusHeight)<2 &&
+        Math.abs(cardLayout.categoryTop-cardLayout.statusTop)<2,
+        `Mobile metadata fields must have identical aligned geometry: ${JSON.stringify(cardLayout)}`);
+      const editMobileCard = await evaluate(`(() => {
+        const title=document.querySelector('.catalog__mobile-card-title input');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(title,'Documento corregido');
+        title.dispatchEvent(new Event('input',{bubbles:true}));
+        return true;
+      })()`);
+      assert.ok(editMobileCard,'Mobile record field must remain editable');
+      await waitFor('document.querySelector(".catalog__mobile-card-title input")?.value === "Documento corregido"',
+        'Mobile record name editing did not synchronize');
+      process.stdout.write('PASS purpose-built mobile record cards: adjacent checkbox, equal metadata fields, live edit\\n');
+      const mobileProfileAlignment=await evaluate(`(() => {
+        const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
+        const appearance=document.querySelector('.header-controls .zenit-select:nth-child(2) .zenit-select__trigger').getBoundingClientRect();
+        const avatar=document.querySelector('.profile-menu__avatar').getBoundingClientRect();
+        return {productBottom:product.bottom,appearanceBottom:appearance.bottom,avatarBottom:avatar.bottom,
+          avatarRight:avatar.right,viewport:window.innerWidth};
+      })()`);
+      assert.ok(Math.abs(mobileProfileAlignment.productBottom-mobileProfileAlignment.appearanceBottom)<=2 &&
+        Math.abs(mobileProfileAlignment.productBottom-mobileProfileAlignment.avatarBottom)<=2,
+        `Profile avatar must share baseline with both header selectors: ${JSON.stringify(mobileProfileAlignment)}`);
+      await evaluate(`document.querySelector('.profile-menu__trigger')?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".profile-menu__popover"))','Mobile profile menu did not open');
+      const menuInfo=await evaluate(`(() => {
+        const popup=document.querySelector('.profile-menu__popover'),rect=popup.getBoundingClientRect();
+        return {role:popup.getAttribute('role'),radius:getComputedStyle(popup).borderTopLeftRadius,
+          left:rect.left,right:rect.right,choices:[...popup.querySelectorAll('.profile-menu__option')].map(el=>el.textContent.trim()),
+          locked:document.body.style.overflow==='hidden'};
+      })()`);
+      assert.equal(menuInfo.role,'dialog');
+      assert.equal(menuInfo.radius,'16px');
+      assert.equal(menuInfo.choices.length,6);
+      assert.ok(menuInfo.choices.includes('Mi perfil')&&menuInfo.choices.includes('Cerrar sesión')&&menuInfo.locked,
+        'Mobile profile must show expected actions and lock background');
+      await evaluate(`document.querySelector('.profile-menu__close')?.click(); true`);
+      await waitFor('!document.querySelector(".profile-menu__popover")','Profile menu failed to close');
+      await waitFor('document.body.style.overflow!=="hidden"','Profile modal must restore page scrolling');
+      process.stdout.write('PASS mobile profile alignment and accessible profile action popup\\n');
 
     }
     if (width === 1024) {
