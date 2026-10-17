@@ -95,6 +95,24 @@ Browser verification on the code change (before this documentation commit):
 
 **Pending:** real device verification in mobile Safari and Android Chrome, landscape and on-screen keyboard behaviour, RTL parity, screen-reader experience, original approved V3.0 screenshot comparison, user visual acceptance. **Not yet deployed**; existing Cloud Run revision remains unchanged until separate explicit preview workflow.
 
+## Mobile polish and account/calendar examples — approved feedback 2026-10-17
+
+**Implementation in branch:** complete as a preview/prototype; user acceptance and physical device validation pending. This updates the mobile-only design while keeping the canonical V3.0–V4.5.1 tokens and original desktop table layout.
+
+| Item | Implementation | Verified behaviour | Limits |
+|---|---|---|---|
+| Mobile records are visually misaligned | Dedicated `catalog__mobile-records` card list, distinct from the desktop semantic table; checkbox and editable name share a header, two metadata fields have equal geometry | Chromium tests card positions, width, editability, checkbox/name proximity and identical category/status input size on mobile | Physical Safari and Android Chrome review pending |
+| Profile circle off-axis | `ProfileMenu.tsx` replaces static avatar; aligned mobile three-column header and desktop control centering; six illustrated account/help choices | Browser checks avatar/selector baseline on mobile and centerline on desktop | Demo-only labels and action feedback, no real account/session operations |
+| Profile menu not implemented | Desktop anchored rounded popup, mobile centered modal, keyboard dismissal/focus and scroll locking | Chromium checks all six entries, geometry, modal roles, click-to-close and notice behaviour | Screen-reader audit pending |
+| Wednesday wrongly shown as `X` | One locale-aware `calendarWeekdays` utility for chart and interactive compact date specimen. Spanish `L M M J V S D`; Portuguese, English, Hebrew and Arabic use localized initial/full day labels with independent weekday start and RTL consideration | Browser asserts Spanish symbols/accessibility names, PT-BR/EN-US sequences and Hebrew RTL. Static rule blocks regressions to Spanish `X` | Date specimen demonstrates **Gregorian dates only**; non-Gregorian calendars and timezone engine remain future work |
+| Desktop visual language | Existing desktop tables and selectors preserved; profile belongs to same icon family, controls retain canonical colors, sizes and shapes | Browser tests field-anchored dropdown geometry at 1024px and no overflow across 11 viewports × 2 modes | Original V3.0 screenshot pixel comparison still pending |
+
+**CI evidence on code commit `1651dedc`:**
+- [Design Lab CI #39046889794](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39046889794) — success (TypeScript/Vite + Storybook).
+- [Verify Design Lab #39046889777](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39046889777) — success (20 static contract guards plus Chromium interaction/geometry in 11 viewport widths and 2 themes).
+
+**Deployment:** no deployment of this revision at the time of authoring; Cloud Run continues serving the previous successful version until the dedicated preview deployment workflow runs. **PR #8 stays in draft.** No Zenit Platform/ZMC production files or services changed.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
