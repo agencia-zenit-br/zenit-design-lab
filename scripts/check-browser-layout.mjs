@@ -105,7 +105,7 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
 
-  for (const width of [320, 375, 390, 768, 1024, 1440]) {
+  for (const width of [320, 375, 390, 600, 700, 701, 768, 820, 900, 1024, 1440]) {
     await send('Emulation.setDeviceMetricsOverride', {
       width, height: 850, deviceScaleFactor: 1, mobile: width <= 700,
     });
@@ -133,14 +133,19 @@ try {
         const rect=popup?.getBoundingClientRect();
         return {shown:!!popup, radius:popup ? getComputedStyle(popup).borderTopLeftRadius : null,
           position:popup ? getComputedStyle(popup).position : null,
-          left:rect?.left,right:rect?.right,bottom:rect?.bottom,
-          sheetHeader:!!popup?.querySelector('.zenit-select__sheet-head')};
+          left:rect?.left,right:rect?.right,bottom:rect?.bottom,top:rect?.top,
+          width:rect?.width,dialog:popup?.getAttribute('role'),
+          sheetHeader:!!popup?.querySelector('.zenit-select__sheet-head'),
+          bodyLocked:document.body.style.overflow==='hidden'};
       })()`);
-      assert.ok(popupCheck.shown && popupCheck.radius === '18px' && popupCheck.position === 'fixed',
-        'Mobile dropdown should open as an 18px rounded bottom sheet');
-      assert.ok(Math.abs(popupCheck.left) < 1 && Math.abs(popupCheck.right - 375) < 1 && Math.abs(popupCheck.bottom - 850) < 2,
-        `Mobile selector not aligned to viewport: ${JSON.stringify(popupCheck)}`);
-      process.stdout.write('PASS full-width mobile dropdown bottom sheet with rounded corners\n');
+      assert.ok(popupCheck.shown && popupCheck.radius === '16px' && popupCheck.position === 'fixed' && popupCheck.dialog === 'dialog',
+        'Mobile dropdown must open as a rounded modal popup');
+      assert.ok(Math.abs(popupCheck.left - 16) <= 2 && Math.abs(popupCheck.right - (375-16)) <= 2,
+        `Mobile popup must have symmetrical margins: ${JSON.stringify(popupCheck)}`);
+      assert.ok(Math.abs((popupCheck.bottom + popupCheck.top)/2 - 425) <= 2,
+        `Mobile popup must be centered on available screen: ${JSON.stringify(popupCheck)}`);
+      assert.ok(popupCheck.bodyLocked,'Mobile dropdown should lock background page scroll');
+      process.stdout.write('PASS centered mobile popup, focus dialog and background scroll lock\n');
 
       await waitFor('document.activeElement?.matches(".catalog__select-example .zenit-select__search input")', 'Searchable dropdown did not focus its search input');
       await send('Input.insertText', { text:'revisión' });
@@ -165,10 +170,20 @@ try {
       process.stdout.write('PASS grouped multiple selection, chip removal and explicit Done\n');
 
       await evaluate(`document.querySelector('.mobile-nav-toggle')?.click(); true`);
-      await waitFor('Boolean(document.querySelector(".lab-sidebar--mobile-open") && document.querySelector(".lab-sidebar__backdrop"))', 'Mobile sidebar overlay did not open');
-      await evaluate(`document.querySelector('.lab-sidebar__backdrop')?.click(); true`);
-      await waitFor('!document.querySelector(".lab-sidebar--mobile-open")', 'Mobile sidebar did not close');
-      process.stdout.write('PASS mobile sidebar overlay open/close\n');
+      await waitFor('Boolean(document.querySelector(".lab-sidebar--mobile-open"))', 'Mobile navigation did not open');
+      const menu=await evaluate(`(() => {
+        const panel=document.querySelector('.lab-sidebar'),rect=panel.getBoundingClientRect();
+        return {left:rect.left,top:rect.top,right:rect.right,bottom:rect.bottom,
+          width:rect.width,modal:panel.getAttribute('aria-modal'),
+          locked:document.body.style.overflow==='hidden'};
+      })()`);
+      assert.ok(Math.abs(menu.left)<1 && Math.abs(menu.top)<1 &&
+        Math.abs(menu.right-375)<1 && Math.abs(menu.bottom-850)<1 && menu.modal==='true' && menu.locked,
+        `Mobile navigation must occupy entire screen: ${JSON.stringify(menu)}`);
+      await evaluate(`document.querySelector('.lab-sidebar__close')?.click(); true`);
+      await waitFor('!document.querySelector(".lab-sidebar--mobile-open")', 'Full-screen navigation did not close');
+      await waitFor('document.body.style.overflow!== "hidden"', 'Mobile menu failed to restore background scrolling');
+      process.stdout.write('PASS full-screen mobile navigation open/close, focus and scroll lock\n');
       await evaluate('window.scrollTo(0, 500); true');
       await sleep(100);
       const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
@@ -178,17 +193,21 @@ try {
         const row=document.querySelector('.catalog__data-row');
         const cell=row?.querySelector('td:first-child');
         const checkbox=cell?.querySelector('input[type="checkbox"]');
-        const r=row?.getBoundingClientRect(),c=checkbox?.getBoundingClientRect();
+        const title=row?.querySelector('td[data-label="Elemento"] input');
+        const r=row?.getBoundingClientRect(),c=checkbox?.getBoundingClientRect(),
+          t=title?.getBoundingClientRect();
         return {rowTop:r?.top,rowRight:r?.right,checkTop:c?.top,checkRight:c?.right,
-          position:cell?getComputedStyle(cell).position:null,
-          tapFlash:checkbox?getComputedStyle(checkbox).webkitTapHighlightColor:null};
+          checkMidY:c?(c.top+c.bottom)/2:null,
+          titleLeft:t?.left,titleMidY:t?(t.top+t.bottom)/2:null,
+          position:cell?getComputedStyle(cell).position:null};
       })()`);
-      assert.equal(cardCheckbox.position,'absolute','Mobile record checkbox must be in compact card header');
-      assert.ok(cardCheckbox.checkTop >= cardCheckbox.rowTop && cardCheckbox.checkTop <= cardCheckbox.rowTop+45,
-        `Checkbox must sit alongside the card first row: ${JSON.stringify(cardCheckbox)}`);
-      assert.ok(cardCheckbox.checkRight <= cardCheckbox.rowRight+1,
-        `Checkbox must remain inside card: ${JSON.stringify(cardCheckbox)}`);
-      process.stdout.write('PASS mobile record checkbox integrated in card corner\n');
+      assert.equal(cardCheckbox.position,'static','Mobile checkbox must use the row grid, not a distant overlay');
+      assert.ok(cardCheckbox.checkRight <= cardCheckbox.titleLeft &&
+        cardCheckbox.titleLeft-cardCheckbox.checkRight <= 24,
+        `Mobile checkbox must immediately precede the corresponding title: ${JSON.stringify(cardCheckbox)}`);
+      assert.ok(Math.abs(cardCheckbox.checkMidY-cardCheckbox.titleMidY)<=8,
+        `Mobile checkbox and corresponding title must align vertically: ${JSON.stringify(cardCheckbox)}`);
+      process.stdout.write('PASS mobile checkbox precedes record title with close visual alignment\n');
 
     }
     if (width === 1024) {
