@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Converts local file URLs to paths without a dependency on @types/node.
-const pathFromUrl = (relative:string) => decodeURIComponent(new URL(relative,import.meta.url).pathname).replace(/^\\/([A-Za-z]:)/,'$1');
+// Resolve entry points without requiring undeclared Node types.
+const pathFromUrl = (relative:string) => {
+  const pathname=decodeURIComponent(new URL(relative,import.meta.url).pathname);
+  return pathname.startsWith('/') && pathname.charAt(2)===':' ? pathname.slice(1) : pathname;
+};
 
 export default defineConfig({
   plugins: [react()],
