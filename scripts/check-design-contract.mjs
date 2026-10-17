@@ -10,6 +10,9 @@ const select = readFileSync(new URL('../src/ZenitSelect.tsx', import.meta.url), 
 const multiSelect = readFileSync(new URL('../src/ZenitMultiSelect.tsx', import.meta.url), 'utf8');
 const selectStories = readFileSync(new URL('../src/select.stories.tsx', import.meta.url), 'utf8');
 const sidebar = readFileSync(new URL('../src/LabSidebar.tsx', import.meta.url), 'utf8');
+const profile = readFileSync(new URL('../src/ProfileMenu.tsx', import.meta.url), 'utf8');
+const locale = readFileSync(new URL('../src/calendarLocale.ts', import.meta.url), 'utf8');
+const calendar = readFileSync(new URL('../src/CalendarSpecimen.tsx', import.meta.url), 'utf8');
 const mobileModal = readFileSync(new URL('../src/mobileModal.ts', import.meta.url), 'utf8');
 
 const checks = [
@@ -115,6 +118,37 @@ const checks = [
     assert.match(css, /\.catalog__table \.catalog__data-row\s*\{\s*display:grid;\s*grid-template-columns:44px minmax\(0,1fr\)/s);
     assert.ok(css.includes('td[data-label="Elemento"]'));
     assert.ok(css.includes('width:44px;height:44px'));
+  }],
+  ['mobile record cards have independent harmonized composition', () => {
+    assert.ok(catalog.includes('className="catalog__mobile-records"'));
+    assert.ok(catalog.includes('className="catalog__mobile-card-head"'));
+    assert.ok(catalog.includes('className="catalog__mobile-card-fields"'));
+    assert.ok(catalog.includes('className="catalog__mobile-card-field"'));
+    assert.match(css, /\.catalog__table-scroll\s*\{display:none;\}/s);
+    assert.match(css, /\.catalog__mobile-card-fields\s*\{\s*display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/s);
+    assert.ok(css.includes('.catalog__mobile-card-title input'));
+  }],
+  ['user profile is aligned with the header and opens a safe menu', () => {
+    assert.ok(shell.includes('<ProfileMenu onAction='));
+    assert.ok(profile.includes("'Mi perfil'"));
+    assert.ok(profile.includes("'Organización'"));
+    assert.ok(profile.includes("'Preferencias'"));
+    assert.ok(profile.includes("'Idioma'"));
+    assert.ok(profile.includes("'Cerrar sesión'"));
+    assert.ok(profile.includes('useMobileModal(open,mobile,popup)'));
+    assert.ok(css.includes('grid-template-columns:minmax(0,1fr) minmax(0,1fr) 42px'));
+    assert.ok(css.includes('.profile-menu__popover'));
+  }],
+  ['weekday initials are localized, not Spanish Wednesday X', () => {
+    assert.ok(locale.includes("es: ['L','M','M','J','V','S','D']"));
+    assert.ok(locale.includes("pt: ['S','T','Q','Q','S','S','D']"));
+    assert.ok(locale.includes("en: ['M','T','W','T','F','S','S']"));
+    assert.ok(locale.includes('weekday: \'long\''));
+    assert.ok(calendar.includes('calendarWeekdays(locale)'));
+    assert.ok(calendar.includes('aria-label={day.full}'));
+    assert.ok(catalog.includes('<CalendarSpecimen/>'));
+    assert.ok(shell.includes("calendarWeekdays('es-ES', 1)"));
+    assert.doesNotMatch(shell, /'M','X','J'/);
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
