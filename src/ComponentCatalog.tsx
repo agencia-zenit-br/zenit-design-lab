@@ -146,7 +146,7 @@ export function ComponentCatalog() {
         </tr></thead>
         <tbody>
           {filtered.map(row=><tr className="catalog__data-row" key={row.id}>
-            <td data-label="Seleccionar"><input type="checkbox" aria-label={`Seleccionar ${row.name}`} checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/></td>
+            <td data-label="Seleccionar"><label className="catalog__row-select"><input type="checkbox" aria-label={`Seleccionar ${row.name}`} checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/></label></td>
             {columns.map(column=><td data-label={names[column]} key={column}><input aria-label={`${names[column]} de ${row.name}`} value={row[column]} onChange={event=>change(row.id,column,event.target.value)}/></td>)}
           </tr>)}
           {!filtered.length&&<tr><td className="catalog__empty" colSpan={columns.length+1}>No hay registros que coincidan con la búsqueda.</td></tr>}
