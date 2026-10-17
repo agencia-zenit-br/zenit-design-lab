@@ -4,6 +4,7 @@ import { Icon, type IconName } from './Icon';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { ZenitMultiSelect } from './ZenitMultiSelect';
 import { RegionalWorkbench } from './RegionalWorkbench';
+import { ContextHelp } from './ContextHelp';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -64,12 +65,13 @@ export function ComponentCatalog() {
   return <div className="catalog">
     <div className="eyebrow">DESIGN LAB / ESTÁNDARES COMPARTIDOS</div>
     <div className="catalog__intro">
-      <div><h1>Componentes</h1><p>Pruebas del lenguaje visual aprobado para toda la familia de productos. Las herramientas de inspección pertenecen al laboratorio, nunca a una interfaz de cliente.</p></div>
-      <StatusPill tone="warning">Implementación parcial</StatusPill>
+      <div><h1>Componentes</h1>
+        <ContextHelp label="Acerca del catálogo de componentes">Pruebas de lenguaje visual y funciones comunes para el ecosistema Zenit. Los datos e interacciones son demostraciones aisladas.</ContextHelp>
+      </div>
     </div>
 
     <section className="panel catalog__section" aria-labelledby="catalog-type">
-      <div className="panel__head"><div><h2 id="catalog-type">Tipografía y jerarquía</h2><p>Texto neutro, densidad consistente y escala compartida.</p></div></div>
+      <div className="panel__head"><div><h2 id="catalog-type">Tipografía y jerarquía</h2><ContextHelp label="Sobre la tipografía">Un sistema común de escalas y jerarquías para títulos, lectura y metadatos.</ContextHelp></div></div>
       <h1 className="catalog__display">Título principal</h1>
       <h2>Encabezado de sección</h2>
       <p>Texto de lectura para formularios, registros y paneles de trabajo. El contenido mantiene contraste, interlineado y márgenes constantes en cada producto.</p>
@@ -77,12 +79,12 @@ export function ComponentCatalog() {
     </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-icons">
-      <div className="panel__head"><div><h2 id="catalog-icons">Iconografía SVG</h2><p>Una única familia vectorial de trazos finos. No se utilizan caracteres Unicode como iconos de interfaz.</p></div></div>
+      <div className="panel__head"><div><h2 id="catalog-icons">Iconografía SVG</h2><ContextHelp label="Sobre la iconografía">Familia de iconos vectoriales compartidos. Los símbolos Unicode no se usan como iconos operativos.</ContextHelp></div></div>
       <div className="catalog__icons">{iconExamples.map(item=><div className="catalog__icon" key={item.name}><Icon name={item.name} size={20}/><span>{item.title}</span></div>)}</div>
     </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-buttons">
-      <div className="panel__head"><div><h2 id="catalog-buttons">Controles, dimensiones y estados</h2><p>Botones compactos 27 px, estándar 32 px, prominentes 37 px. Escala de referencia visual V1.1.</p></div></div>
+      <div className="panel__head"><div><h2 id="catalog-buttons">Controles, dimensiones y estados</h2><ContextHelp label="Sobre dimensiones y estados">Botones 27, 32 y 37 píxeles; estados visuales coherentes con los tokens compartidos.</ContextHelp></div></div>
       <div className="catalog__row">
         <Button size="compact" onClick={()=>setNotice('Botón compacto activado en la demostración.')}>Compacto</Button>
         <Button size="standard" onClick={()=>setNotice('Botón estándar activado en la demostración.')}><Icon name="plus" size={14}/> Estándar</Button>
@@ -99,31 +101,29 @@ export function ComponentCatalog() {
 
     <section className="panel catalog__section" aria-labelledby="catalog-select">
       <div className="panel__head">
-        <div><h2 id="catalog-select">Zenit Select</h2><p>Desplegables universales: bordes redondeados, búsqueda, grupos, selección múltiple y estados vacíos.</p></div>
-        <StatusPill tone="warning">Validación visual pendiente</StatusPill>
+        <div><h2 id="catalog-select">Zenit Select</h2><ContextHelp label="Acerca de Zenit Select">Selector universal con búsqueda, grupos, selección única y múltiple, chips y estados vacíos. La virtualización y servicios remotos quedan pendientes.</ContextHelp></div>
       </div>
       <div className="catalog__select-grid">
         <div className="catalog__select-example">
           <ZenitSelect<DemoFilter> label="Selección única" value={demoFilter}
             options={demoFilterOptions} onChange={setDemoFilter} onClear={()=>setDemoFilter(null)} searchable
             searchPlaceholder="Buscar estados…"/>
-          <p>Buscar por texto, abrir grupos, seleccionar con teclado o limpiar la selección.</p>
+          <ContextHelp label="Ayuda para selección única">Busca en los grupos, selecciona una opción, usa teclado y limpia la selección desde el campo.</ContextHelp>
         </div>
         <div className="catalog__select-example">
           <ZenitMultiSelect<DemoModule> label="Selección múltiple" values={selectedModules}
             options={demoModules} onChange={setSelectedModules}/>
-          <p>Seleccionar varias opciones, retirar chips, limpiar todo y cerrar con «Listo».</p>
+          <ContextHelp label="Ayuda para selección múltiple">Selecciona opciones, elimina chips o vacía la lista; confirma con «Listo».</ContextHelp>
         </div>
       </div>
-      <p className="catalog__footnote">El prototipo usa datos sintéticos. La virtualización, carga remota de grandes catálogos y validación integral con lectores de pantalla siguen pendientes.</p>
+      <ContextHelp label="Limitaciones del selector">Los datos son sintéticos. Quedan pendientes la virtualización, búsqueda remota y certificación integral con lectores de pantalla.</ContextHelp>
     </section>
 
     <RegionalWorkbench/>
 
     <section className="panel catalog__section" aria-labelledby="catalog-table">
       <div className="panel__head">
-        <div><h2 id="catalog-table">Tabla y registros</h2><p>Selección, edición, orden de columnas y conversión a tarjetas en móvil. Sin barra de desplazamiento horizontal.</p></div>
-        <StatusPill tone="warning">Faltan interacciones avanzadas</StatusPill>
+        <div><h2 id="catalog-table">Tabla y registros</h2><ContextHelp label="Funciones disponibles en registros">Selecciona y edita elementos, reorganiza encabezados. En móvil aparecen tarjetas sin desplazamiento horizontal. Arrastrar columnas, portapapeles y deshacer están pendientes.</ContextHelp></div>
       </div>
       <div className="catalog__toolbar">
         <label className="catalog__field"><Icon name="search" size={16}/><span className="sr-only">Buscar elementos</span><input value={filter} onChange={event=>setFilter(event.target.value)} placeholder="Buscar elementos…" aria-label="Buscar elementos"/></label>
@@ -191,7 +191,7 @@ export function ComponentCatalog() {
         </article>)}
         {!filtered.length && <div className="catalog__mobile-empty">No hay registros coincidentes.</div>}
       </div>
-      <p className="catalog__footnote">Pendiente de implementación y pruebas: arrastre de columnas, redimensionamiento, selección rectangular de celdas, portapapeles Excel, deshacer/rehacer y navegación avanzada. No se declara conformidad funcional completa.</p>
+      <ContextHelp label="Funciones avanzadas pendientes">Arrastre de columnas, redimensionamiento, selección de celdas, portapapeles, deshacer/rehacer y navegación avanzada requieren implementación adicional.</ContextHelp>
     </section>
   </div>;
 }
