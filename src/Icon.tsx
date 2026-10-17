@@ -7,7 +7,7 @@ export type IconName =
   | 'search' | 'bell' | 'user' | 'plus' | 'check' | 'arrow-right'
   | 'moon' | 'sun' | 'monitor' | 'trash' | 'filter' | 'more'
   | 'folder' | 'chart' | 'users' | 'sparkles' | 'alert' | 'x'
-  | 'help' | 'list' | 'edit' | 'external' | 'menu' | 'shield';
+  | 'help' | 'list' | 'edit' | 'external' | 'menu' | 'shield' | 'globe' | 'log-out';
 
 const artwork: Record<IconName, ReactNode> = {
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
@@ -44,6 +44,8 @@ const artwork: Record<IconName, ReactNode> = {
   external: <><path d="M13 5h6v6M19 5l-9 9"/><path d="M19 14v5H5V5h5"/></>,
   menu: <path d="M4 6h16M4 12h16M4 18h16"/>,
   shield: <><path d="M12 2 4 5v6c0 5 3 8 8 11 5-3 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></>,
+  globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/></>,
+  'log-out': <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/><path d="M13 7l5 5-5 5M18 12H9"/></>,
 };
 
 export function Icon({ name, size = 18, title, ...props }: Omit<SVGProps<SVGSVGElement>,'children'> & {name: IconName; size?: number; title?: string}) {
