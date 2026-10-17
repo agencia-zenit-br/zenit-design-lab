@@ -137,7 +137,6 @@ export function ZenitSelect<Value extends string>({
         onClick={event => { event.stopPropagation(); onClear(); close(); }}>
         <Icon name="x" size={13}/>
       </button>}
-    </div>
     {open && <div className="zenit-select__popover">
       {searchable && <div className="zenit-select__search">
         <Icon name="search" size={15}/>
@@ -171,5 +170,6 @@ export function ZenitSelect<Value extends string>({
         })}
       </div>
     </div>}
+    </div>
   </div>;
 }
