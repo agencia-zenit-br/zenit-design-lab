@@ -290,7 +290,7 @@ try {
       await evaluate(`document.querySelector('.profile-menu__close')?.click(); true`);
       await waitFor('!document.querySelector(".profile-menu__popover")','Profile menu failed to close');
       await waitFor('document.body.style.overflow!=="hidden"','Profile modal must restore page scrolling');
-      process.stdout.write('PASS mobile profile alignment and accessible profile action popup\\n');
+      process.stdout.write('PASS mobile profile alignment and accessible profile action popup\n');
 
     }
     if (width === 1024) {
@@ -318,9 +318,9 @@ try {
       await waitFor('document.querySelector(".lab-sidebar")?.dataset.sidebarState === "collapsed"', 'Desktop sidebar did not collapse');
       process.stdout.write('PASS desktop collapsible contextual sidebar\n');
       const weekdayLabels=await evaluate(`(() => ({
-        codes:[...document.querySelectorAll('#catalog-calendar .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join(''),
-        fullNames:[...document.querySelectorAll('#catalog-calendar .zenit-calendar__weekday')].map(el=>el.getAttribute('aria-label')),
-        firstCalendarDay:document.querySelector('#catalog-calendar [data-calendar-day="1"]')?.getAttribute('aria-label'),
+        codes:[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join(''),
+        fullNames:[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.getAttribute('aria-label')),
+        firstCalendarDay:document.querySelector('.calendar-specimen [data-calendar-day="1"]')?.getAttribute('aria-label'),
       }))()`);
       assert.equal(weekdayLabels.codes,'LMMJVSD','Spanish weekday initials must use L M M J V S D, never X');
       assert.ok(weekdayLabels.fullNames[1]!==weekdayLabels.fullNames[2] &&
@@ -333,7 +333,7 @@ try {
         await waitFor('Boolean(document.querySelector(".calendar-specimen .zenit-select__popover"))',
           'Calendar locale selector did not open');
         await evaluate(`[...document.querySelectorAll('.calendar-specimen .zenit-select__option')].find(el=>el.textContent.includes('${label}'))?.click(); true`);
-        await waitFor(`[...document.querySelectorAll('#catalog-calendar .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join('')==='${expected}'`,
+        await waitFor(`[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join('')==='${expected}'`,
           `Calendar weekday symbols do not match requested locale: ${label}`);
       }
       await evaluate(`document.querySelector('.calendar-specimen .zenit-select__trigger')?.click(); true`);
@@ -346,9 +346,9 @@ try {
       await waitFor('Boolean(document.querySelector(".calendar-specimen .zenit-select__popover"))',
         'Calendar locale menu unavailable for Spanish reset');
       await evaluate(`[...document.querySelectorAll('.calendar-specimen .zenit-select__option')].find(el=>el.textContent.includes('Español'))?.click(); true`);
-      await waitFor('[...document.querySelectorAll("#catalog-calendar .zenit-calendar__weekday")].map(el=>el.textContent.trim()).join("") === "LMMJVSD"',
+      await waitFor('[...document.querySelectorAll(".calendar-specimen .zenit-calendar__weekday")].map(el=>el.textContent.trim()).join("") === "LMMJVSD"',
         'Calendar failed to return to Spanish configuration');
-      process.stdout.write('PASS calendar weekdays Spanish LMMJVSD, PT-BR, English, Hebrew RTL and accessible names\\n');
+      process.stdout.write('PASS calendar weekdays Spanish LMMJVSD, PT-BR, English, Hebrew RTL and accessible names\n');
 
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
@@ -377,7 +377,7 @@ try {
       await waitFor('!document.querySelector(".profile-menu__popover")','Desktop profile menu did not close after action');
       await waitFor('document.querySelector(".notice")?.textContent?.includes("preferencias")',
         'Profile preference action must show honest demonstration feedback');
-      process.stdout.write('PASS desktop profile vertical alignment, six-item menu, anchored popup and safe actions\\n');
+      process.stdout.write('PASS desktop profile vertical alignment, six-item menu, anchored popup and safe actions\n');
 
       await evaluate(`Array.from(document.querySelectorAll('.nav-item')).find(node => node.textContent.includes('Redacción'))?.click(); true`);
       await waitFor('Boolean(document.querySelector(".editorial-hero"))', 'Editorial demo did not render');
