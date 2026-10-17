@@ -11,6 +11,7 @@ export type ZenitMultiSelectProps<Value extends string> = {
   searchable?: boolean;
   placeholder?: string;
   className?: string;
+  mobileSheet?: boolean;
 };
 
 const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
@@ -18,7 +19,7 @@ const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036
 /** Multi-selection variant of the approved Zenit Select 03.14; selection stays open until Done. */
 export function ZenitMultiSelect<Value extends string>({
   label, values, options, onChange, disabled = false, searchable = true,
-  placeholder = 'Seleccionar opciones', className = '',
+  placeholder = 'Seleccionar opciones', className = '', mobileSheet = true,
 }: ZenitMultiSelectProps<Value>) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -109,7 +110,7 @@ export function ZenitMultiSelect<Value extends string>({
     }
   };
 
-  return <div ref={root} className={`zenit-select zenit-select--multiple ${open?'zenit-select--open':''} ${className}`.trim()}
+  return <div ref={root} className={`zenit-select zenit-select--multiple ${open?'zenit-select--open':''} ${mobileSheet?'zenit-select--mobile-sheet':''} ${className}`.trim()}
     onKeyDown={onKeyDown}>
     <span className="zenit-select__label" id={`${id}-label`}>{label}</span>
     <div className="zenit-select__multi-control">
@@ -126,7 +127,12 @@ export function ZenitMultiSelect<Value extends string>({
         aria-label={`Limpiar selección de ${label}`} title="Limpiar selección" onClick={()=>onChange([])}>
         <Icon name="x" size={13}/>
       </button>}
+    {open && mobileSheet && <button type="button" className="zenit-select__backdrop" tabIndex={-1}
+      aria-label={`Cerrar ${label}`} onClick={() => close(true)}/>}
     {open && <div className="zenit-select__popover">
+      <div className="zenit-select__sheet-head"><strong>{label}</strong>
+        <button type="button" className="icon-button" aria-label={`Cerrar ${label}`} onClick={() => close(true)}><Icon name="x" size={19}/></button>
+      </div>
       {searchable && <div className="zenit-select__search">
         <Icon name="search" size={15}/>
         <input ref={input} type="text" value={searchText} placeholder="Buscar opciones…"
