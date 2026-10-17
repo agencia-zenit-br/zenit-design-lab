@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type TouchEvent, type WheelEvent } from 'react';
-import { Icon } from './Icon';
-import { formatEditableTime, parseTimeOfDay, type TimeOfDay } from './temporal/core';
-import type { HourCycle } from './calendarLocale';
+import { Icon } from '../Icon';
+import { formatEditableTime, parseTimeOfDay, type TimeOfDay } from './core';
+import type { HourCycle } from '../calendarLocale';
 
 export type TimePresentation = 'wheel' | 'text' | 'hybrid';
 type TimeInputProps = {
