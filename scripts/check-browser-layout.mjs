@@ -130,10 +130,17 @@ try {
       await waitFor('Boolean(document.querySelector(".catalog__select-example .zenit-select__popover"))', 'Custom dropdown did not open');
       const popupCheck = await evaluate(`(() => {
         const popup = document.querySelector('.catalog__select-example .zenit-select__popover');
-        return {shown:!!popup, radius:popup ? getComputedStyle(popup).borderTopLeftRadius : null};
+        const rect=popup?.getBoundingClientRect();
+        return {shown:!!popup, radius:popup ? getComputedStyle(popup).borderTopLeftRadius : null,
+          position:popup ? getComputedStyle(popup).position : null,
+          left:rect?.left,right:rect?.right,bottom:rect?.bottom,
+          sheetHeader:!!popup?.querySelector('.zenit-select__sheet-head')};
       })()`);
-      assert.ok(popupCheck.shown && popupCheck.radius === '12px', 'Rounded custom dropdown geometry differs from approved design');
-      process.stdout.write('PASS accessible custom dropdown surface with rounded corners\n');
+      assert.ok(popupCheck.shown && popupCheck.radius === '18px' && popupCheck.position === 'fixed',
+        'Mobile dropdown should open as an 18px rounded bottom sheet');
+      assert.ok(Math.abs(popupCheck.left) < 1 && Math.abs(popupCheck.right - 375) < 1 && Math.abs(popupCheck.bottom - 850) < 2,
+        `Mobile selector not aligned to viewport: ${JSON.stringify(popupCheck)}`);
+      process.stdout.write('PASS full-width mobile dropdown bottom sheet with rounded corners\n');
 
       await waitFor('document.activeElement?.matches(".catalog__select-example .zenit-select__search input")', 'Searchable dropdown did not focus its search input');
       await send('Input.insertText', { text:'revisión' });
@@ -167,11 +174,62 @@ try {
       const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
       assert.ok(stickyAfterScroll.scrollY > 0 && Math.abs(stickyAfterScroll.top) <= 1, `Header not fixed at top while scrolling: ${JSON.stringify(stickyAfterScroll)}`);
       process.stdout.write('PASS sticky header remains at top during real scrolling\n');
+      const cardCheckbox = await evaluate(`(() => {
+        const row=document.querySelector('.catalog__data-row');
+        const cell=row?.querySelector('td:first-child');
+        const checkbox=cell?.querySelector('input[type="checkbox"]');
+        const r=row?.getBoundingClientRect(),c=checkbox?.getBoundingClientRect();
+        return {rowTop:r?.top,rowRight:r?.right,checkTop:c?.top,checkRight:c?.right,
+          position:cell?getComputedStyle(cell).position:null,
+          tapFlash:checkbox?getComputedStyle(checkbox).webkitTapHighlightColor:null};
+      })()`);
+      assert.equal(cardCheckbox.position,'absolute','Mobile record checkbox must be in compact card header');
+      assert.ok(cardCheckbox.checkTop >= cardCheckbox.rowTop && cardCheckbox.checkTop <= cardCheckbox.rowTop+45,
+        `Checkbox must sit alongside the card first row: ${JSON.stringify(cardCheckbox)}`);
+      assert.ok(cardCheckbox.checkRight <= cardCheckbox.rowRight+1,
+        `Checkbox must remain inside card: ${JSON.stringify(cardCheckbox)}`);
+      process.stdout.write('PASS mobile record checkbox integrated in card corner\n');
+
     }
     if (width === 1024) {
+      for (const index of [1, 2]) {
+        await evaluate(`document.querySelector('.catalog__select-example:nth-child(${index}) .zenit-select__trigger')?.click(); true`);
+        await waitFor(`Boolean(document.querySelector(".catalog__select-example:nth-child(${index}) .zenit-select__popover"))`,
+          'Desktop dropdown did not open');
+        const geometry=await evaluate(`(() => {
+          const parent=document.querySelector('.catalog__select-example:nth-child(${index})');
+          const trigger=parent.querySelector('.zenit-select__trigger').getBoundingClientRect();
+          const popup=parent.querySelector('.zenit-select__popover').getBoundingClientRect();
+          return {fieldBottom:trigger.bottom,fieldLeft:trigger.left,fieldWidth:trigger.width,
+            popupTop:popup.top,popupLeft:popup.left,popupWidth:popup.width};
+        })()`);
+        assert.ok(Math.abs(geometry.fieldWidth - geometry.popupWidth) <= 2,
+          `Desktop dropdown width must equal originating field: ${JSON.stringify(geometry)}`);
+        assert.ok(Math.abs(geometry.fieldLeft - geometry.popupLeft) <= 2 && Math.abs(geometry.popupTop - geometry.fieldBottom - 5) <= 2,
+          `Desktop dropdown must be immediately anchored to originating field: ${JSON.stringify(geometry)}`);
+        await evaluate(`document.querySelector('.catalog__select-example:nth-child(${index}) .zenit-select__trigger')?.click(); true`);
+        await waitFor(`!document.querySelector(".catalog__select-example:nth-child(${index}) .zenit-select__popover")`,
+          'Desktop dropdown did not close');
+      }
+      process.stdout.write('PASS both desktop dropdowns match originating field width and position\n');
       await evaluate(`document.querySelector('.lab-sidebar__collapse')?.click(); true`);
       await waitFor('document.querySelector(".lab-sidebar")?.dataset.sidebarState === "collapsed"', 'Desktop sidebar did not collapse');
       process.stdout.write('PASS desktop collapsible contextual sidebar\n');
+      await evaluate(`Array.from(document.querySelectorAll('.nav-item')).find(node => node.textContent.includes('Redacción'))?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".editorial-hero"))', 'Editorial demo did not render');
+      const editorial = await evaluate(`(() => ({
+        title:document.querySelector('.editorial-hero h1')?.textContent,
+        extraneous:document.querySelector('.editorial-disclaimer')?.textContent ?? null,
+        heroParagraphs:document.querySelectorAll('.editorial-hero p').length,
+        helper:!!document.querySelector('.editorial-hero .context-help__trigger'),
+      }))()`);
+      assert.equal(editorial.title,'Producción editorial');
+      assert.equal(editorial.extraneous,null,'Editorial disclaimer must not occupy permanent workspace space');
+      assert.equal(editorial.heroParagraphs,0,'Editorial hero must not contain persistent explanatory paragraphs');
+      assert.ok(editorial.helper,'The demo description must be available through contextual information');
+      await evaluate(`document.querySelector('.editorial-hero .context-help__trigger')?.click(); true`);
+      await waitFor('Boolean(document.querySelector(".editorial-hero .context-help__popover"))', 'Contextual help did not open');
+      process.stdout.write('PASS editorial workspace remains copy-efficient with accessible contextual info\n');
     }
   }
   process.stdout.write('Browser layout checks passed. Screenshot comparisons and screen-reader QA remain pending.\n');
