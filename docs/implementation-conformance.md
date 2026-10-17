@@ -188,6 +188,28 @@ Browser verification on the code change (before this documentation commit):
 
 **References:** binding [next-delivery architecture section](design-decisions.md), prior [portability gate](design-decisions.md), and Zenit Platform [cross-product modularity issue #323](https://github.com/agencia-zenit-br/zenit-platform/issues/323).
 
+
+## 2026-10-17 — Universal Temporal Core implementation checkpoint: code and browser QA GREEN
+
+**Status:** approved next-release *prototype functionality has been implemented on the preview branch* and verified at the source/component/browser level. The **user has not yet reviewed this build on a real phone**, the PR is still draft, and **Cloud Run currently serves the previous deployed build** until a separate authorized manual deployment. This checkpoint supersedes the earlier `Approved / pending` statuses in the planning matrix **only for the tested prototype capabilities below**.
+
+| Package | Implemented in preview | Evidence | Explicitly not yet certified |
+|---|---|---|---|
+| A — Operational density | Removed persistent intro/catalog select/table/tutorial copy, reused accessible `ContextHelp` for details; removed inappropriate 740/780px width caps from operational intro; preserved typographic tokens and desktop table. | Browser no-overflow across 320–1440px + light/dark; style guard; contextual help remains clickable/tappable. | Physical iPhone/Android screen-reader, exact V3.0 pixel parity and every product screen. |
+| B — Gregorian dates | `CivilDateField` strict ES/PT/EN-aware numeric text parsing, min/max bounds, calendar selection, single/range/discontiguous days, end/start editing, inclusive days, days elapsed and example lodging nights from `dateRangeMetrics`. Gregorian grid supports year-step navigation and localized weekdays. | Pure Node unit assertions for leap days, invalid dates, ranges, multiple dates; Chromium UI test for multi-select and 5 inclusive dates versus 4 nights. | Hebrew/Hijri engines, product-specific inventory and external calendar providers. |
+| B — Time selection | One controlled `TimeOfDay` contract with 24h or AM/PM, optional seconds, vertical wheel showing three values and typed direct field, text/wheel/hybrid interchangeability, minutes/seconds steps and explicit errors; time ranges with explicit next-day option and duration to seconds. | Node tests for AM/PM, invalid input and 22:30→02:15:12 rollover; Chromium keyboard typing, mode switching, interval calculation. | Analog clock UI (contract-approved future adapter), DST-local-time ambiguity resolution for production scheduling and full mobile Safari accessibility QA. |
+| C — Functional reuse and skins | Pure TS temporal core with no React or product imports; two independent consumer wrappers share value/validation; separate Vite-built `/temporal-embed.html` entry mounts *without* `.lab` or Design Lab shell and uses two distinct scoped semantic skins. `src/temporal/README.md` documents the contract and future adapter boundary. | Chromium separate-host tests at 375px and 1024px verify independent mount, distinct skins, no overflow and synchronized keyboard edits; Storybook examples compile. | **NOT** a published npm package, L2-certified WordPress adapter or commercially certified L3 component; semver migration testing/deprecation policy still needed. |
+| D — Durations | Pure functions distinguish civil inclusive days, hotel-style date-boundary gaps, wall-time range and elapsed offsets via explicit instants; structured `DurationParts`. | Deterministic pure tests incl. leap-day/month crossing, midnight and NYC spring-forward explicit-offset interval. | Advanced IANA local-time disambiguation for scheduled events, business policy backends. |
+| D — Countdown | Deadline target with explicit Z/offset, `countdownSnapshot(targetMs,nowMs)`, real-time browser refresh on visibility/focus, days/hours/minutes/seconds, card/compact/progress views and expiry states. | Fake-clock pure tests for before/exact-zero/after; Chromium active countdown smoke checks. | Trusted server clock, cross-device continuity, automatic domain transitions, accessibility audit across assistive readers. |
+| D — Timer | `makeTimer`, `startTimer`, `pauseTimer`, `timerSnapshot`, `resetTimer`, immutable state + configurable duration. UI supports start, pause, resume, reset, progress display, seconds toggle, explicit completed/paused states. | Virtual clock pure tests and Chromium UI tests verifying run→pause→stable value→resume→reset. | Server-backed timer restoration and security-sensitive actions. |
+
+**Build and QA evidence for implementation commit `910cdb6`** (before README-only update):
+- [Design Lab CI #39057295047](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39057295047): **success**, including Vite/TypeScript compilation, Storybook build and 8 deterministic Node temporal tests.
+- [Verify Design Lab #39057295046](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39057295046): **success**, 28 static guards, 11 Chromium viewport widths in light and dark mode, locale/RTL and UI interactions, plus standalone host at 375 and 1024px.
+- Further documentation-only commits must keep both checks green before sharing a deployment branch; do not call this deployed until user runs the workflow and Cloud Run revision/health is verified.
+
+**Security/product semantics:** counter expiration is **informational** and does not authorize any publication, account activity, payment, booking/cancellation or external action. Server-authoritative deadlines and tenant permissions belong to consuming products.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
