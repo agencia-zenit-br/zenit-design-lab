@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { fileURLToPath } from 'node:url';
+
+// Converts local file URLs to paths without a dependency on @types/node.
+const pathFromUrl = (relative:string) => decodeURIComponent(new URL(relative,import.meta.url).pathname).replace(/^\\/([A-Za-z]:)/,'$1');
 
 export default defineConfig({
   plugins: [react()],
@@ -8,8 +10,8 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        main: fileURLToPath(new URL('./index.html', import.meta.url)),
-        temporal: fileURLToPath(new URL('./temporal-embed.html', import.meta.url)),
+        main: pathFromUrl('./index.html'),
+        temporal: pathFromUrl('./temporal-embed.html'),
       },
     },
   },
