@@ -661,3 +661,136 @@ button,a,[role="option"],summary {
     padding-block-start:0;
   }
 }
+
+
+/* 2026-10-17 mobile UX refinement.
+   Keep original V3.0 tokens, typography and desktop behaviour unchanged. */
+@media (max-width:900px) {
+  /* The contextual menu owns the entire mobile screen while open. */
+  .lab-sidebar {
+    inset:0;
+    width:100%;
+    max-width:none;
+    height:100dvh;
+    min-height:0;
+    padding:max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    border-inline-end:0;
+    border-radius:0;
+    box-shadow:none;
+    overflow-y:auto;
+  }
+  .lab-sidebar--mobile-open {width:100%;}
+  .lab-sidebar__backdrop {display:none;}
+  .lab-sidebar__header {
+    min-height:48px;
+    margin-bottom:20px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .lab-sidebar__heading {font-size:17px;letter-spacing:-.025em;}
+  .lab-sidebar__close {min-height:40px;min-width:40px;}
+  .lab-sidebar__navigation {gap:5px;}
+  .lab-sidebar__caption {padding:12px 10px;font-size:11px;}
+  .lab-sidebar__link {
+    min-height:52px;
+    padding:13px 12px;
+    gap:12px;
+    font-size:14px;
+    border:1px solid transparent;
+  }
+  .lab-sidebar__link:active {background:var(--hover);}
+  .lab-sidebar__footer {margin-top:24px;padding-inline:12px;}
+}
+/* A familiar floating popup dialog instead of bottom-anchored sheets.
+   Product/appearance selectors use the same mobile interaction as content selectors. */
+@media (max-width:700px) {
+  .lab .zenit-select.zenit-select--mobile-sheet .zenit-select__popover,
+  .lab .header-controls .zenit-select.zenit-select--mobile-sheet .zenit-select__popover,
+  .lab .catalog__select-example .zenit-select.zenit-select--mobile-sheet .zenit-select__popover {
+    position:fixed;
+    inset:auto;
+    inset-inline-start:auto;
+    inset-inline-end:auto;
+    inset-block-start:auto;
+    inset-block-end:auto;
+    top:50%;
+    left:50%;
+    right:auto;
+    bottom:auto;
+    transform:translate(-50%,-50%);
+    width:min(440px,calc(100vw - 32px));
+    max-width:none;
+    min-width:0;
+    max-height:min(78dvh,630px);
+    padding:12px;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 18px 55px rgba(0,0,0,.22);
+    z-index:99;
+  }
+  .lab .zenit-select--mobile-sheet .zenit-select__backdrop {
+    background:rgba(0,0,0,.40);
+    z-index:98;
+  }
+  .lab .zenit-select--mobile-sheet .zenit-select__sheet-head {
+    min-height:42px;
+    padding:3px 4px 10px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:8px;
+  }
+  .lab .zenit-select--mobile-sheet .zenit-select__list {
+    max-height:min(55dvh,500px);
+    overscroll-behavior:contain;
+  }
+  .lab .zenit-select--mobile-sheet .zenit-select__option {
+    min-height:48px;
+    padding:12px;
+  }
+  .catalog__table .catalog__data-row {
+    display:grid;
+    grid-template-columns:36px minmax(0,1fr);
+    gap:0 8px;
+    align-items:center;
+    padding:12px;
+  }
+  .catalog__table .catalog__data-row td:first-child {
+    position:static;
+    grid-column:1;
+    grid-row:1;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    width:36px;
+    min-height:44px;
+    padding:0;
+  }
+  .catalog__table .catalog__data-row td:first-child::before {content:none;}
+  .catalog__table .catalog__data-row td[data-label="Elemento"] {
+    grid-column:2;
+    grid-row:1;
+    display:flex;
+    align-items:center;
+    min-width:0;
+    padding:0;
+  }
+  .catalog__table .catalog__data-row td[data-label="Elemento"]::before {content:none;display:none;}
+  .catalog__table .catalog__data-row td[data-label="Elemento"] input {
+    min-height:44px;
+    width:100%;
+    font-weight:600;
+  }
+  .catalog__table .catalog__data-row td:not(:first-child):not([data-label="Elemento"]) {
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:minmax(72px,30%) minmax(0,1fr);
+    align-items:center;
+    gap:9px;
+    padding:6px 0;
+  }
+}
+@media (max-width:400px) {
+  .catalog__table .catalog__data-row td:not(:first-child):not([data-label="Elemento"]) {
+    grid-template-columns:minmax(0,1fr);
+    gap:4px;
+  }
+}
