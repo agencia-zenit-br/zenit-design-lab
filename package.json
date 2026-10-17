@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
+    "build": "npm run check:design && npm run test:temporal && tsc -b && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "check:design": "node scripts/check-design-contract.mjs",
+    "check:browser": "node scripts/check-browser-layout.mjs",
+    "test:temporal": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test scripts/temporal.test.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",

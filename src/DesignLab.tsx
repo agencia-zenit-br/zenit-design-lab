@@ -1,66 +1,125 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, MetricCard, StatusPill } from './components';
+import { Icon, type IconName } from './Icon';
+import { EditorialPreview } from './EditorialPreview';
+import { ComponentCatalog } from './ComponentCatalog';
+import { ZenitSelect, type ZenitOption } from './ZenitSelect';
+import { LabSidebar, type LabSection } from './LabSidebar';
+import { ProfileMenu } from './ProfileMenu';
+import { calendarWeekdays } from './calendarLocale';
 
+type Mode = 'light' | 'dark' | 'system';
 type Product = 'platform' | 'media' | 'cms';
-type Theme = 'light' | 'dark' | 'system';
-type Locale = 'es' | 'en' | 'pt';
-const products: Product[] = ['platform', 'media', 'cms'];
-const names: Record<Product, string> = { platform: 'Platform', media: 'Media Core', cms: 'CMS' };
-const dictionaries = {
-  es: { command:'Centro de control', spatial:'Espacio creativo', overview:'Resumen', operations:'Operaciones', organizations:'Organizaciones', products:'Productos', resources:'Recursos', settings:'Configuración', workspace:'Espacio de trabajo', activity:'Actividad operativa', recent:'Actividad reciente', services:'Servicios activos', users:'Usuarios', storage:'Almacenamiento', usage:'Consumo de IA', week:'Últimos siete días', preview:'Vista conceptual', synthetic:'Datos sintéticos · Sin conexión a producción', light:'Claro', dark:'Oscuro', system:'Sistema', launch:'Nueva operación', explore:'Explorar espacio', layers:'Capas', canvas:'Lienzo', library:'Biblioteca', publish:'Publicación', pipeline:'Flujo editorial', projects:'Proyectos', assets:'Recursos visuales', drafts:'Borradores', published:'Publicados', queue:'En revisión', team:'Equipo', updated:'Actualizado recientemente', sample:'Entorno de demostración', status:'Operativo', details:'Detalle', open:'Abrir', home:'Inicio', design:'Sistema de diseño', mode:'Apariencia', language:'Idioma', product:'Producto', commandIntro:'Supervisa tu ecosistema, operaciones y capacidad desde una única superficie de control.', spatialIntro:'Un espacio modular para crear, organizar y publicar con precisión.', welcome:'Bienvenido a Zenit', workflow:'Flujo de trabajo', editorial:'Mesa editorial', performance:'Rendimiento', active:'Activo', ready:'Listo', select:'Selecciona una sección para explorar su vista de demostración.' },
-  en: { command:'Command center', spatial:'Creative workspace', overview:'Overview', operations:'Operations', organizations:'Organizations', products:'Products', resources:'Resources', settings:'Settings', workspace:'Workspace', activity:'Operational activity', recent:'Recent activity', services:'Active services', users:'Users', storage:'Storage', usage:'AI usage', week:'Last seven days', preview:'Concept preview', synthetic:'Synthetic data · Not connected to production', light:'Light', dark:'Dark', system:'System', launch:'New operation', explore:'Explore workspace', layers:'Layers', canvas:'Canvas', library:'Library', publish:'Publishing', pipeline:'Editorial pipeline', projects:'Projects', assets:'Visual assets', drafts:'Drafts', published:'Published', queue:'In review', team:'Team', updated:'Recently updated', sample:'Demo environment', status:'Operational', details:'Details', open:'Open', home:'Home', design:'Design system', mode:'Appearance', language:'Language', product:'Product', commandIntro:'Monitor your ecosystem, operations and capacity from one unified control surface.', spatialIntro:'A modular space to create, organize and publish with precision.', welcome:'Welcome to Zenit', workflow:'Workflow', editorial:'Editorial desk', performance:'Performance', active:'Active', ready:'Ready', select:'Select a section to explore its demonstration view.' },
-  pt: { command:'Centro de controle', spatial:'Espaço criativo', overview:'Visão geral', operations:'Operações', organizations:'Organizações', products:'Produtos', resources:'Recursos', settings:'Configurações', workspace:'Espaço de trabalho', activity:'Atividade operacional', recent:'Atividade recente', services:'Serviços ativos', users:'Usuários', storage:'Armazenamento', usage:'Consumo de IA', week:'Últimos sete dias', preview:'Prévia conceitual', synthetic:'Dados sintéticos · Sem conexão com produção', light:'Claro', dark:'Escuro', system:'Sistema', launch:'Nova operação', explore:'Explorar espaço', layers:'Camadas', canvas:'Tela', library:'Biblioteca', publish:'Publicação', pipeline:'Fluxo editorial', projects:'Projetos', assets:'Recursos visuais', drafts:'Rascunhos', published:'Publicados', queue:'Em revisão', team:'Equipe', updated:'Atualizado recentemente', sample:'Ambiente de demonstração', status:'Operacional', details:'Detalhes', open:'Abrir', home:'Início', design:'Sistema de design', mode:'Aparência', language:'Idioma', product:'Produto', commandIntro:'Monitore seu ecossistema, operações e capacidade em uma única central de controle.', spatialIntro:'Um espaço modular para criar, organizar e publicar com precisão.', welcome:'Bem-vindo à Zenit', workflow:'Fluxo de trabalho', editorial:'Mesa editorial', performance:'Desempenho', active:'Ativo', ready:'Pronto', select:'Selecione uma seção para explorar a demonstração.' }
-};
-type Key = keyof typeof dictionaries.es;
-function stored<T extends string>(key: string, allowed: readonly T[], fallback: T): T { try { const value = localStorage.getItem(key) as T; return allowed.includes(value) ? value : fallback; } catch { return fallback; } }
-function Icon({ name }: { name: string }) { const paths: Record<string, string> = { grid:'M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z', activity:'M3 12h4l3-7 4 14 3-7h4', box:'M12 2 3 7l9 5 9-5-9-5ZM3 7v10l9 5 9-5V7M12 12v10', users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', layers:'m12 2 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5M3 17l9 5 9-5', settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 12h2m12 0h2M12 4v2m0 12v2M6.3 6.3l1.4 1.4m8.6 8.6 1.4 1.4m0-11.4-1.4 1.4m-8.6 8.6-1.4 1.4', file:'M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h8', chart:'M3 20h18M6 17V9m6 8V4m6 13v-6', search:'m21 21-4.4-4.4M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0', chevron:'m9 18 6-6-6-6', plus:'M12 5v14M5 12h14', globe:'M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20' }; return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name] || paths.grid}/></svg>; }
-export function DesignLab() {
-  const [product,setProduct] = useState<Product>(()=>stored('zenit-product',products,'platform'));
-  const [theme,setTheme] = useState<Theme>(()=>stored('design-lab-theme',['light','dark','system'] as const,'light'));
-  const [locale,setLocale] = useState<Locale>(()=>stored('zenit-locale',['es','en','pt'] as const,'es'));
-  const [systemDark,setSystemDark] = useState(()=>window.matchMedia('(prefers-color-scheme: dark)').matches);
-  const [section,setSection] = useState('overview');
-  const [notice,setNotice] = useState('');
-  const t = (key:Key)=>dictionaries[locale][key];
-  const spatial = product !== 'platform';
-  const resolved = theme === 'system' ? (systemDark ? 'dark':'light') : theme;
-  useEffect(()=>{try{localStorage.setItem('zenit-product',product);localStorage.setItem('design-lab-theme',theme);localStorage.setItem('zenit-locale',locale);}catch{/* storage disabled */}},[product,theme,locale]);
-  useEffect(()=>{const mq=window.matchMedia('(prefers-color-scheme: dark)');const fn=(e:MediaQueryListEvent)=>setSystemDark(e.matches);mq.addEventListener('change',fn);return()=>mq.removeEventListener('change',fn)},[]);
-  useEffect(()=>{document.documentElement.lang=locale;document.title=names[product]+' — Zenit Design Lab'},[locale,product]);
-  const nav: {id:string;key:Key;icon:string}[] = spatial ? [{id:'overview',key:'workspace',icon:'grid'},{id:'projects',key:'projects',icon:'layers'},{id:'assets',key:'library',icon:'box'},{id:'pipeline',key:'pipeline',icon:'activity'},{id:'settings',key:'settings',icon:'settings'}] : [{id:'overview',key:'overview',icon:'grid'},{id:'operations',key:'operations',icon:'activity'},{id:'organizations',key:'organizations',icon:'users'},{id:'products',key:'products',icon:'box'},{id:'resources',key:'resources',icon:'chart'},{id:'settings',key:'settings',icon:'settings'}];
-  function changeProduct(next:Product){setProduct(next);setSection('overview');setNotice('');}
-  function navigate(id:string){setSection(id);setNotice(id==='overview'?'':t('select'));}
-  const metricData: {key:Key;value:string;trend:string}[] = [{key:'services',value:'12',trend:'+2.4%'},{key:'users',value:'2,408',trend:'+12.8%'},{key:'storage',value:'64.8 GB',trend:'+5.2%'},{key:'usage',value:'18.4K',trend:'+8.1%'}];
-  return <div className={'zenit-shell '+(spatial?'zenit-shell--spatial':'zenit-shell--command')} data-theme={resolved} data-product={product}>
-    <a href="#main" className="skip-link">{t('home')}</a>
-    <aside className="zenit-rail" aria-label={t('products')}>
-      <div className="zenit-mark" title="Zenit Design Lab">Z<span>.</span></div>
-      <div className="rail-divider"/>
-      {products.map(p=><button type="button" key={p} className={'rail-product '+(product===p?'selected':'')} aria-label={names[p]} aria-pressed={product===p} title={names[p]} onClick={()=>changeProduct(p)}>{p==='platform'?'P':p==='media'?'M':'C'}</button>)}
-      <div className="rail-spacer"/>
-      <span className="rail-version">0.2</span>
-    </aside>
-    <aside className="zenit-sidebar">
-      <div className="sidebar-heading"><span className="sidebar-kicker">ZENIT / {spatial?'SPATIAL':'COMMAND'}</span><strong>{names[product]}</strong><small>{spatial?t('spatial'):t('command')}</small></div>
-      <div className="nav-label">{t('workspace').toUpperCase()}</div>
-      <nav className="zenit-nav" aria-label={t('workspace')}>{nav.map(item=><button key={item.id} type="button" onClick={()=>navigate(item.id)} className={'zenit-nav-item '+(section===item.id?'active':'')} aria-current={section===item.id?'page':undefined}><Icon name={item.icon}/><span>{t(item.key)}</span>{section===item.id&&<span className="nav-active-dot"/>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="sidebar-environment"><span className="live-dot"/><div><strong>{t('sample')}</strong><small>{t('synthetic')}</small></div></div></div>
-    </aside>
-    <div className="zenit-main-wrap">
-      <header className="zenit-header"><div className="zenit-breadcrumb"><span>ZENIT</span><Icon name="chevron"/><span>{names[product]}</span><Icon name="chevron"/><strong>{t(nav.find(n=>n.id===section)?.key||'overview')}</strong></div><div className="zenit-controls"><label><span>{t('language')}</span><select aria-label={t('language')} value={locale} onChange={e=>setLocale(e.target.value as Locale)}><option value="es">ES</option><option value="en">EN</option><option value="pt">PT</option></select></label><label><span>{t('mode')}</span><select aria-label={t('mode')} value={theme} onChange={e=>setTheme(e.target.value as Theme)}><option value="light">{t('light')}</option><option value="dark">{t('dark')}</option><option value="system">{t('system')}</option></select></label><span className="zenit-avatar">Z</span></div></header>
-      <main id="main" className={'zenit-content '+(spatial?'zenit-content--spatial':'')}>
-        {notice&&<div role="status" className="zenit-notice">{notice}<button type="button" onClick={()=>setNotice('')} aria-label="Close">×</button></div>}
-        <div className="zenit-intro"><div><div className="zenit-overline"><span className="overline-dot"/> ZENIT DESIGN LAB <span className="overline-slash">/</span> {spatial?'PRECISION SPATIAL':'PRECISION COMMAND'}</div><h1>{section==='overview'?(spatial?t('spatial'):t('command')):t(nav.find(n=>n.id===section)?.key||'overview')}</h1><p>{spatial?t('spatialIntro'):t('commandIntro')}</p></div><button className="zenit-primary-action" onClick={()=>setNotice(t('synthetic'))}><Icon name="plus"/>{spatial?t('explore'):t('launch')}</button></div>
-        {!spatial ? <>
-          <div className="zenit-stats">{metricData.map((m,i)=><article className="zenit-stat" key={m.key}><div className="stat-label"><span>{t(m.key)}</span><Icon name={['box','users','layers','activity'][i]}/></div><strong>{m.value}</strong><span className="stat-trend">{m.trend} <small>↗</small></span></article>)}</div>
-          <div className="command-grid"><section className="zenit-panel chart-panel"><div className="panel-title"><div><span className="panel-eyebrow">{t('performance')}</span><h2>{t('activity')}</h2></div><span className="panel-filter">{t('week')}</span></div><div className="command-chart"><div className="chart-y"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div><div className="chart-area">{[40,58,52,76,68,92,82,95,72,85,78,99].map((v,i)=><div key={i} className="command-bar" style={{height:v+'%'}} title={String(v)}/>)}</div></div><div className="chart-x"><span>01</span><span>04</span><span>08</span><span>12</span></div></section><section className="zenit-panel"><div className="panel-title"><div><span className="panel-eyebrow">{t('products')}</span><h2>{t('services')}</h2></div><span className="panel-count">03</span></div><div className="command-services">{(['media','cms','platform'] as Product[]).map((p,i)=><button type="button" className="command-service" key={p} onClick={()=>changeProduct(p)}><span className={'service-symbol service-symbol--'+p}>{p==='platform'?'P':p==='media'?'M':'C'}</span><span className="service-copy"><strong>{names[p]}</strong><small>{i===0?t('editorial'):i===1?t('publish'):t('operations')}</small></span><span className="service-state"><span className="live-dot"/>{t('active')}</span><Icon name="chevron"/></button>)}</div></section></div>
-          <div className="command-bottom"><section className="zenit-panel"><div className="panel-title"><div><span className="panel-eyebrow">{t('resources')}</span><h2>{t('storage')}</h2></div><strong>64%</strong></div><div className="zenit-progress"><span/></div><div className="progress-legend"><span>64 GB</span><span>100 GB</span></div></section><section className="zenit-panel"><div className="panel-title"><div><span className="panel-eyebrow">{t('updated')}</span><h2>{t('recent')}</h2></div></div><div className="recent-row"><span className="recent-dot"/>{t('operations')} <small>09:42</small></div><div className="recent-row"><span className="recent-dot"/>{t('resources')} <small>08:16</small></div></section></div>
-        </> : <>
-          <div className="spatial-toolbar"><div className="spatial-tabs"><button className="current" onClick={()=>navigate('overview')}><Icon name="grid"/>{t('canvas')}</button><button onClick={()=>navigate('projects')}><Icon name="layers"/>{t('projects')}</button><button onClick={()=>navigate('assets')}><Icon name="box"/>{t('library')}</button></div><span className="spatial-ready"><span className="live-dot"/>{t('ready')}</span></div>
-          <div className="spatial-layout"><section className="spatial-stage"><div className="stage-top"><span>{product==='media'?t('editorial'):t('design')}</span><span>100% · 1440 × 900</span></div><div className="stage-artboard"><div className="artboard-top"><span className="artboard-icon">{product==='media'?'M':'C'}</span><span>{names[product]} <small>/ {t('workspace')}</small></span><span className="artboard-dots">•••</span></div><div className="artboard-hero"><span className="artboard-kicker">{t('sample')} / 001</span><h2>{product==='media'?t('editorial'):t('projects')}</h2><p>{t('spatialIntro')}</p></div><div className="artboard-cards">{[t('drafts'),t('queue'),t('published')].map((label,i)=><div className="artboard-card" key={label}><span className="artboard-card-icon"><Icon name={['file','activity','chart'][i]}/></span><small>{label}</small><strong>{[24,8,142][i]}</strong></div>)}</div><div className="artboard-stream"><span/><span/><span/></div></div><div className="stage-bottom"><span>{t('preview')}</span><span>{t('synthetic')}</span></div></section><aside className="spatial-inspector"><div className="inspector-heading"><span>{t('details')}</span><Icon name="settings"/></div><div className="inspector-preview"><span className="inspector-orb"/></div><div className="inspector-field"><small>{t('product')}</small><strong>{names[product]}</strong></div><div className="inspector-field"><small>{t('status')}</small><strong><span className="live-dot"/>{t('active')}</strong></div><div className="inspector-field"><small>{t('team')}</small><div className="team-avatars"><span>A</span><span>M</span><span>J</span><span>+4</span></div></div><button className="inspector-button" onClick={()=>setNotice(t('synthetic'))}>{t('open')} <Icon name="chevron"/></button></aside></div>
-          <div className="spatial-bottom-grid"><div className="spatial-mini"><span>{t('drafts')}</span><strong>24</strong><small>+6</small></div><div className="spatial-mini"><span>{t('queue')}</span><strong>08</strong><small>+2</small></div><div className="spatial-mini"><span>{t('published')}</span><strong>142</strong><small>+18</small></div></div>
-        </>}
-        <footer className="zenit-footer">ZENIT PRECISION 2.0 <span>·</span> {t('synthetic')}</footer>
-      </main>
+type Section = LabSection;
+const navigation: {label:Section;icon:IconName}[] = [
+  {label:'Resumen',icon:'dashboard'},
+  {label:'Componentes',icon:'components'},
+  {label:'Redacción',icon:'editorial'},
+];
+const products: Record<Product,string> = {platform:'Zenit Platform',media:'Zenit Media Core',cms:'Zenit CMS'};
+const productOptions: readonly ZenitOption<Product>[] = [{value:'platform',label:'Platform'},{value:'media',label:'Media Core'},{value:'cms',label:'CMS'}];
+const modeOptions: readonly ZenitOption<Mode>[] = [{value:'light',label:'Claro'},{value:'dark',label:'Oscuro'},{value:'system',label:'Sistema'}];
+const chartWeekdays = calendarWeekdays('es-ES', 1);
+const services: {name:string;detail:string;status:string;icon:IconName}[] = [
+  {name:'Media Core',detail:'Producción editorial',status:'Activo',icon:'editorial'},
+  {name:'CMS',detail:'Contenidos y sitios',status:'Activo',icon:'components'},
+  {name:'Storage Core',detail:'Biblioteca de activos',status:'Activo',icon:'storage'},
+];
+
+function initialMode(): Mode {
+  try {const value = localStorage.getItem('zenit-design-lab-theme');return value === 'dark'||value === 'light'||value === 'system' ? value : 'light';}
+  catch{return 'light';}
+}
+
+function initialSidebarCollapsed():boolean { try { return localStorage.getItem('zenit-design-lab-sidebar') === 'collapsed'; } catch { return false; } }
+
+function Overview({showNotice}:{showNotice:(message:string)=>void}) {
+  return <>
+    <div className="eyebrow">ZENIT / SISTEMA VISUAL</div>
+    <div className="hero">
+      <div><h1>Espacio de trabajo</h1><p>Referencia de integración visual: navegación, métricas, registros y acciones con una identidad compartida.</p></div>
+      <Button onClick={()=>showNotice('Acción de demostración. No se han creado operaciones reales.')}><Icon name="plus" size={15}/> Nueva operación</Button>
     </div>
+    <section aria-labelledby="overview"><div className="section-head"><h2 id="overview">Vista general</h2><span>Información de demostración</span></div>
+      <div className="metrics">
+        <MetricCard label="Servicios activos" value="12" detail="+2 este mes" icon="services"/>
+        <MetricCard label="Usuarios" value="28" detail="En 4 organizaciones" icon="users"/>
+        <MetricCard label="Almacenamiento" value="64 GB" detail="De 100 GB disponibles" icon="storage"/>
+      </div>
+    </section>
+    <div className="dashboard-grid">
+      <section className="panel" aria-labelledby="activity">
+        <div className="panel__head"><div><h2 id="activity">Actividad reciente</h2><p>Últimos siete días</p></div><StatusPill>7 días</StatusPill></div>
+        <div className="chart" role="img" aria-label="Gráfico ilustrativo de actividad de lunes a domingo">
+          <div className="chart__bars">{[43,63,55,77,89,71,84].map((height,index)=><div key={index} className="chart__column"><div className="chart__bar" style={{height:`${height}%`}}/><span title={chartWeekdays[index].full} aria-label={chartWeekdays[index].full}>{chartWeekdays[index].short}</span></div>)}</div>
+        </div>
+      </section>
+      <section className="panel" aria-labelledby="service-list">
+        <div className="panel__head"><div><h2 id="service-list">Servicios</h2><p>Productos del entorno de ejemplo</p></div></div>
+        <div className="service-list">{services.map(item=><div className="service" key={item.name}>
+          <span className="service__icon"><Icon name={item.icon} size={17}/></span>
+          <div><strong>{item.name}</strong><small>{item.detail}</small></div>
+          <StatusPill tone="success">{item.status}</StatusPill>
+        </div>)}</div>
+        <Button variant="secondary" onClick={()=>showNotice('Catálogo de servicios aún no implementado en esta demostración.')}>Ver servicios <Icon name="arrow-right" size={14}/></Button>
+      </section>
+    </div>
+    <section className="panel records-panel" aria-labelledby="records-title">
+      <div className="panel__head"><div><h2 id="records-title">Registros</h2><p>Patrón de tabla compartido, con márgenes y adaptación móvil</p></div><StatusPill>Ejemplo visual</StatusPill></div>
+      <div className="records-grid" role="list">
+        {services.map(item=><div className="records-row" role="listitem" key={item.name}><span className="records-name"><Icon name={item.icon} size={16}/>{item.name}</span><span>{item.detail}</span><StatusPill tone="success">{item.status}</StatusPill></div>)}
+      </div>
+    </section>
+  </>;
+}
+
+export function DesignLab() {
+  const [mode,setMode] = useState<Mode>(initialMode);
+  const [systemDark,setSystemDark] = useState(()=>typeof window!=='undefined' && (window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false));
+  const [product,setProduct] = useState<Product>('platform');
+  const [active,setActive] = useState<Section>('Resumen');
+  const [notice,setNotice] = useState('');
+  const [sidebarCollapsed,setSidebarCollapsed] = useState(initialSidebarCollapsed);
+  const [mobileOpen,setMobileOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLButtonElement>(null);
+  const closeMobile = useCallback(() => { setMobileOpen(false); mobileMenuRef.current?.focus(); },[]);
+  const effective = mode==='system'?(systemDark?'dark':'light'):mode;
+  useEffect(()=>{try{localStorage.setItem('zenit-design-lab-theme',mode);}catch{/* storage unavailable */}},[mode]);
+  useEffect(()=>{try{localStorage.setItem('zenit-design-lab-sidebar',sidebarCollapsed?'collapsed':'expanded');}catch{/* storage unavailable */}},[sidebarCollapsed]);
+  useEffect(()=>{
+    const mq=window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange=(event:MediaQueryListEvent)=>setSystemDark(event.matches);
+    mq.addEventListener('change',onChange);
+    return ()=>mq.removeEventListener('change',onChange);
+  },[]);
+  return <div className="lab" data-theme={effective} data-product={product}>
+    <a className="skip" href="#main">Ir al contenido</a>
+    <div className="app-chrome"><header className="app-header">
+      <div className="app-header__inner">
+        <div className="brand"><button ref={mobileMenuRef} type="button" className="icon-button mobile-nav-toggle" aria-label="Abrir navegación lateral" aria-controls="zenit-lab-sidebar" aria-expanded={mobileOpen} onClick={()=>setMobileOpen(true)}><Icon name="menu" size={20}/></button><span className="brand__symbol" aria-hidden="true"><Icon name="components" size={21}/></span><span><strong>ZENIT</strong><small>DESIGN LAB</small></span></div>
+        <div className="header-controls">
+          <ZenitSelect<Product> label="Producto" value={product} options={productOptions} onChange={setProduct}/>
+          <ZenitSelect<Mode> label="Apariencia" value={mode} options={modeOptions} onChange={setMode}/>
+          <ProfileMenu onAction={action=>setNotice(action==='Cerrar sesión'
+            ? 'Demostración: no se ha cerrado ninguna sesión.'
+            : `Vista de ${action.toLowerCase()} disponible como muestra del menú de perfil; sin conexión a cuentas reales.`)}/>
+        </div>
+      </div>
+    </header>
+    <div className="app-nav-frame"><nav className="app-nav" aria-label="Secciones del laboratorio">
+      {navigation.map(item=><button key={item.label} type="button" className={`nav-item ${active===item.label?'nav-item--active':''}`} aria-current={active===item.label?'page':undefined} onClick={()=>{setActive(item.label);setNotice('');}}>
+        <Icon name={item.icon} size={16}/><span>{item.label}</span>
+      </button>)}
+    </nav></div></div>
+    <div className={`app-body ${sidebarCollapsed?'app-body--sidebar-collapsed':''}`}>
+      <LabSidebar section={active} collapsed={sidebarCollapsed} onToggle={()=>setSidebarCollapsed(value=>!value)} mobileOpen={mobileOpen} onCloseMobile={closeMobile}/>
+    <div className="workspace">
+      <div className="context-bar"><div className="breadcrumbs"><span>{products[product]}</span><Icon name="chevron-right" size={13}/><span>Design Lab</span><Icon name="chevron-right" size={13}/><strong>{active}</strong></div><span className="context-bar__demo"><Icon name="shield" size={14}/> Entorno de demostración</span></div>
+      <main id="main" className="content">
+        {notice && <div className="notice" role="status"><Icon name="help" size={17}/><span>{notice}</span><button type="button" className="icon-button" aria-label="Cerrar aviso" onClick={()=>setNotice('')}><Icon name="x" size={16}/></button></div>}
+        {active==='Componentes'?<ComponentCatalog/>:active==='Redacción'?<EditorialPreview/>:<Overview showNotice={setNotice}/>}
+        <footer className="lab-footer">Sistema visual Zenit · Referencia aprobada V3.0–V4.5.1 · Datos sintéticos · Sin conexión al backend</footer>
+      </main>
+    </div></div>
   </div>;
 }

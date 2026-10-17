@@ -1,0 +1,51 @@
+name: Verify Design Lab
+
+# Preview-only, read-only CI. Never deploys to Google Cloud.
+on:
+  push:
+    branches:
+      - preview/zmc-editorial-20261016
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - '.github/workflows/verify-design-lab.yml'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'vite.config.ts'
+      - '.storybook/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: design-lab-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build and verify reusable components
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify approved design invariants
+        run: npm run check:design
+      - name: Compile TypeScript and Vite
+        run: npm run build
+      - name: Build Storybook reference catalog
+        run: npm run build-storybook -- --quiet
+      - name: Verify actual Chromium viewport layout and interactions
+        run: npm run check:browser
