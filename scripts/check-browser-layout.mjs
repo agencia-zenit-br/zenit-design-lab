@@ -317,38 +317,118 @@ try {
       await evaluate(`document.querySelector('.lab-sidebar__collapse')?.click(); true`);
       await waitFor('document.querySelector(".lab-sidebar")?.dataset.sidebarState === "collapsed"', 'Desktop sidebar did not collapse');
       process.stdout.write('PASS desktop collapsible contextual sidebar\n');
-      const weekdayLabels=await evaluate(`(() => ({
-        codes:[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join(''),
-        fullNames:[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.getAttribute('aria-label')),
-        firstCalendarDay:document.querySelector('.calendar-specimen [data-calendar-day="1"]')?.getAttribute('aria-label'),
-      }))()`);
-      assert.equal(weekdayLabels.codes,'LMMJVSD','Spanish weekday initials must use L M M J V S D, never X');
-      assert.ok(weekdayLabels.fullNames[1]!==weekdayLabels.fullNames[2] &&
-        weekdayLabels.fullNames[1].toLowerCase().includes('martes') &&
-        weekdayLabels.fullNames[2].toLowerCase().includes('miércoles'),
-        'Calendar must expose different accessible names for both M initials');
-      assert.ok(weekdayLabels.firstCalendarDay,'Calendar day buttons must have full localized date names');
-      for(const [label, expected] of [['Português (BR)','DSTQQSS'],['English (US)','SMTWTFS']]) {
-        await evaluate(`document.querySelector('.calendar-specimen .zenit-select__trigger')?.click(); true`);
-        await waitFor('Boolean(document.querySelector(".calendar-specimen .zenit-select__popover"))',
-          'Calendar locale selector did not open');
-        await evaluate(`[...document.querySelectorAll('.calendar-specimen .zenit-select__option')].find(el=>el.textContent.includes('${label}'))?.click(); true`);
-        await waitFor(`[...document.querySelectorAll('.calendar-specimen .zenit-calendar__weekday')].map(el=>el.textContent.trim()).join('')==='${expected}'`,
-          `Calendar weekday symbols do not match requested locale: ${label}`);
+      const calendarRoot='.catalog__section[aria-labelledby="catalog-calendar"]';
+      const selectRegional=async (key,label) => {
+        await evaluate(`document.querySelector('.regional-prefs__${key} .zenit-select__trigger')?.click(); true`);
+        await waitFor(`Boolean(document.querySelector(".regional-prefs__${key} .zenit-select__popover"))`,
+          `Regional selector ${key} failed to open`);
+        const count=await evaluate(`(() => {
+          const options=[...document.querySelectorAll('.regional-prefs__${key} .zenit-select__option')];
+          const item=options.find(el=>el.textContent.trim()==='${label}');
+          if(!item)return -1;
+          item.click();
+          return options.length;
+        })()`);
+        assert.ok(count>0,`Regional option '${label}' missing from ${key}`);
+        await waitFor(`!document.querySelector(".regional-prefs__${key} .zenit-select__popover")`,
+          `Regional selector ${key} did not close`);
+      };
+      const getCalendar=()=>evaluate(`(() => {
+        const root=document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen');
+        const grid=root?.querySelector('.zenit-calendar');
+        const rect=grid?.getBoundingClientRect(),container=root?.getBoundingClientRect();
+        return {codes:[...root.querySelectorAll('.zenit-calendar__weekday')].map(el=>el.textContent.trim()).join(''),
+          names:[...root.querySelectorAll('.zenit-calendar__weekday')].map(el=>el.getAttribute('aria-label')),
+          direction:root.getAttribute('dir'),system:root.getAttribute('data-calendar-system'),
+          label:root.querySelector('.calendar-specimen__month')?.textContent?.trim(),
+          centerDelta:rect&&container?Math.abs((rect.left+rect.right)-(container.left+container.right)):null,
+          weekStart:grid?.getAttribute('data-week-start'),hasDays:!!root.querySelector('[data-calendar-day="1"]')};
+      })()`);
+      const spanish=await getCalendar();
+      assert.equal(spanish.codes,'LMMJVSD','Spanish weekdays must use L M M J V S D, never X');
+      assert.ok(spanish.names[1]!==spanish.names[2] && spanish.names[1].toLowerCase().includes('martes') &&
+        spanish.names[2].toLowerCase().includes('miércoles'),'Distinct accessible names required for repeated M initials');
+      assert.ok(spanish.centerDelta<=2,`Calendar not centered in LTR container: ${JSON.stringify(spanish)}`);
+      assert.ok(spanish.label==='octubre de 2026',`Spanish month casing must remain native: ${JSON.stringify(spanish)}`);
+      await evaluate(`document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen__month-control button:last-child')?.click();true`);
+      const november=await getCalendar();
+      assert.equal(november.label,'noviembre de 2026','Month name and "de" must remain lowercase');
+      await selectRegional('week','Domingo');
+      assert.equal((await getCalendar()).codes,'DLMMJVS');
+      await selectRegional('week','Sábado');
+      assert.equal((await getCalendar()).codes,'SDLMMJV');
+      await selectRegional('week','Lunes');
+      assert.equal((await getCalendar()).codes,'LMMJVSD');
+      await selectRegional('week','Según la región');
+      for (const [label,expected] of [['Português (Brasil)','DSTQQSS'],['English (US)','SMTWTFS']]) {
+        await selectRegional('locale',label);
+        const current=await getCalendar();
+        assert.equal(current.codes,expected,`Locale weekday sequence failed for ${label}`);
+        assert.ok(current.centerDelta<=2,`Calendar not centered in ${label}`);
       }
-      await evaluate(`document.querySelector('.calendar-specimen .zenit-select__trigger')?.click(); true`);
-      await waitFor('Boolean(document.querySelector(".calendar-specimen .zenit-select__popover"))',
-        'Calendar locale menu unavailable after change');
-      await evaluate(`[...document.querySelectorAll('.calendar-specimen .zenit-select__option')].find(el=>el.textContent.includes('עברית'))?.click(); true`);
-      await waitFor('document.querySelector(".calendar-specimen")?.getAttribute("dir")==="rtl"',
-        'Hebrew calendar preview must use RTL');
-      await evaluate(`document.querySelector('.calendar-specimen .zenit-select__trigger')?.click(); true`);
-      await waitFor('Boolean(document.querySelector(".calendar-specimen .zenit-select__popover"))',
-        'Calendar locale menu unavailable for Spanish reset');
-      await evaluate(`[...document.querySelectorAll('.calendar-specimen .zenit-select__option')].find(el=>el.textContent.includes('Español'))?.click(); true`);
-      await waitFor('[...document.querySelectorAll(".calendar-specimen .zenit-calendar__weekday")].map(el=>el.textContent.trim()).join("") === "LMMJVSD"',
-        'Calendar failed to return to Spanish configuration');
-      process.stdout.write('PASS calendar weekdays Spanish LMMJVSD, PT-BR, English, Hebrew RTL and accessible names\n');
+      await selectRegional('locale','עברית');
+      const hebrew=await getCalendar();
+      assert.ok(hebrew.direction==='rtl'&&hebrew.centerDelta<=2,`Calendar not centered in RTL: ${JSON.stringify(hebrew)}`);
+      await selectRegional('locale','العربية');
+      const arabic=await getCalendar();
+      assert.ok(arabic.direction==='rtl'&&arabic.codes.length>0&&arabic.names.length===7&&arabic.centerDelta<=2,
+        'Arabic weekdays must remain accessible and RTL-centered');
+      await selectRegional('locale','Español');
+      await selectRegional('calendar','Hebreo (motor pendiente)');
+      const unsupported=await getCalendar();
+      assert.ok(unsupported.system==='hebrew'&&!unsupported.hasDays,'Unimplemented Hebrew engine must not show Gregorian day buttons');
+      await selectRegional('calendar','Gregoriano');
+      await selectRegional('hours','12 horas (AM/PM)');
+      await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))','DateTime mode did not open');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Hora')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__clock .zenit-select__trigger"))','Clock mode was not rendered');
+      const clock=await evaluate(`(() => ({
+        period:!![...document.querySelectorAll('.datetime-demo__clock .zenit-select__label')].find(el=>el.textContent.includes('Período')),
+        text:document.querySelector('.datetime-demo__summary')?.textContent
+      }))()`);
+      assert.ok(clock.period && clock.text.includes('12 h'),'AM/PM mode did not appear');
+      await selectRegional('hours','24 horas');
+      await waitFor('!document.querySelector(".datetime-demo__clock .zenit-select__label")?.textContent?.includes("Período")',
+        'Hour-cycle change did not remove AM/PM control');
+      await evaluate(`document.querySelector('.datetime-demo__mode .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__mode .zenit-select__popover"))','Picker mode selector did not reopen');
+      await evaluate(`[...document.querySelectorAll('.datetime-demo__mode .zenit-select__option')].find(el=>el.textContent.trim()==='Rango de fechas')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__calendar [data-calendar-day]"))','Range calendar failed to render');
+      await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="12"]')?.click();true`);
+      await evaluate(`document.querySelector('.datetime-demo__calendar [data-calendar-day="16"]')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".datetime-demo__actions button:not(:disabled)"))','Date range did not complete');
+      await evaluate(`document.querySelector('.datetime-demo__actions button')?.click();true`);
+      await waitFor('document.querySelector(".datetime-demo__message")?.textContent?.includes("Selección validada")',
+        'Valid date range failed local validation');
+      await evaluate(`document.querySelector('.forms-demo button[type="submit"]')?.click();true`);
+      await waitFor('document.querySelectorAll(".forms-demo__error").length===3','Form did not flag required fields');
+      await evaluate(`(() => {
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        const fields=[['#forms-demo-title','Ejemplo válido'],['#forms-demo-email','prueba@ejemplo.com']];
+        for(const [selector,value] of fields) {
+          const input=document.querySelector(selector);
+          setter.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));
+        }
+        document.querySelector('.forms-demo__consent input')?.click();
+        return true;
+      })()`);
+      await evaluate(`document.querySelector('.forms-demo button[type="submit"]')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".forms-demo__success"))','Valid form failed its local-only submission');
+      await selectRegional('week','Sábado');
+      await waitFor('Boolean(document.querySelector(".regional-prefs__actions button:not(:disabled)"))',
+        'Preferences changes should require explicit save');
+      await evaluate(`[...document.querySelectorAll('.regional-prefs__actions button')].find(el=>el.textContent.includes('Guardar preferencias'))?.click();true`);
+      await waitFor('document.querySelector(".regional-prefs__notice")?.textContent?.includes("guardadas")',
+        'Regional preferences failed to persist demo settings');
+      const saved=await evaluate(`JSON.parse(localStorage.getItem('zenit-design-lab-regional-demo-v1'))?.weekStart`);
+      assert.equal(saved,'saturday','Saved demo settings must retain independent week start');
+      await evaluate(`[...document.querySelectorAll('.regional-prefs__actions button')].find(el=>el.textContent.includes('Restablecer valores'))?.click();true`);
+      assert.equal((await getCalendar()).codes,'LMMJVSD','Reset must update live preview before saving');
+      await evaluate(`[...document.querySelectorAll('.regional-prefs__actions button')].find(el=>el.textContent.includes('Guardar preferencias'))?.click();true`);
+      await waitFor('document.querySelector(".regional-prefs__notice")?.textContent?.includes("guardadas")',
+        'Reset preferences could not be persisted');
+      process.stdout.write('PASS locale/week-start/calendar-system/hour-cycle, centered LTR/RTL dates, native lowercase months, form validation and demo preference save/reset\\n');
 
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
