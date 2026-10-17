@@ -603,6 +603,38 @@ try {
       process.stdout.write('PASS editorial workspace remains copy-efficient with accessible contextual info\n');
     }
   }
+  for (const width of [375,1024]) {
+    await send('Emulation.setDeviceMetricsOverride',{width,height:850,deviceScaleFactor:1,mobile:width<=700});
+    await send('Page.navigate',{url:url+'temporal-embed.html'});
+    await waitFor('Boolean(document.querySelector("[data-standalone-host=true] [data-temporal-host=client]"))',
+      'Independent temporal host did not load');
+    const isolated=await evaluate(`(() => {
+      const root=document.querySelector('[data-standalone-host=true]'),a=root.querySelector('[data-temporal-host=zenit]'),
+        b=root.querySelector('[data-temporal-host=client]'),z=a.querySelector('input'),c=b.querySelector('input');
+      return {labCount:document.querySelectorAll('.lab').length,
+        appNav:!!document.querySelector('.app-chrome'),rootWidth:root.getBoundingClientRect().width,
+        viewport:window.innerWidth,documentWidth:document.documentElement.scrollWidth,
+        firstSkin:getComputedStyle(a).backgroundColor,secondSkin:getComputedStyle(b).backgroundColor,
+        firstValue:z.value,secondValue:c.value};
+    })()`);
+    assert.equal(isolated.labCount,0,'Standalone temporal host must never require .lab ancestor');
+    assert.equal(isolated.appNav,false,'Host must not mount global Design Lab shell');
+    assert.ok(isolated.documentWidth<=width+1,'Standalone host overflowed viewport');
+    assert.notEqual(isolated.firstSkin,isolated.secondSkin,'Independent host skins were not distinct');
+    assert.equal(isolated.firstValue,isolated.secondValue,'Independent consumers do not share state');
+    await evaluate(`(() => {
+      const input=document.querySelector('[data-temporal-host=client] input');
+      input.focus();input.select();return true;
+    })()`);
+    await send('Input.insertText',{text:'19:05'});
+    await waitFor('document.querySelector("[data-temporal-host=client] input")?.value==="19:05"',
+      'Standalone host input did not accept typed time');
+    await sleep(80);
+    await evaluate('document.querySelector("[data-temporal-host=client] input")?.blur();true');
+    await waitFor('document.querySelector("[data-temporal-host=zenit] input")?.value==="19:05"',
+      'Standalone host did not synchronize time across independent skins');
+    process.stdout.write(`PASS isolated temporal host at ${width}px: no Lab, two skins, shared contract, no overflow\\n`);
+  }
   process.stdout.write('Browser layout checks passed. Screenshot comparisons and screen-reader QA remain pending.\n');
 } finally {
   if (ws && ws.readyState === WebSocket.OPEN) ws.close();
