@@ -3,7 +3,7 @@ import { Button, StatusPill } from './components';
 import { Icon, type IconName } from './Icon';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { ZenitMultiSelect } from './ZenitMultiSelect';
-import { CalendarSpecimen } from './CalendarSpecimen';
+import { RegionalWorkbench } from './RegionalWorkbench';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -118,10 +118,7 @@ export function ComponentCatalog() {
       <p className="catalog__footnote">El prototipo usa datos sintéticos. La virtualización, carga remota de grandes catálogos y validación integral con lectores de pantalla siguen pendientes.</p>
     </section>
 
-    <section className="panel catalog__section" aria-labelledby="catalog-calendar">
-      <div className="panel__head"><div><h2 id="catalog-calendar">Calendario compacto</h2></div></div>
-      <CalendarSpecimen/>
-    </section>
+    <RegionalWorkbench/>
 
     <section className="panel catalog__section" aria-labelledby="catalog-table">
       <div className="panel__head">
