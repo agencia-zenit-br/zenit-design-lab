@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { Icon } from './Icon';
+import { useCompactViewport, useMobileModal } from './mobileModal';
 
 export type ZenitOption<Value extends string> = {
   value: Value;
@@ -36,6 +37,10 @@ export function ZenitSelect<Value extends string>({
   const [query, setQuery] = useState('');
   const id = useId();
   const root = useRef<HTMLDivElement>(null);
+  const modal = useRef<HTMLDivElement>(null);
+  const compactViewport = useCompactViewport();
+  const modalActive = open && mobileSheet && compactViewport;
+  useMobileModal(open && mobileSheet, compactViewport, modal);
   const trigger = useRef<HTMLButtonElement>(null);
   const search = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
@@ -85,6 +90,10 @@ export function ZenitSelect<Value extends string>({
   }, [open]);
 
   useEffect(() => { if (open && searchable) search.current?.focus(); }, [open, searchable]);
+  useEffect(() => {
+    if (modalActive && !searchable) modal.current?.focus();
+  }, [modalActive, searchable]);
+
   useEffect(() => {
     if (!open) return;
     const element = optionRefs.current[activeIndex];
@@ -140,7 +149,9 @@ export function ZenitSelect<Value extends string>({
       </button>}
     {open && mobileSheet && <button type="button" className="zenit-select__backdrop" tabIndex={-1}
       aria-label={`Cerrar ${label}`} onClick={() => close(true)}/>}
-    {open && <div className="zenit-select__popover">
+    {open && <div ref={modal} className="zenit-select__popover" tabIndex={modalActive ? -1 : undefined}
+      role={modalActive ? 'dialog' : undefined} aria-modal={modalActive || undefined}
+      aria-label={modalActive ? label : undefined}>
       <div className="zenit-select__sheet-head"><strong>{label}</strong>
         <button type="button" className="icon-button" aria-label={`Cerrar ${label}`} onClick={() => close(true)}><Icon name="x" size={19}/></button>
       </div>
