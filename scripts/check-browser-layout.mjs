@@ -412,9 +412,10 @@ try {
           const set=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
           set.call(input,'${value}');
           input.dispatchEvent(new Event('input',{bubbles:true}));
-          input.blur();
           return true;
         })()`);
+        await sleep(80); // React must commit controlled input state before blur validation.
+        await evaluate(`document.querySelector('${selector}')?.blur(); true`);
       };
       await typeTime('.datetime-demo__clock .temporal-time-input__field input','16:45');
       await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("16:45")',
@@ -516,9 +517,11 @@ try {
       await evaluate(`(() => {
         const input=document.querySelector('[data-temporal-host="client"] .temporal-time-input__field input');
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        input.focus();setter.call(input,'17:20');input.dispatchEvent(new Event('input',{bubbles:true}));input.blur();
+        input.focus();setter.call(input,'17:20');input.dispatchEvent(new Event('input',{bubbles:true}));
         return true;
       })()`);
+      await sleep(80);
+      await evaluate(`document.querySelector('[data-temporal-host="client"] .temporal-time-input__field input')?.blur();true`);
       await waitFor('document.querySelector("[data-temporal-host=zenit] .temporal-time-input__field input")?.value==="17:20"',
         'Independent client-skinned renderer failed to synchronize shared controlled time');
       assert.equal(await evaluate('document.querySelector(".temporal-portability__value strong")?.textContent'),'17:20',
