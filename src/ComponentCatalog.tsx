@@ -145,7 +145,7 @@ export function ComponentCatalog() {
           </div></th>)}
         </tr></thead>
         <tbody>
-          {filtered.map(row=><tr key={row.id}>
+          {filtered.map(row=><tr className="catalog__data-row" key={row.id}>
             <td data-label="Seleccionar"><input type="checkbox" aria-label={`Seleccionar ${row.name}`} checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/></td>
             {columns.map(column=><td data-label={names[column]} key={column}><input aria-label={`${names[column]} de ${row.name}`} value={row[column]} onChange={event=>change(row.id,column,event.target.value)}/></td>)}
           </tr>)}
