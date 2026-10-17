@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
  validateCivilDate,parseCivilDate,localeDateOrder,formatEditableCivilDate,civilDayDifference,
  dateRangeMetrics,normalizeMultiDates,parseTimeOfDay,formatEditableTime,timeRangeDuration,
- secondsToDuration,instantIntervalDuration,countdownSnapshot,makeTimer,timerSnapshot,
+ secondsToDuration,instantIntervalDuration,parseExplicitInstant,countdownSnapshot,makeTimer,timerSnapshot,
  startTimer,pauseTimer,resetTimer,
 } from '../src/temporal/core.ts';
 
@@ -67,6 +67,15 @@ test('Real offset-aware instants account for daylight saving, unlike civil days'
  assert.equal(value(instantIntervalDuration('2026-03-08T01:30:00-05:00','2026-03-08T03:30:00-04:00')).totalSeconds,3600);
  assert.ok(error(instantIntervalDuration('2026-03-08T01:30:00','2026-03-08T03:30:00')));
  assert.ok(error(instantIntervalDuration('2026-03-08T04:00:00Z','2026-03-08T02:00:00Z')));
+});
+test('Explicit instant parsing rejects silent browser date normalization and invalid offsets',()=>{
+ assert.ok(error(parseExplicitInstant('2026-02-30T12:00:00Z')));
+ assert.ok(error(parseExplicitInstant('2026-11-15T24:01:00Z')));
+ assert.ok(error(parseExplicitInstant('2026-11-15T12:61:00Z')));
+ assert.ok(error(parseExplicitInstant('2026-11-15T12:01:99Z')));
+ assert.ok(error(parseExplicitInstant('2026-11-15T12:01:00+24:00')));
+ assert.ok(error(parseExplicitInstant('2026-11-15T12:01:00')));
+ assert.equal(value(parseExplicitInstant('2026-11-15T12:01:00Z')),Date.UTC(2026,10,15,12,1));
 });
 test('Countdown recomputes using absolute target, including overdue and exact zero',()=>{
  const target=Date.UTC(2026,10,15,12,0,0);
