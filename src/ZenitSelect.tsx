@@ -89,9 +89,9 @@ export function ZenitSelect<Value extends string>({
     return () => { document.removeEventListener('pointerdown', outside); window.removeEventListener('blur', blur); };
   }, [open]);
 
-  useEffect(() => { if (open && searchable) search.current?.focus(); }, [open, searchable]);
+  useEffect(() => { if (open && searchable && !modalActive) search.current?.focus(); }, [open, searchable, modalActive]);
   useEffect(() => {
-    if (modalActive && !searchable) modal.current?.focus();
+    if (modalActive) modal.current?.focus();
   }, [modalActive, searchable]);
 
   useEffect(() => {
@@ -107,10 +107,8 @@ export function ZenitSelect<Value extends string>({
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (disabled) return;
     const typing = event.target instanceof HTMLInputElement;
-    if (event.target instanceof HTMLButtonElement && event.target !== trigger.current) {
-      if (event.key === 'Escape' && open) { event.preventDefault(); close(true); }
-      return;
-    }
+    if (event.target instanceof HTMLButtonElement && event.target !== trigger.current &&
+        (event.key === 'Enter' || event.key === ' ')) return;
     if (event.key === 'Escape') {
       if (open) { event.preventDefault(); event.stopPropagation(); close(true); }
     } else if (event.key === 'Tab') {
