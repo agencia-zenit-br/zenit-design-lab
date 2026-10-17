@@ -8,6 +8,7 @@ import {
 type CalendarSpecimenProps = {
   settings?: RegionalSettings;
   selectedDate?: string | null;
+  selectedDates?: readonly string[];
   startDate?: string | null;
   endDate?: string | null;
   onSelectDate?: (dateISO: string) => void;
@@ -20,6 +21,7 @@ type CalendarSpecimenProps = {
 export function CalendarSpecimen({
   settings = defaultRegionalSettings,
   selectedDate,
+  selectedDates = [],
   startDate,
   endDate,
   onSelectDate,
@@ -56,11 +58,15 @@ export function CalendarSpecimen({
       </div> :
       <>
         <div className="calendar-specimen__month-control">
+          <button type="button" className="icon-button calendar-specimen__year-step" aria-label="Año anterior"
+            onClick={()=>setMonthKey(value=>value-12)}><Icon name="chevron-left" size={13}/><Icon name="chevron-left" size={13}/></button>
           <button type="button" className="icon-button" aria-label="Mes anterior"
             onClick={()=>setMonthKey(value=>value-1)}><Icon name="chevron-left" size={17}/></button>
           <strong className="calendar-specimen__month">{label}</strong>
           <button type="button" className="icon-button" aria-label="Mes siguiente"
             onClick={()=>setMonthKey(value=>value+1)}><Icon name="chevron-right" size={17}/></button>
+          <button type="button" className="icon-button calendar-specimen__year-step" aria-label="Año siguiente"
+            onClick={()=>setMonthKey(value=>value+12)}><Icon name="chevron-right" size={13}/><Icon name="chevron-right" size={13}/></button>
         </div>
         <div className="zenit-calendar" role="group" aria-label={label} data-week-start={resolveWeekStart(settings)}>
           <div className="zenit-calendar__weekdays">
@@ -75,7 +81,7 @@ export function CalendarSpecimen({
               const accessible=formatLong.format(new Date(Date.UTC(year,month,day)));
               const disabled=Boolean(minDate&&iso<minDate||maxDate&&iso>maxDate);
               const inRange=Boolean(startDate&&endDate&&iso>=startDate&&iso<=endDate);
-              const selected=active===iso||startDate===iso||endDate===iso;
+              const selected=active===iso||selectedDates.includes(iso)||startDate===iso||endDate===iso;
               return <button className={`zenit-calendar__day ${selected?'zenit-calendar__day--selected':''} ${inRange?'zenit-calendar__day--in-range':''}`}
                 type="button" key={iso} data-calendar-day={day} data-calendar-iso={iso}
                 aria-label={accessible} aria-pressed={selected}
