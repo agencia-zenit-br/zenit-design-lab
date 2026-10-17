@@ -13,6 +13,9 @@ const sidebar = readFileSync(new URL('../src/LabSidebar.tsx', import.meta.url), 
 const profile = readFileSync(new URL('../src/ProfileMenu.tsx', import.meta.url), 'utf8');
 const locale = readFileSync(new URL('../src/calendarLocale.ts', import.meta.url), 'utf8');
 const calendar = readFileSync(new URL('../src/CalendarSpecimen.tsx', import.meta.url), 'utf8');
+const regional = readFileSync(new URL('../src/RegionalWorkbench.tsx', import.meta.url), 'utf8');
+const datetime = readFileSync(new URL('../src/DateTimeDemo.tsx', import.meta.url), 'utf8');
+const form = readFileSync(new URL('../src/FormSpecimen.tsx', import.meta.url), 'utf8');
 const mobileModal = readFileSync(new URL('../src/mobileModal.ts', import.meta.url), 'utf8');
 
 const checks = [
@@ -144,11 +147,52 @@ const checks = [
     assert.ok(locale.includes("pt: ['S','T','Q','Q','S','S','D']"));
     assert.ok(locale.includes("en: ['M','T','W','T','F','S','S']"));
     assert.ok(locale.includes('weekday: \'long\''));
-    assert.ok(calendar.includes('calendarWeekdays(locale)'));
+    assert.ok(calendar.includes('calendarWeekdays(settings.locale,resolveWeekStart(settings))'));
     assert.ok(calendar.includes('aria-label={day.full}'));
-    assert.ok(catalog.includes('<CalendarSpecimen/>'));
+    assert.ok(catalog.includes('<RegionalWorkbench/>'));
+    assert.ok(regional.includes('<CalendarSpecimen settings={draft}/>'));
     assert.ok(shell.includes("calendarWeekdays('es-ES', 1)"));
     assert.doesNotMatch(shell, /'M','X','J'/);
+  }],
+  ['regional preferences are independent, validated and explicitly saved in demo only', () => {
+    for(const field of ['locale','weekStart','calendarSystem','hourCycle','timeZone','direction']) {
+      assert.ok(locale.includes(field+':') || locale.includes(field+';'), `Missing setting ${field}`);
+    }
+    assert.ok(regional.includes('localStorage.setItem(storageKey,JSON.stringify(draft))'));
+    assert.ok(regional.includes('validRegionalSettings('));
+    assert.ok(regional.includes('timezoneValid('));
+    assert.ok(regional.includes("label=\"Inicio de semana\""));
+    assert.ok(regional.includes("label=\"Formato horario\""));
+    assert.ok(regional.includes("label=\"Sistema de calendario\""));
+    assert.ok(regional.includes("label=\"Dirección de lectura\""));
+    assert.ok(locale.includes("'saturday'"));
+    assert.ok(css.includes('.regional-prefs__grid'));
+  }],
+  ['calendar is direction-independent centered and respects native month casing', () => {
+    assert.ok(css.includes('align-items:center;'));
+    assert.ok(css.includes('margin-inline:auto;align-self:center;'));
+    assert.match(css, /\.calendar-specimen__month\s*\{text-transform:none/);
+    assert.ok(locale.includes('calendarMonthLabel('));
+    assert.ok(calendar.includes("data-calendar-system={settings.calendarSystem}"));
+    assert.ok(calendar.includes("settings.calendarSystem === 'gregory'"));
+    assert.ok(calendar.includes('resolveWeekStart(settings)'));
+    assert.ok(calendar.includes('resolveDirection(settings)'));
+    assert.ok(calendar.includes('Motor de fechas pendiente de implementación'));
+  }],
+  ['date and time modes share the universal Gregorian component', () => {
+    for(const mode of ["'date'","'range'","'datetime'","'time'"])assert.ok(datetime.includes(mode));
+    assert.ok(datetime.includes('<CalendarSpecimen settings={settings}'));
+    assert.ok(datetime.includes("settings.hourCycle==='h12'"));
+    assert.ok(datetime.includes('formatHour(hour,minute,settings)'));
+    assert.ok(datetime.includes("No se ha guardado ni programado ningún evento"));
+  }],
+  ['form fields expose errors without backend submission', () => {
+    assert.ok(form.includes('onSubmit={validate}'));
+    assert.ok(form.includes('aria-invalid='));
+    assert.ok(form.includes('role="alert"'));
+    assert.ok(form.includes('role="status"'));
+    assert.ok(form.includes('type="reset"'));
+    assert.ok(form.includes('Ningún dato se ha enviado ni almacenado'));
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
