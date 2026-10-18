@@ -39,3 +39,14 @@ La integración de referencia se hará en una rama de desarrollo revisada por se
 ### UX regional y temporal (misma entrega)
 
 El selector IANA de zona horaria y el campo comprensible de fecha/hora de finalización de la cuenta regresiva son ajustes solicitados, no capacidades específicas de ZMC. Mantienen el dato canónico en el núcleo y adaptan solo la entrada. Las horas DST imposibles/ambiguas no deben corregirse en silencio.
+
+## Páginas remotas (contrato agregado 18-10-2026)
+
+`OperationalRecords` ahora admite `pageResult?: ServerPage<Row>`, con la forma `{rows,total,page,pageSize}`, como alternativa a `rows` local. En modo remoto, `presentServerPage` presenta directamente la página autorizada por el servidor: **no vuelve a ejecutar búsqueda, filtros, ordenación ni paginación sobre las filas recibidas**. Conserva el total de resultados y permite que `selectedIds` sobreviva a los cambios de página mediante el estado controlado por el consumidor.
+
+- El producto debe proporcionar `query`, `onQueryChange`, carga/error y `pageResult` como un único estado lógico coherente. Debe cancelar/descartar respuestas de búsquedas anteriores para impedir datos obsoletos; no confundir resultados de otro filtro con una página actual.
+- La vista no decide permisos, visibilidad de filas, entitlements ni revisiones. Es obligatorio que el backend devuelva solo registros permitidos; la selección tampoco otorga autorización.
+- El Workbench tiene el control **Servidor simulado**: calcula una página de los registros sintéticos locales y la pasa mediante `pageResult`, exclusivamente para comprobar el modo de presentación sin conectar ZMC ni clientes. La simulación **no** demuestra autenticación ni integración de datos reales.
+- Pruebas: `scripts/operational.test.mjs` valida las cifras de páginas y que no se reordenen/rebanen; el Chromium QA recorre páginas 1 a 4, cuenta registros y comprueba persistencia de selección. La aceptación visual en dispositivos reales sigue pendiente.
+
+El adaptador de dominio para artículos permanece en el **repositorio privado Zenit Platform, PR #326**, con dependencia de la API del PR #325. Ni el código del adaptador ZMC ni su esquema de permisos pueden copiarse a este núcleo universal. Siguen pendientes pruebas de acceso granular por autor/sección/registro, despliegue controlado y consumo HTTP autenticado en entorno aislado.
