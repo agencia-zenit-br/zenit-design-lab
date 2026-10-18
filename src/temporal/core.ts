@@ -89,8 +89,15 @@ export function formatEditableTime(value:TimeOfDay,hourCycle:'h12'|'h23',showSec
 }
 /** Whitespace/AM-PM is explicit for h12; no ambiguous 12:00 is silently normalized. */
 export function parseTimeOfDay(input:string,hourCycle:'h12'|'h23'):TemporalResult<TimeOfDay> {
-  const match=/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i.exec(input.trim());
-  if(!match)return failure('Escribe HH:MM, HH:MM:SS o una hora con AM/PM.');
+  const trimmed=input.trim();
+  // An unambiguous compact HHMM (or HMM) is a presentation convenience,
+  // never an implicit conversion of an invalid hour or a timezone.
+  const compact=/^(\d{3,4})(?:\s*(AM|PM))?$/i.exec(trimmed);
+  const normalized=compact
+    ? `${compact[1].slice(0,-2)}:${compact[1].slice(-2)}${compact[2]?' '+compact[2]:''}`
+    : trimmed;
+  const match=/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i.exec(normalized);
+  if(!match)return failure('Escribe HH:MM, HHMM, HH:MM:SS o una hora con AM/PM.');
   let hour=Number(match[1]);
   const minute=Number(match[2]),second=Number(match[3]??0);
   const period=match[4]?.toUpperCase();
