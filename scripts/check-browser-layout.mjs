@@ -266,14 +266,11 @@ try {
         Math.abs(cardLayout.categoryHeight-cardLayout.statusHeight)<2 &&
         Math.abs(cardLayout.categoryTop-cardLayout.statusTop)<2,
         `Mobile metadata fields must have identical aligned geometry: ${JSON.stringify(cardLayout)}`);
-      const editMobileCard=await evaluate(`(() => {
+      await evaluate(`(() => {
         const title=document.querySelector('.operational-records__card-title input');
-        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        setter.call(title,'Registro corregido');
-        title.dispatchEvent(new Event('input',{bubbles:true}));
-        return true;
+        title.focus();title.select();return true;
       })()`);
-      assert.ok(editMobileCard,'Mobile record title must remain editable');
+      await send('Input.insertText',{text:'Registro corregido'});
       await waitFor('document.querySelector(".operational-records__card-title input")?.value==="Registro corregido"',
         'Universal mobile record title did not synchronize after editing');
       process.stdout.write('PASS unified mobile record cards: adjacent checkbox, aligned metadata, editable title\\n');
@@ -657,11 +654,12 @@ try {
         'New synthetic editable column not rendered');
       await evaluate(`(() => {
         const input=document.querySelector('[data-column-title="name"]');
-        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        setter.call(input,'Referencia principal');
-        input.dispatchEvent(new Event('input',{bubbles:true}));
-        input.blur();return true;
+        input.focus();input.select();return true;
       })()`);
+      await send('Input.insertText',{text:'Referencia principal'});
+      await waitFor('document.querySelector("[data-column-title=name]")?.value==="Referencia principal"',
+        'New guide column title not editable');
+      await evaluate(`document.querySelector('[data-column-title="name"]')?.blur();true`);
       await waitFor('document.querySelector(".operational-records__desktop thead th:nth-child(2)")?.textContent?.includes("Referencia principal")',
         'Renaming the first (guide) data column did not update the visible header');
       assert.equal(await evaluate('document.querySelector(".operational-records__desktop tbody tr:first-child td:nth-child(2)")?.textContent?.includes("Registro 01")'),true,
