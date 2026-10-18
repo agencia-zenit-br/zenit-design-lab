@@ -156,7 +156,7 @@ export function OperationalWorkbench(){
     page:simulated.page,pageSize:simulated.pageSize}:undefined;
   return <div className="operational-workbench" data-operational-workbench="true">
     <div className="operational-workbench__actions">
-      <label className="catalog__check"><input type="checkbox" checked={editingCells}
+      <label className="catalog__check"><input type="checkbox" aria-label="Editar celdas" checked={editingCells}
         onChange={event=>setEditingCells(event.target.checked)}/> Editar celdas</label>
       <label className="catalog__check"><input type="checkbox" checked={compact}
         onChange={event=>setCompact(event.target.checked)}/> Compacto</label>
@@ -196,7 +196,7 @@ export function OperationalWorkbench(){
       <div className="operational-workbench__column-list" aria-label="Visibilidad y títulos de columnas">
         {allColumns.map(column=><div className="operational-workbench__column-item" key={column.key}>
           <label className="operational-workbench__column-title">
-            <span className="sr-only">{'Título de columna '+column.key}</span>
+            <span>Título</span>
             <input type="text" data-column-title={column.key}
               aria-label={'Título de columna '+column.key}
               value={titleDrafts[column.key]??column.label} maxLength={40}
@@ -206,7 +206,6 @@ export function OperationalWorkbench(){
                 if(event.key==='Enter'){event.preventDefault();event.currentTarget.blur();}
                 if(event.key==='Escape'){
                   setTitleDrafts(previous=>{const next={...previous};delete next[column.key];return next;});
-                  event.currentTarget.blur();
                 }
               }}/>
           </label>
