@@ -4,7 +4,7 @@ import { Icon } from '../Icon';
 import { ContextHelp } from '../ContextHelp';
 import { OperationalRecords, type OperationalColumn, type OperationalFilter } from './OperationalRecords';
 import { ActionConfirm, OperationNotice, type FeedbackMessage } from './OperationFeedback';
-import { reconcileSelectedIds, type CollectionQuery, type RecordIdentity } from './collectionCore';
+import { queryCollection, reconcileSelectedIds, type CollectionQuery, type RecordIdentity } from './collectionCore';
 
 type SampleRecord={id:number;name:string;category:string;status:'Activo'|'Pendiente'|'Completado';updated:string;revision:number};
 const categories=['General','Contenido','Diseño','Soporte'];
@@ -39,6 +39,7 @@ export function OperationalWorkbench(){
   const [notice,setNotice]=useState<FeedbackMessage|null>(null);
   const [confirm,setConfirm]=useState(false);
   const [compact,setCompact]=useState(false);
+  const [remote,setRemote]=useState(false);
   const [scenario,setScenario]=useState<'ready'|'loading'|'error'>('ready');
   const [sequence,setSequence]=useState(1);
   const notify=(level:FeedbackMessage['level'],message:string)=>{
@@ -62,13 +63,19 @@ export function OperationalWorkbench(){
   };
   const open=(row:SampleRecord)=>notify('info',`Se seleccionó «${row.name}». La apertura de detalles se implementará en cada producto consumidor.`);
   const reset=()=>{
-    setQuery(initialQuery);setSelected([]);setRows(sampleRows);setNotice(null);setScenario('ready');setCompact(false);setConfirm(false);
+    setQuery(initialQuery);setSelected([]);setRows(sampleRows);setNotice(null);setScenario('ready');setCompact(false);setRemote(false);setConfirm(false);
   };
   const select=(ids:RecordIdentity[])=>setSelected(reconcileSelectedIds(ids,rows));
+  // The Lab uses a synthetic, in-memory server simulator. No remote API is invoked.
+  const simulated=queryCollection(rows,columns,query);
+  const pageResult=remote?{rows:simulated.visibleRows,total:simulated.total,
+    page:simulated.page,pageSize:simulated.pageSize}:undefined;
   return <div className="operational-workbench" data-operational-workbench="true">
     <div className="operational-workbench__actions">
       <label className="catalog__check"><input type="checkbox" checked={compact}
         onChange={event=>setCompact(event.target.checked)}/> Compacto</label>
+      <label className="catalog__check"><input type="checkbox" data-remote-page-demo="true" checked={remote}
+        onChange={event=>setRemote(event.target.checked)}/> Servidor simulado</label>
       <div className="operational-workbench__action-buttons">
         <Button variant="secondary" size="compact" onClick={add}><Icon name="plus" size={14}/> Añadir</Button>
         <Button variant="danger" size="compact" disabled={!selected.length}
@@ -88,7 +95,7 @@ export function OperationalWorkbench(){
     <OperationNotice notice={notice} onDismiss={()=>setNotice(null)}/>
     {confirm&&<ActionConfirm question={`¿Eliminar ${selected.length} registro(s) de esta demostración?`}
       onConfirm={remove} onCancel={()=>setConfirm(false)}/>}
-    <OperationalRecords rows={rows} columns={columns} query={query}
+    <OperationalRecords rows={remote?[]:rows} pageResult={pageResult} columns={columns} query={query}
       onQueryChange={setQuery} selectedIds={selected} onSelectedIdsChange={select}
       getRowLabel={row=>row.name} filters={filters} compact={compact}
       isLoading={scenario==='loading'} error={scenario==='error'?'No se pudieron consultar los registros de demostración.':null}
