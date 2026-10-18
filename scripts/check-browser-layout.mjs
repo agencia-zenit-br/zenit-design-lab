@@ -500,6 +500,31 @@ try {
         'Reset preferences could not be persisted');
       process.stdout.write('PASS locale/week-start/calendar-system/hour-cycle, centered LTR/RTL dates, native lowercase months, form validation and demo preference save/reset\\n');
 
+      const timezoneSelector=await evaluate(`(() => ({
+        select:!!document.querySelector('.regional-prefs__timezone-select .zenit-select__trigger'),
+        freeText:!!document.querySelector('.regional-prefs__timezone-choice>input'),
+        visible:document.querySelector('.regional-prefs__timezone-select .zenit-select__value')?.textContent
+      }))()`);
+      assert.ok(timezoneSelector.select&&!timezoneSelector.freeText,
+        'Timezone must be selected from a searchable IANA catalogue, never entered as arbitrary free text');
+      await evaluate(`document.querySelector('.regional-prefs__timezone-select .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".regional-prefs__timezone-select .zenit-select__popover"))',
+        'Timezone selector failed to open');
+      const optionsCount=await evaluate('document.querySelectorAll(".regional-prefs__timezone-select .zenit-select__option").length');
+      assert.ok(optionsCount>10,'Timezone catalogue should include more than an arbitrary handful of zones');
+      await evaluate(`[...document.querySelectorAll('.regional-prefs__timezone-select .zenit-select__option')]
+        .find(el=>el.textContent.includes('America/New_York'))?.click();true`);
+      await waitFor('document.querySelector(".regional-prefs__timezone-select .zenit-select__value")?.textContent?.includes("Nueva York")',
+        'Friendly timezone label/selection failed');
+      await evaluate(`document.querySelector('.regional-prefs__timezone-select .zenit-select__trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".regional-prefs__timezone-select .zenit-select__popover"))',
+        'Timezone selector did not reopen');
+      await evaluate(`[...document.querySelectorAll('.regional-prefs__timezone-select .zenit-select__option')]
+        .find(el=>el.textContent.includes('America/Sao_Paulo'))?.click();true`);
+      await waitFor('document.querySelector(".regional-prefs__timezone-select .zenit-select__value")?.textContent?.includes("São Paulo")',
+        'Timezone reset in picker failed');
+      process.stdout.write('PASS searchable IANA timezone picker, friendly city labels and no free text\\n');
+
       const skinGeometry=await evaluate(`(() => {
         const a=document.querySelector('[data-temporal-host="zenit"]');
         const b=document.querySelector('[data-temporal-host="client"]');
@@ -523,11 +548,15 @@ try {
       await evaluate(`document.querySelector('[data-temporal-counter="countdown"] .temporal-live-demo__quick button:first-child')?.click();true`);
       const countdown=await evaluate(`(() => {
         const root=document.querySelector('[data-temporal-counter="countdown"]');
-        const field=root.querySelector('input'),status=root.querySelector('.temporal-live-demo__state')?.textContent;
-        return {field:field?.value,status,unitCount:root.querySelectorAll('.temporal-duration__cell').length};
+        const date=root.querySelector('input[type=date]')?.value;
+        const time=root.querySelector('input[type=time]')?.value;
+        const zone=root.querySelector('.temporal-live-demo__timezone')?.textContent;
+        const status=root.querySelector('.temporal-live-demo__state')?.textContent;
+        return {date,time,zone,status,unitCount:root.querySelectorAll('.temporal-duration__cell').length};
       })()`);
-      assert.ok(countdown.field.includes('T')&&countdown.field.endsWith('Z')&&countdown.status==='Tiempo restante'&&countdown.unitCount===4,
-        'Countdown needs explicit UTC instant, days/hours/minutes/seconds and active state');
+      assert.ok(/^\\d{4}-\\d{2}-\\d{2}$/.test(countdown.date)&&/^\\d{2}:\\d{2}$/.test(countdown.time)&&
+        countdown.zone.includes('Zona horaria')&&countdown.status==='Tiempo restante'&&countdown.unitCount===4,
+        'Countdown must use local date/time fields, display zone and show live durations');
       const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Duración del temporizador en segundos"]';
       await evaluate(`(() => {
         const input=document.querySelector('${timerFieldSelector}');
@@ -556,6 +585,40 @@ try {
       await waitFor('document.querySelector("[data-temporal-counter=timer] .temporal-live-demo__state")?.textContent==="Listo"',
         'Timer failed to reset');
       process.stdout.write('PASS active countdown, configurable timer, start/pause/resume/reset with stable pause\\n');
+
+      const opInitial=await evaluate(`(() => ({
+        panel:!!document.querySelector('[data-operational-workbench]'),
+        desktopRows:document.querySelectorAll('.operational-records__desktop tbody tr').length,
+        mobileCards:document.querySelectorAll('.operational-records__card').length,
+        count:document.querySelector('.operational-records__footer')?.textContent,
+        title:document.querySelector('#catalog-operational')?.textContent
+      }))()`);
+      assert.ok(opInitial.panel&&opInitial.desktopRows===5&&opInitial.mobileCards===5&&
+        opInitial.count.includes('1–5 de 17'),'Operational view must paginate 17 synthetic records by 5');
+      await evaluate(`[...document.querySelectorAll('.operational-records__pages button')].find(el=>el.textContent.includes('Siguiente'))?.click();true`);
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("6–10 de 17")',
+        'Operational pagination failed');
+      await evaluate(`document.querySelector('.operational-records__desktop tbody tr input[type=checkbox]')?.click();true`);
+      await waitFor('document.querySelector(".operational-records__selected")?.textContent?.includes("1 seleccionado")',
+        'Operational row selection failed');
+      const rowSelected=await evaluate('document.querySelector(".operational-records__desktop tbody tr input[type=checkbox]")?.checked');
+      assert.equal(rowSelected,true,'Checkbox must reflect selection');
+      await evaluate(`document.querySelector('.operational-records__search input')?.focus();true`);
+      await send('Input.insertText',{text:'Registro 17'});
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("1–1 de 1")',
+        'Operational query did not filter across all rows and reset page');
+      assert.equal(await evaluate('document.querySelector(".operational-records__selected")?.textContent?.includes("1 seleccionado")'),true,
+        'Selection should survive filters rather than silently reset');
+      await evaluate(`[...document.querySelectorAll('.operational-workbench__simulation button')].find(el=>el.textContent==='Error')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".operational-records__state[role=alert]"))',
+        'Operational fetch error state missing');
+      await evaluate(`[...document.querySelectorAll('.operational-records__state button')].find(el=>el.textContent.includes('Reintentar'))?.click();true`);
+      await waitFor('!document.querySelector(".operational-records__state[role=alert]")',
+        'Operational error retry did not recover');
+      await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("1–5 de 17")',
+        'Operational reset did not restore initial model');
+      process.stdout.write('PASS universal operational records: paging, selection across filters, error retry and reset\\n');
 
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
