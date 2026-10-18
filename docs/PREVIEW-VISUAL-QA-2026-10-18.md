@@ -1,4 +1,7 @@
 # Zenit UI Core — protocolo de revisión visual V3.0–V4.5.1
+
+> **ACTUALIZACIÓN DE ESTADO — 2026-10-18:** la vista previa aislada fue **desplegada** por el CEO tras `--check` y `--deploy`, y su salud HTTP se verificó por Cloud Shell. Revisar https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app/ , servicio `zenit-ui-core-preview`, revisión `zenit-ui-core-preview-00001-wfs`, commit **`ab7db1345356a5bc736d180d8bc1561c1832a472`**. El servicio anterior `zenit-design-lab` permanece disponible. Los comandos locales y advertencias posteriores se mantienen **como protocolo histórico de preparación**, no como afirmación de que aún falta desplegar. Este branch documental no está publicado. El siguiente gate es **feedback y aprobación visual humana**, no otro despliegue. Ver [handoff actual](REVIEW-HANDOFF-2026-10-18.md).
+
 Fecha: 2026-10-18
 
 **Estado:** listo para revisión visual humana **sin aprobación visual final**. Esta guía NO es autorización de despliegue ni fusión. Referencia de alcance: [Issue #10](https://github.com/agencia-zenit-br/zenit-design-lab/issues/10); código en [PR #8](https://github.com/agencia-zenit-br/zenit-design-lab/pull/8).
