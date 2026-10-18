@@ -259,6 +259,26 @@ const checks = [
     assert.ok(form.includes('type="reset"'));
     assert.ok(form.includes('Ningún dato se ha enviado ni almacenado'));
   }],
+  ['CEO-approved spatial stability and temporal consistency', () => {
+    assert.ok(calendar.includes('42-offset-days'),'Calendar must always reserve six week rows');
+    assert.ok(temporalCore.includes('const compact=/'),'Strict compact HHMM recognition must remain');
+    assert.ok(temporalCore.includes('export function parseTimerDuration'));
+    assert.ok(liveTemporal.includes('temporal-live-demo__duration-fields'));
+    assert.ok(datetime.includes('datetime-demo__summary-head'));
+    assert.ok(css.includes('.temporal-feedback-slot'));
+    assert.ok(css.includes('.operational-workbench__feedback-slot'));
+    assert.ok(css.includes('scrollbar-color:var(--brand)'));
+    assert.ok(css.includes('.operational-records__selected'));
+  }],
+  ['configurable synthetic columns stay within component boundaries', () => {
+    assert.ok(operationalWorkbench.includes('setCustomColumns'));
+    assert.ok(operationalWorkbench.includes('data-column-manager="true"'));
+    assert.ok(operationalWorkbench.includes('freezeFirstColumn={freezeFirstColumn}'));
+    assert.ok(operationalRecords.includes('freezeFirstRow?:boolean'));
+    assert.ok(operationalRecords.includes('data-record-scroll-region="true"'));
+    assert.ok(css.includes('.operational-records--freeze-first-column'));
+    assert.ok(css.includes('.operational-records--freeze-first-row'));
+  }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
     assert.ok(css.includes('--space-3:12px'));
