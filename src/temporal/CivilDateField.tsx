@@ -40,6 +40,6 @@ export function CivilDateField({label,value,locale,onChange,minDate,maxDate,null
       placeholder={formatEditableCivilDate('2026-11-15',locale)}
       value={draft} onChange={event=>{setDraft(event.target.value);setError('');}}
       onBlur={commit} onKeyDown={event=>{if(event.key==='Enter'){event.preventDefault();commit();}}}/>
-    {error&&<small id={errorId} role="alert" className="temporal-date-field__error">{error}</small>}
+    <small id={errorId} role={error?'alert':undefined} className="temporal-date-field__error temporal-feedback-slot">{error}</small>
   </label>;
 }
