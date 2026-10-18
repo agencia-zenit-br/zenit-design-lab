@@ -47,7 +47,7 @@ export function queryCollection<Row extends RecordWithId>(
     return Object.entries(query.filters).every(([key,value])=>{
       if(!value)return true;
       const column=byKey.get(key);
-      return Boolean(column?.filterable)&&fold(column.getValue(row))===fold(value);
+      return column?.filterable===true&&fold(column.getValue(row))===fold(value);
     });
   });
   const sort=query.sort;
