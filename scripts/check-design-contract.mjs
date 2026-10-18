@@ -125,20 +125,23 @@ const checks = [
     assert.ok(sidebar.includes('role={mobileOpen ?'));
     assert.ok(css.includes('.app-body--sidebar-collapsed'));
   }],
-  ['mobile checkbox immediately precedes title with 44px touch target', () => {
-    assert.ok(catalog.includes('className="catalog__row-select"'));
-    assert.match(css, /\.catalog__table \.catalog__data-row\s*\{\s*display:grid;\s*grid-template-columns:44px minmax\(0,1fr\)/s);
-    assert.ok(css.includes('td[data-label="Elemento"]'));
-    assert.ok(css.includes('width:44px;height:44px'));
+  ['a single canonical table/records presentation replaces the legacy catalog fork', () => {
+    assert.ok(catalog.includes('id="catalog-operational"'));
+    assert.ok(catalog.includes('<OperationalWorkbench/>'));
+    assert.ok(!catalog.includes('id="catalog-table"'));
+    assert.ok(!catalog.includes('catalog__table-scroll'));
+    assert.ok(sidebar.includes("label:'Registros y tablas',target:'catalog-operational'"));
+    assert.ok(!sidebar.includes("target:'catalog-table'"));
+    assert.ok(shell.includes('Abrir registros y tablas'));
   }],
-  ['mobile record cards have independent harmonized composition', () => {
-    assert.ok(catalog.includes('className="catalog__mobile-records"'));
-    assert.ok(catalog.includes('className="catalog__mobile-card-head"'));
-    assert.ok(catalog.includes('className="catalog__mobile-card-fields"'));
-    assert.ok(catalog.includes('className="catalog__mobile-card-field"'));
-    assert.match(css, /\.catalog__table-scroll\s*\{display:none;\}/s);
-    assert.match(css, /\.catalog__mobile-card-fields\s*\{\s*display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/s);
-    assert.ok(css.includes('.catalog__mobile-card-title input'));
+  ['mobile record cards preserve inline editing and checkbox alignment in the shared component', () => {
+    assert.ok(operationalRecords.includes('className="operational-records__card-head"'));
+    assert.ok(operationalRecords.includes('operational-records__card-title'));
+    assert.ok(operationalRecords.includes('renderMobileTitle?'));
+    assert.ok(operationalWorkbench.includes('renderMobileTitle={editingCells?'));
+    assert.ok(operationalWorkbench.includes('Editar celdas'));
+    assert.ok(css.includes('.operational-records__card-title'));
+    assert.ok(css.includes('grid-template-columns:repeat(2,minmax(0,1fr))'));
   }],
   ['user profile is aligned with the header and opens a safe menu', () => {
     assert.ok(shell.includes('<ProfileMenu onAction='));
@@ -271,6 +274,11 @@ const checks = [
     assert.ok(css.includes('.operational-records__selected'));
   }],
   ['configurable synthetic columns stay within component boundaries', () => {
+    assert.ok(operationalWorkbench.includes('setColumnTitles'));
+    assert.ok(operationalWorkbench.includes('commitColumnTitle'));
+    assert.ok(operationalWorkbench.includes('data-column-title={column.key}'));
+    assert.ok(operationalWorkbench.includes('aria-label={\'Título de columna \'+column.key}'));
+    assert.ok(operationalWorkbench.includes('setEditingCells'));
     assert.ok(operationalWorkbench.includes('setCustomColumns'));
     assert.ok(operationalWorkbench.includes('data-column-manager="true"'));
     assert.ok(operationalWorkbench.includes('freezeFirstColumn={freezeFirstColumn}'));
