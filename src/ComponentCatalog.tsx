@@ -5,6 +5,7 @@ import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { ZenitMultiSelect } from './ZenitMultiSelect';
 import { RegionalWorkbench } from './RegionalWorkbench';
 import { ContextHelp } from './ContextHelp';
+import { OperationalWorkbench } from './operational/OperationalWorkbench';
 
 type Row = { id:number; name:string; category:string; status:string };
 type Column = 'name'|'category'|'status';
@@ -120,6 +121,13 @@ export function ComponentCatalog() {
     </section>
 
     <RegionalWorkbench/>
+
+    <section className="panel catalog__section" aria-labelledby="catalog-operational">
+      <div className="panel__head"><div><h2 id="catalog-operational">Registros operativos universales</h2>
+        <ContextHelp label="Acerca de los registros universales">Búsqueda, filtros, orden, paginación, selección, acciones y estados se reutilizan en cualquier producto. La demostración no realiza operaciones en Platform.</ContextHelp>
+      </div></div>
+      <OperationalWorkbench/>
+    </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-table">
       <div className="panel__head">
