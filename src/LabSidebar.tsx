@@ -22,6 +22,7 @@ const contextLinks: Record<LabSection,ContextLink[]> = {
     {label:'Temporizadores',target:'catalog-temporal',icon:'clock'},
     {label:'Skins',target:'catalog-portability',icon:'components'},
     {label:'Formularios',target:'catalog-forms',icon:'edit'},
+    {label:'Registros',target:'catalog-operational',icon:'list'},
     {label:'Tablas',target:'catalog-table',icon:'list'},
   ],
   Redacción: [
