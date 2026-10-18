@@ -89,8 +89,15 @@ export function formatEditableTime(value:TimeOfDay,hourCycle:'h12'|'h23',showSec
 }
 /** Whitespace/AM-PM is explicit for h12; no ambiguous 12:00 is silently normalized. */
 export function parseTimeOfDay(input:string,hourCycle:'h12'|'h23'):TemporalResult<TimeOfDay> {
-  const match=/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i.exec(input.trim());
-  if(!match)return failure('Escribe HH:MM, HH:MM:SS o una hora con AM/PM.');
+  const trimmed=input.trim();
+  // An unambiguous compact HHMM (or HMM) is a presentation convenience,
+  // never an implicit conversion of an invalid hour or a timezone.
+  const compact=/^(\d{3,4})(?:\s*(AM|PM))?$/i.exec(trimmed);
+  const normalized=compact
+    ? `${compact[1].slice(0,-2)}:${compact[1].slice(-2)}${compact[2]?' '+compact[2]:''}`
+    : trimmed;
+  const match=/^(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?$/i.exec(normalized);
+  if(!match)return failure('Escribe HH:MM, HHMM, HH:MM:SS o una hora con AM/PM.');
   let hour=Number(match[1]);
   const minute=Number(match[2]),second=Number(match[3]??0);
   const period=match[4]?.toUpperCase();
@@ -112,6 +119,19 @@ export function secondsToDuration(totalSeconds:number):TemporalResult<DurationPa
     days:Math.floor(totalSeconds/86400),hours:Math.floor(totalSeconds%86400/3600),
     minutes:Math.floor(totalSeconds%3600/60),seconds:totalSeconds%60,totalSeconds
   });
+}
+/** Structured timer configuration; rejects overflows instead of silently rolling minutes/hours. */
+export function parseTimerDuration(fields:Readonly<{days:string;hours:string;minutes:string;seconds:string}>):TemporalResult<number> {
+  const raw=[fields.days,fields.hours,fields.minutes,fields.seconds];
+  if(raw.some(item=>!/^[0-9]{1,4}$/.test(item.trim())))
+    return failure('Introduce números enteros no negativos en días, horas, minutos y segundos.');
+  const [days,hours,minutes,seconds]=raw.map(item=>Number(item.trim()));
+  if(days>365||hours>23||minutes>59||seconds>59)
+    return failure('Máximo 365 días; horas hasta 23 y minutos/segundos hasta 59.');
+  const total=days*86400+hours*3600+minutes*60+seconds;
+  if(total===0||total>365*86400)
+    return failure('La duración debe ser mayor que cero y no superar 365 días.');
+  return success(total);
 }
 export function timeRangeDuration(start:TimeOfDay,end:TimeOfDay,allowNextDay=false):TemporalResult<DurationParts> {
   if(!validateTimeOfDay(start).ok||!validateTimeOfDay(end).ok)return failure('El intervalo contiene una hora inválida.');

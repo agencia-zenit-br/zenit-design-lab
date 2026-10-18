@@ -242,3 +242,45 @@ Browser verification on the code change (before this documentation commit):
 7. Never deploy/move to production merely because visual QA or preview CI passes.
 
 The automated static design guard is a regression detector, **not** screenshot/dimensional/browser certification.
+
+
+## 2026-10-18 — Seven CEO feedback items / PR #12 implementation checkpoint
+
+**Approval:** CEO authorized both implementation lots after inspecting commit `ab7db134`; **not yet visually accepted**. Working branch `feat/ui-core-stability-tables-20261018` with [draft PR #12](https://github.com/agencia-zenit-br/zenit-design-lab/pull/12) based on the former preview branch. The published service `zenit-ui-core-preview` still displays the earlier SHA until a distinct authorized deployment; do not claim these improvements are live.
+
+| Approved criterion | Implementation in PR #12 branch | Acceptance test and remaining gate |
+| --- | --- | --- |
+| Non-shifting feedback and selections | Reserved status zones in Records and temporal fields; overlapping confirmation only when asked | Chromium measure table position before/after checkbox; observe notices in narrow view; further UX review on real phones |
+| Stable calendar height | Six complete weeks/42 Gregorian cells including inert blanks | Chromium exact cell count and month-to-month height regression |
+| Numeric time `2000` | Pure parser normalizes 3/4 digits, keeps strict time validation and explicit 12h period | Node test valid/invalid HHMM, Chromium input↔controlled value |
+| Scrollbar theming | `--brand` semantic scrollbar thumb plus neutral track | Light/dark browser inspection; native OS styles vary |
+| Vertical control alignment | Shared checkboxes and label baseline rules, reserved validation region | Chromium overflow + keyboard; manual precision QA of remaining components |
+| Inline contextual `?` | Summary help beside heading and countdown/timer help with their title line | Inspect RTL/mobile; generic popover remains independent |
+| Columns/row/column guides | Synthetic-only editable added columns with visibility, reorder/delete; sticky header/data row/first column in internally scrollable desktop table; mobile cards remain | Chromium add/guide controls, sticky CSS and pagination; **not** product schema changes |
+| Structured timer input | Days/hours/minutes/seconds typed fields; pure aggregate validated and used by timer | Node strict boundaries and Chromium start/pause/resume/reset |
+
+**Not included/certified:** persistable per-user view configuration, production schema changes, advanced spreadsheet selection/resizing/clipboard/undo, screen-reader audit, physical mobile QA, pixel-diff V3.0, authorization to deploy, real ZMC backend. The source-of-truth parent is [2026-10-18 design decision](design-decisions.md). This addendum records implemented source pending final CI and visual gates; update check links when CI passes.
+
+### 2026-10-18 — QA verified for functional SHA `c72ac0174d5218cb59739b9274b9ef2d67f20816`
+
+- [Design Lab CI #39171009508](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171009508): **SUCCESS**, TypeScript/Vite production build, unit suites, static invariants and Storybook build.
+- [Verify Design Lab #39171009459](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171009459): **SUCCESS**, including Chromium viewport/RTL/LTR/synthetic operational interactions, fixed six-week calendar, normalized typed `2000`, stable table position when selecting a row, custom column creation and fixed first-column CSS.
+- An earlier Verify job [#39170598796](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39170598796) **failed** because its browser test expected an explicit `aria-label` attribute on a checkbox whose accessible name was originally only inherited from a wrapping `label`. The component was strengthened with explicit `aria-label` and retested successfully. Do not erase failed-run provenance.
+- **Remaining gates:** manual visual comparison to V3.0, physical devices, keyboard/screen reader audit, actual sticky scroll observation in narrow desktop cases and approved Cloud Run redeploy. `zenit-ui-core-preview` still contains earlier SHA `ab7db134` until operator confirms a new revision. PR #12 remains draft.
+
+
+### 2026-10-18 — UI Core review revision 2 DEPLOYED, human review pending
+
+The CEO ran the guarded `--check` followed by `--deploy` through Cloud Shell, with expected branch and **commit `c747fb3985f5d20b080ea9b7beb93a84e5f41925`**. Source CI/Chromium for this exact SHA passed in [Design Lab CI #39171249469](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171249469) and [Verify #39171249453](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171249453).
+
+| Evidence | Verified outcome |
+| --- | --- |
+| Cloud Build | `321e991a-5f39-4d8f-9ca9-93dffd3d57aa`, SUCCESS (1m06s), per CEO Cloud Shell |
+| Cloud Run service | `zenit-ui-core-preview` in `zenit-platform-labs/southamerica-east1` (independent from original `zenit-design-lab`) |
+| Revision | `zenit-ui-core-preview-00002-c2d` at 100% traffic for **its own preview service** |
+| Preview | https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app |
+| Alternative script URL | https://zenit-ui-core-preview-pj3dnprg2a-rj.a.run.app |
+| Health | The deploy script reported successful verification; visual rendering is **not** certified by health |
+| Current gate | `DEPLOYED_PREVIEW` + `HUMAN_REVIEW_PENDING` |
+
+**Supersession:** the earlier note in this file that the preview still serves `ab7db134` records the state *before* this deployment and is now historical; the new revision above is current. The existing Design Lab service is preserved, no PR was merged and no Platform/ZMC customer data or backend was activated. Further browser/device/assistive-technology and CEO visual acceptance remain open. **This addendum is a documentation-only commit newer than the deployed source SHA; it does not mean the running preview contains this documentation commit.**

@@ -142,6 +142,6 @@ export function TimeInput({
     {presentation!=='text'&&!disabled&&
       <TimeWheel value={value} onChange={onChange} hourCycle={hourCycle}
         showSeconds={showSeconds} minuteStep={minuteStep} secondStep={secondStep}/>}
-    {error&&<small id={`${label.replace(/\s/g,'-')}-time-error`} className="temporal-time-input__error" role="alert">{error}</small>}
+    <small id={`${label.replace(/\s/g,'-')}-time-error`} className="temporal-time-input__error temporal-feedback-slot" role={error?'alert':undefined}>{error}</small>
   </div>;
 }

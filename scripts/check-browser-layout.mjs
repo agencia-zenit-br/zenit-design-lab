@@ -354,6 +354,11 @@ try {
           centerDelta:rect&&container?Math.abs((rect.left+rect.right)-(container.left+container.right)):null,
           weekStart:grid?.getAttribute('data-week-start'),hasDays:!!root.querySelector('[data-calendar-day="1"]')};
       })()`);
+      const stableMonth=await evaluate(`(() => {
+        const days=document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .zenit-calendar__days');
+        return {height:days?.getBoundingClientRect().height,count:days?.children.length};
+      })()`);
+      assert.equal(stableMonth.count,42,'Calendar must reserve six complete week rows');
       const spanish=await getCalendar();
       assert.equal(spanish.codes,'LMMJVSD','Spanish weekdays must use L M M J V S D, never X');
       assert.ok(spanish.names[1]!==spanish.names[2] && spanish.names[1].toLowerCase().includes('martes') &&
@@ -363,6 +368,12 @@ try {
       await evaluate(`document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .calendar-specimen__month-control button[aria-label="Mes siguiente"]')?.click();true`);
       const november=await getCalendar();
       assert.equal(november.label,'noviembre de 2026','Month name and "de" must remain lowercase');
+      const nextMonth=await evaluate(`(() => {
+        const days=document.querySelector('.catalog__section[aria-labelledby="catalog-calendar"] .zenit-calendar__days');
+        return {height:days?.getBoundingClientRect().height,count:days?.children.length};
+      })()`);
+      assert.equal(nextMonth.count,42,'November must retain six calendar rows');
+      assert.equal(nextMonth.height,stableMonth.height,'Calendar must not resize when switching months');
       await selectRegional('week','Domingo');
       assert.equal((await getCalendar()).codes,'DLMMJVS');
       await selectRegional('week','Sábado');
@@ -417,6 +428,9 @@ try {
         await sleep(90);
         await evaluate(`document.querySelector('${selector}')?.blur();true`);
       };
+      await typeTime('.datetime-demo__clock .temporal-time-input__field input','2000');
+      await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("20:00")',
+        'Compact numeric time entry 2000 must normalize to 20:00');
       await typeTime('.datetime-demo__clock .temporal-time-input__field input','16:45');
       await waitFor('document.querySelector(".datetime-demo__summary")?.textContent?.includes("16:45")',
         'Direct time entry must commit one shared controlled time value');
@@ -557,7 +571,7 @@ try {
       assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(countdown.date)&&/^\d{2}:\d{2}$/.test(countdown.time)&&
         countdown.zone.includes('Zona horaria')&&countdown.status==='Tiempo restante'&&countdown.unitCount===4,
         'Countdown must use local date/time fields, display zone and show live durations');
-      const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Duración del temporizador en segundos"]';
+      const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Segundos del temporizador"]';
       await evaluate(`(() => {
         const input=document.querySelector('${timerFieldSelector}');
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
@@ -598,9 +612,12 @@ try {
       await evaluate(`[...document.querySelectorAll('.operational-records__pages button')].find(el=>el.textContent.includes('Siguiente'))?.click();true`);
       await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("6–10 de 17")',
         'Operational pagination failed');
+      const beforeSelectTop=await evaluate('document.querySelector(".operational-records__desktop")?.getBoundingClientRect().top');
       await evaluate(`document.querySelector('.operational-records__desktop tbody tr input[type=checkbox]')?.click();true`);
       await waitFor('document.querySelector(".operational-records__selected")?.textContent?.includes("1 seleccionado")',
         'Operational row selection failed');
+      const afterSelectTop=await evaluate('document.querySelector(".operational-records__desktop")?.getBoundingClientRect().top');
+      assert.ok(Math.abs(beforeSelectTop-afterSelectTop)<=1,'Selecting a checkbox moved the records table vertically');
       const rowSelected=await evaluate('document.querySelector(".operational-records__desktop tbody tr input[type=checkbox]")?.checked');
       assert.equal(rowSelected,true,'Checkbox must reflect selection');
       await evaluate(`document.querySelector('.operational-records__search input')?.focus();true`);
@@ -619,6 +636,31 @@ try {
       await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("1–5 de 17")',
         'Operational reset did not restore initial model');
       process.stdout.write('PASS universal operational records: paging, selection across filters, error retry and reset\\n');
+      // Synthetic columns and guide controls; never mutate a real product data model.
+      await evaluate(`(() => {
+        const input=document.querySelector('[aria-label="Nombre de columna nueva"]');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'Responsable');input.dispatchEvent(new Event('input',{bubbles:true}));
+        return true;
+      })()`);
+      await evaluate(`[...document.querySelectorAll('[data-column-manager] button')].find(el=>el.textContent.includes('Añadir columna'))?.click();true`);
+      await waitFor('Boolean(document.querySelector("input[aria-label=\\"Responsable de Registro 01\\"]"))',
+        'New synthetic editable column not rendered');
+      await evaluate(`document.querySelector('[aria-label="Fijar primera columna"]')?.click();true`);
+      await waitFor('document.querySelector(".operational-records--freeze-first-column")!==null',
+        'Freeze-first-column toggle not applied');
+      const sticky=await evaluate(`(() => ({
+        first:getComputedStyle(document.querySelector('.operational-records__desktop th:first-child')).position,
+        second:getComputedStyle(document.querySelector('.operational-records__desktop th:nth-child(2)')).position,
+        scroll:getComputedStyle(document.querySelector('.operational-records__desktop')).overflowX,
+        cards:document.querySelectorAll('.operational-records__mobile .operational-records__card').length
+      }))()`);
+      assert.equal(sticky.first,'sticky','Guide checkbox column must be sticky in desktop grid');
+      assert.equal(sticky.second,'sticky','Guide first data column must be sticky in desktop grid');
+      assert.ok(['auto','scroll'].includes(sticky.scroll),'Scroll should remain internal to desktop table');
+      assert.equal(sticky.cards,5,'Adding a column must preserve mobile card display');
+      await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
+      process.stdout.write('PASS stable layout, synthetic column add and fixed guide columns\\n');
 
       await evaluate("document.querySelector('[data-remote-page-demo]')?.click();true");
       await waitFor('document.querySelector("[data-remote-page-demo]")?.checked===true',

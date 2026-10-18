@@ -7,7 +7,7 @@ import { defaultRegionalSettings,type RegionalSettings } from './calendarLocale'
 import { friendlyZone } from './timeZoneOptions';
 import { resolveZonedDateTime,zonedInstantFields } from './temporal/zonedClock';
 import {
-  countdownSnapshot,makeTimer,pauseTimer,resetTimer,startTimer,timerSnapshot,
+  countdownSnapshot,makeTimer,parseTimerDuration,pauseTimer,resetTimer,startTimer,timerSnapshot,
   type DurationParts,type TimerSession,
 } from './temporal/core';
 
@@ -105,21 +105,23 @@ function CountdownDemo({now,display,showSeconds,settings}:{
         Si una hora es inexistente o se repite por un cambio de horario de verano, deberás escoger otra hora.
       </ContextHelp>
     </div>
-    {!valid&&<span className="temporal-error" role="alert">{parsed.ok?'':parsed.error}</span>}
+    <span className="temporal-error temporal-feedback-slot" role={!valid?'alert':undefined}>{parsed.ok?'':parsed.error}</span>
     <DurationDisplay parts={valid?result.remaining:zero} mode={display} seconds={showSeconds} progress={progress}/>
     <span className="temporal-live-demo__state" role="status" aria-live="off">
       {result.state==='pending'?'Tiempo restante':result.state==='expired'?'Plazo vencido':'Fecha y hora no válidas'}
     </span>
-    <ContextHelp label="Cómo funciona la cuenta regresiva">
-      Selecciona la fecha y hora de finalización. El sistema calcula el tiempo restante sin acumular errores
-      por actualización visual. El contador no ejecuta acciones comerciales o editoriales.
-    </ContextHelp>
+    <div className="temporal-live-demo__help-line"><span>Acerca de la cuenta regresiva</span>
+      <ContextHelp label="Cómo funciona la cuenta regresiva">
+        Selecciona la fecha y hora de finalización. El sistema calcula el tiempo restante sin acumular errores
+        por actualización visual. El contador no ejecuta acciones comerciales o editoriales.
+      </ContextHelp>
+    </div>
   </div>;
 }
 function TimerDemo({now,display,showSeconds}:{
   now:number;display:DisplayMode;showSeconds:boolean;
 }) {
-  const [duration,setDuration]=useState('180');
+  const [duration,setDuration]=useState({days:'0',hours:'0',minutes:'3',seconds:'0'});
   const [timer,setTimer]=useState<TimerSession>(()=> {
     const result=makeTimer(180);
     if(!result.ok)throw Error('Invalid default timer');
@@ -130,7 +132,9 @@ function TimerDemo({now,display,showSeconds}:{
   const remainingTotal=timer.durationMs/1000;
   const progress=remainingTotal>0?100*snapshot.elapsedSeconds/remainingTotal:0;
   const refreshDuration=()=>{
-    const result=makeTimer(Number(duration));
+    const validated=parseTimerDuration(duration);
+    if(!validated.ok){setError(validated.error);return;}
+    const result=makeTimer(validated.value);
     if(!result.ok){setError(result.error);return;}
     setTimer(result.value);setError('');
   };
@@ -146,15 +150,22 @@ function TimerDemo({now,display,showSeconds}:{
   };
   return <div className="temporal-live-demo" data-temporal-counter="timer">
     <div className="temporal-live-demo__timer-config">
-      <label className="temporal-live-demo__field">
-        <span>Duración inicial (segundos)</span>
-        <input type="number" min="1" max="31536000" step="1" value={duration}
-          aria-label="Duración del temporizador en segundos"
-          aria-invalid={Boolean(error)} onChange={event=>setDuration(event.target.value)}/>
-      </label>
+      <fieldset className="temporal-live-demo__duration-fields">
+        <legend>Duración inicial</legend>
+        {(['days','hours','minutes','seconds'] as const).map(unit=>{
+          const label={days:'Días',hours:'Horas',minutes:'Minutos',seconds:'Segundos'}[unit];
+          const max=unit==='days'?365:unit==='hours'?23:59;
+          return <label key={unit} className="temporal-live-demo__field">
+            <span>{label}</span>
+            <input type="number" min="0" max={max} step="1" inputMode="numeric"
+              aria-label={label+' del temporizador'} aria-invalid={Boolean(error)}
+              value={duration[unit]} onChange={event=>setDuration(previous=>({...previous,[unit]:event.target.value}))}/>
+          </label>;
+        })}
+      </fieldset>
       <Button variant="secondary" size="standard" onClick={refreshDuration}>Aplicar duración</Button>
     </div>
-    {error&&<span className="temporal-error" role="alert">{error}</span>}
+    <span className="temporal-error temporal-feedback-slot" role={error?'alert':undefined}>{error}</span>
     <DurationDisplay parts={snapshot.remaining} mode={display} seconds={showSeconds} progress={progress}/>
     <div className="temporal-live-demo__timer-actions">
       <Button size="standard" onClick={run} disabled={snapshot.state==='running'}>
@@ -164,9 +175,12 @@ function TimerDemo({now,display,showSeconds}:{
       <Button variant="secondary" onClick={reset}>Restablecer</Button>
       <span className="temporal-live-demo__state" role="status" aria-live="off">{status[snapshot.state]}</span>
     </div>
-    <ContextHelp label="Precisiones del temporizador">
-      La pausa congela el tiempo acumulado; al reanudar se conserva el tiempo restante. El contador es local a esta pestaña, no es un reloj de servidor ni ejecuta acciones productivas.
-    </ContextHelp>
+    <div className="temporal-live-demo__help-line"><span>Acerca del temporizador</span>
+      <ContextHelp label="Precisiones del temporizador">
+        La pausa congela el tiempo acumulado; al reanudar se conserva el tiempo restante.
+        El contador es local a esta pestaña, no es un reloj de servidor ni ejecuta acciones productivas.
+      </ContextHelp>
+    </div>
   </div>;
 }
 

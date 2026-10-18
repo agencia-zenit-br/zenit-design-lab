@@ -29,6 +29,9 @@ type Props<Row extends RecordWithId>={
   onOpenRow?:(row:Row)=>void;
   emptyLabel?:string;
   compact?:boolean;
+  freezeHeader?:boolean;
+  freezeFirstColumn?:boolean;
+  freezeFirstRow?:boolean;
   locale?:string;
 };
 
@@ -37,7 +40,7 @@ type Props<Row extends RecordWithId>={
 export function OperationalRecords<Row extends RecordWithId>({
   rows=[],pageResult,columns,query,onQueryChange,selectedIds,onSelectedIdsChange,getRowLabel,
   filters=[],isLoading=false,error=null,onRetry,onOpenRow,emptyLabel='No hay registros.',
-  compact=false,locale='es-ES',
+  compact=false,freezeHeader=false,freezeFirstColumn=false,freezeFirstRow=false,locale='es-ES',
 }:Props<Row>){
   // Remote pages already carry authoritative filtering, sorting and pagination.
   // In-memory mode remains unchanged for local fixtures and small datasets.
@@ -56,7 +59,7 @@ export function OperationalRecords<Row extends RecordWithId>({
   ];
   const selectedCount=selectedIds.length;
   const busy=isLoading||Boolean(error);
-  return <section className={`operational-records ${compact?'operational-records--compact':''}`}
+  return <section className={`operational-records ${compact?'operational-records--compact':''} ${freezeHeader?'operational-records--freeze-header':''} ${freezeFirstColumn?'operational-records--freeze-first-column':''} ${freezeFirstRow?'operational-records--freeze-first-row':''}`}
     aria-label="Registros operativos" data-operational-records="true">
     <div className="operational-records__toolbar">
       <label className="operational-records__search">
@@ -79,11 +82,12 @@ export function OperationalRecords<Row extends RecordWithId>({
         {onRetry&&<Button variant="secondary" size="compact" onClick={onRetry}>Reintentar</Button>}</>:
         <><span className="operational-records__spinner" aria-hidden="true"/><span>Cargando registros…</span></>}
     </div>:<>
-      {selectedCount>0&&<div className="operational-records__selected" role="status">{selectedCount} seleccionado(s)
-        <Button variant="ghost" size="compact" onClick={()=>onSelectedIdsChange([])}>Limpiar selección</Button>
-      </div>}
-      <div className="operational-records__desktop">
-        <table>
+      <div className="operational-records__selected" role="status" aria-live="polite">
+        {selectedCount>0&&<>{selectedCount} seleccionado(s)
+          <Button variant="ghost" size="compact" onClick={()=>onSelectedIdsChange([])}>Limpiar selección</Button></>}
+      </div>
+      <div className="operational-records__desktop" data-record-scroll-region="true">
+        <table style={{minWidth:`max(100%, ${100+columns.length*155+(onOpenRow?105:0)}px)`}}>
           <thead><tr>
             <th scope="col"><input id={id+'-all'} type="checkbox" checked={selectedOnPage}
               aria-label="Seleccionar todos los registros de esta página"
@@ -98,7 +102,7 @@ export function OperationalRecords<Row extends RecordWithId>({
             </th>)}
             {onOpenRow&&<th scope="col">Acciones</th>}
           </tr></thead>
-          <tbody>{result.visibleRows.map(row=><tr key={String(row.id)}>
+          <tbody>{result.visibleRows.map((row,rowIndex)=><tr key={String(row.id)} data-record-row={rowIndex}>
             <td><input type="checkbox" checked={selectedIds.includes(row.id)}
               aria-label={`Seleccionar ${getRowLabel(row)}`}
               onChange={event=>toggleOne(row,event.target.checked)}/></td>
