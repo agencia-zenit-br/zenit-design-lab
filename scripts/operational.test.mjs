@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {
- queryCollection,reconcileSelectedIds,toggleIds,selectedAllVisible,nextSort,
+ queryCollection,presentServerPage,reconcileSelectedIds,toggleIds,selectedAllVisible,nextSort,
 } from '../src/operational/collectionCore.ts';
 
 const rows=[
@@ -69,4 +69,28 @@ test('Sort cycles ascending -> descending -> original order',()=>{
  const desc=nextSort(asc,'name');
  assert.deepEqual(desc,{key:'name',direction:'desc'});
  assert.equal(nextSort(desc,'name'),null);
+});
+
+test('A server page is never re-sorted, re-filtered or re-paginated in the UI core',()=>{
+ const page=presentServerPage({rows:[rows[4],rows[2]],total:105,page:4,pageSize:2});
+ assert.deepEqual(page.visibleRows.map(row=>row.id),[5,3]);
+ assert.equal(page.total,105);
+ assert.equal(page.page,4);
+ assert.equal(page.pageCount,53);
+ assert.equal(page.from,7);
+ assert.equal(page.to,8);
+ assert.equal(page.hasPrevious,true);
+ assert.equal(page.hasNext,true);
+ assert.deepEqual(toggleIds([1,2],page.visibleRows.map(row=>row.id),true),[1,2,5,3]);
+});
+
+test('Server pages preserve reported totals, even if a deletion empties a stale page',()=>{
+ const stale=presentServerPage({rows:[],total:10,page:3,pageSize:5});
+ assert.equal(stale.page,3);
+ assert.equal(stale.total,10);
+ assert.equal(stale.from,0);
+ assert.equal(stale.to,0);
+ assert.equal(stale.hasPrevious,true);
+ assert.equal(stale.hasNext,false);
+ assert.throws(()=>presentServerPage({rows:[rows[0],rows[1]],total:1,page:1,pageSize:1}),RangeError);
 });
