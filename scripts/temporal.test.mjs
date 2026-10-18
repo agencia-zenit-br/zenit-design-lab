@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
  validateCivilDate,parseCivilDate,localeDateOrder,formatEditableCivilDate,civilDayDifference,
  dateRangeMetrics,normalizeMultiDates,parseTimeOfDay,formatEditableTime,timeRangeDuration,
- secondsToDuration,instantIntervalDuration,parseExplicitInstant,countdownSnapshot,makeTimer,timerSnapshot,
+ secondsToDuration,parseTimerDuration,instantIntervalDuration,parseExplicitInstant,countdownSnapshot,makeTimer,timerSnapshot,
  startTimer,pauseTimer,resetTimer,
 } from '../src/temporal/core.ts';
 
@@ -45,6 +45,10 @@ test('12/24-hour entry, optional seconds and strict limits',()=>{
  assert.deepEqual(value(parseTimeOfDay('12:00 AM','h12')),{hour:0,minute:0,second:0});
  assert.deepEqual(value(parseTimeOfDay('12:45 PM','h12')),{hour:12,minute:45,second:0});
  assert.deepEqual(value(parseTimeOfDay('23:59:59','h23')),{hour:23,minute:59,second:59});
+ assert.deepEqual(value(parseTimeOfDay('2000','h23')),{hour:20,minute:0,second:0});
+ assert.deepEqual(value(parseTimeOfDay('930','h23')),{hour:9,minute:30,second:0});
+ assert.deepEqual(value(parseTimeOfDay('0930','h23')),{hour:9,minute:30,second:0});
+ assert.deepEqual(value(parseTimeOfDay('230 PM','h12')),{hour:14,minute:30,second:0});
  assert.equal(formatEditableTime({hour:14,minute:30,second:45},'h12',true),'02:30:45 PM');
  assert.equal(formatEditableTime({hour:14,minute:30,second:45},'h23',false),'14:30');
  assert.ok(error(parseTimeOfDay('14:30 PM','h12')));
@@ -52,6 +56,10 @@ test('12/24-hour entry, optional seconds and strict limits',()=>{
  assert.ok(error(parseTimeOfDay('2:30 PM','h23')));
  assert.ok(error(parseTimeOfDay('24:00','h23')));
  assert.ok(error(parseTimeOfDay('12:60','h23')));
+ assert.ok(error(parseTimeOfDay('2460','h23')));
+ assert.ok(error(parseTimeOfDay('2400','h23')));
+ assert.ok(error(parseTimeOfDay('1260','h23')));
+ assert.ok(error(parseTimeOfDay('930','h12')));
 });
 test('Time interval next-day policy and seconds-precise duration',()=>{
  const start={hour:22,minute:30,second:0},end={hour:2,minute:15,second:12};
@@ -86,6 +94,17 @@ test('Countdown recomputes using absolute target, including overdue and exact ze
    state:'expired',remaining:{days:0,hours:0,minutes:0,seconds:0,totalSeconds:0}});
  assert.equal(countdownSnapshot(target,target+60000).state,'expired');
  assert.equal(countdownSnapshot(NaN,target).state,'invalid');
+});
+test('Structured timer units preserve strict upper bounds and no implicit rollover',()=>{
+ assert.equal(value(parseTimerDuration({days:'0',hours:'1',minutes:'2',seconds:'3'})),3723);
+ assert.equal(value(parseTimerDuration({days:'1',hours:'0',minutes:'0',seconds:'0'})),86400);
+ assert.equal(value(parseTimerDuration({days:'365',hours:'0',minutes:'0',seconds:'0'})),31536000);
+ assert.ok(error(parseTimerDuration({days:'0',hours:'0',minutes:'0',seconds:'0'})));
+ assert.ok(error(parseTimerDuration({days:'0',hours:'24',minutes:'0',seconds:'0'})));
+ assert.ok(error(parseTimerDuration({days:'0',hours:'0',minutes:'60',seconds:'0'})));
+ assert.ok(error(parseTimerDuration({days:'0',hours:'0',minutes:'0',seconds:'60'})));
+ assert.ok(error(parseTimerDuration({days:'365',hours:'0',minutes:'0',seconds:'1'})));
+ assert.ok(error(parseTimerDuration({days:'a',hours:'0',minutes:'0',seconds:'1'})));
 });
 test('Timer runs, pauses, resumes, finishes and resets under injected virtual time',()=>{
  let timer=value(makeTimer(180));
