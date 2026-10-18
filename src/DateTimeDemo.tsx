@@ -138,7 +138,13 @@ export function DateTimeDemo({settings}:{settings:RegionalSettings}) {
     </div>}
     {isClock&&<div className="datetime-demo__clock">{showHour()}</div>}
     <div className="datetime-demo__summary" role="status" aria-live="polite">
-      <strong>Resultado de la selección</strong>
+      <div className="datetime-demo__summary-head">
+        <strong>Resultado de la selección</strong>
+        <ContextHelp label="Acerca de fechas civiles y tiempo real">
+          Las fechas civiles no son instantes UTC. Los intervalos horarios mostrados son horas de reloj;
+          horarios de verano, eventos reales y reglas comerciales requieren validación específica del producto.
+        </ContextHelp>
+      </div>
       {isCalendar&&<p>{calendarSupported?dateText:'Calendario pendiente de implementación'}</p>}
       {isRange&&rangeMetrics?.ok&&<div className="datetime-demo__metrics">
         <span><strong>{rangeMetrics.value.inclusiveDays}</strong> días incluidos</span>
@@ -151,9 +157,6 @@ export function DateTimeDemo({settings}:{settings:RegionalSettings}) {
       {isTimeRange&&<p className="datetime-demo__duration">
         {durationText?'Duración: '+durationText:(timeMetrics&&!timeMetrics.ok?timeMetrics.error:'')}
       </p>}
-      <ContextHelp label="Acerca de fechas civiles y tiempo real">
-        Las fechas civiles no son instantes UTC. Los intervalos horarios mostrados son horas de reloj; horarios de verano, eventos reales y reglas comerciales requieren validación específica del producto.
-      </ContextHelp>
     </div>
     <div className="datetime-demo__actions">
       <Button variant="secondary" onClick={clearSelection}>Limpiar selección</Button>
