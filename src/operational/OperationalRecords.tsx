@@ -79,9 +79,10 @@ export function OperationalRecords<Row extends RecordWithId>({
         {onRetry&&<Button variant="secondary" size="compact" onClick={onRetry}>Reintentar</Button>}</>:
         <><span className="operational-records__spinner" aria-hidden="true"/><span>Cargando registros…</span></>}
     </div>:<>
-      {selectedCount>0&&<div className="operational-records__selected" role="status">{selectedCount} seleccionado(s)
-        <Button variant="ghost" size="compact" onClick={()=>onSelectedIdsChange([])}>Limpiar selección</Button>
-      </div>}
+      <div className="operational-records__selected" role="status" aria-live="polite">
+        {selectedCount>0&&<>{selectedCount} seleccionado(s)
+          <Button variant="ghost" size="compact" onClick={()=>onSelectedIdsChange([])}>Limpiar selección</Button></>}
+      </div>
       <div className="operational-records__desktop">
         <table>
           <thead><tr>
