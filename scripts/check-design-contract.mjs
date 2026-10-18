@@ -18,6 +18,9 @@ const datetime = readFileSync(new URL('../src/DateTimeDemo.tsx', import.meta.url
 const form = readFileSync(new URL('../src/FormSpecimen.tsx', import.meta.url), 'utf8');
 const mobileModal = readFileSync(new URL('../src/mobileModal.ts', import.meta.url), 'utf8');
 const temporalCore = readFileSync(new URL('../src/temporal/core.ts', import.meta.url), 'utf8');
+const collectionCore = readFileSync(new URL('../src/operational/collectionCore.ts', import.meta.url), 'utf8');
+const operationalRecords = readFileSync(new URL('../src/operational/OperationalRecords.tsx', import.meta.url), 'utf8');
+const operationalWorkbench = readFileSync(new URL('../src/operational/OperationalWorkbench.tsx', import.meta.url), 'utf8');
 const timeInput = readFileSync(new URL('../src/temporal/TimeInput.tsx', import.meta.url), 'utf8');
 const dateInput = readFileSync(new URL('../src/temporal/CivilDateField.tsx', import.meta.url), 'utf8');
 const liveTemporal = readFileSync(new URL('../src/TemporalDemo.tsx', import.meta.url), 'utf8');
@@ -216,7 +219,11 @@ const checks = [
     assert.ok(liveTemporal.includes('timerSnapshot('));
     assert.ok(liveTemporal.includes("document.addEventListener('visibilitychange',refresh)"));
     assert.ok(liveTemporal.includes('aria-live="off"'));
-    assert.ok(regional.includes('<TemporalDemo/>'));
+    assert.ok(regional.includes('<TemporalDemo settings={draft}/>'));
+    assert.ok(regional.includes('timeZoneOptions'));
+    assert.ok(regional.includes('regional-prefs__timezone-select'));
+    assert.ok(!regional.includes('aria-label="Zona horaria IANA"'));
+    assert.ok(liveTemporal.includes('resolveZonedDateTime('));
   }],
   ['operational copy is contextual and intro uses available width', () => {
     assert.ok(catalog.includes('<ContextHelp label="Acerca del catálogo'));
@@ -231,6 +238,18 @@ const checks = [
     assert.ok(css.includes('.temporal-host--zenit'));
     assert.ok(temporalStories.includes('SkinsSinCambiarMotor'));
     assert.ok(regional.includes('<PortabilityDemo settings={draft}/>'));
+  }],
+  ['universal operational records remain headless, controlled and mobile-safe', () => {
+    assert.ok(collectionCore.includes('export function queryCollection'));
+    assert.ok(collectionCore.includes('export function reconcileSelectedIds'));
+    assert.ok(collectionCore.includes('export function nextSort'));
+    assert.ok(operationalRecords.includes('aria-sort='));
+    assert.ok(operationalRecords.includes('data-operational-records='));
+    assert.ok(operationalRecords.includes('operational-records__mobile'));
+    assert.ok(operationalRecords.includes('operational-records__desktop'));
+    assert.ok(operationalWorkbench.includes('<OperationalRecords'));
+    assert.ok(catalog.includes('<OperationalWorkbench/>'));
+    assert.ok(css.includes('.operational-records__card'));
   }],
   ['form fields expose errors without backend submission', () => {
     assert.ok(form.includes('onSubmit={validate}'));
