@@ -22,6 +22,8 @@ type Props<Row extends RecordWithId>={
   selectedIds:readonly RecordIdentity[];
   onSelectedIdsChange:(value:RecordIdentity[])=>void;
   getRowLabel:(row:Row)=>string;
+  renderMobileTitle?:(row:Row)=>ReactNode;
+  mobileTitleColumnKey?:string;
   filters?:readonly OperationalFilter[];
   isLoading?:boolean;
   error?:string|null;
@@ -41,6 +43,7 @@ export function OperationalRecords<Row extends RecordWithId>({
   rows=[],pageResult,columns,query,onQueryChange,selectedIds,onSelectedIdsChange,getRowLabel,
   filters=[],isLoading=false,error=null,onRetry,onOpenRow,emptyLabel='No hay registros.',
   compact=false,freezeHeader=false,freezeFirstColumn=false,freezeFirstRow=false,locale='es-ES',
+  renderMobileTitle,mobileTitleColumnKey,
 }:Props<Row>){
   // Remote pages already carry authoritative filtering, sorting and pagination.
   // In-memory mode remains unchanged for local fixtures and small datasets.
@@ -127,9 +130,11 @@ export function OperationalRecords<Row extends RecordWithId>({
             <label><input type="checkbox" checked={selectedIds.includes(row.id)}
               aria-label={`Seleccionar ${getRowLabel(row)}`}
               onChange={event=>toggleOne(row,event.target.checked)}/></label>
-            <strong>{getRowLabel(row)}</strong>
+            <div className="operational-records__card-title">
+              {renderMobileTitle?renderMobileTitle(row):<strong>{getRowLabel(row)}</strong>}
+            </div>
           </div>
-          <dl>{columns.map(column=><div key={column.key}>
+          <dl>{columns.filter(column=>!(renderMobileTitle&&column.key===mobileTitleColumnKey)).map(column=><div key={column.key}>
             <dt>{column.label}</dt>
             <dd>{column.render?column.render(row):String(column.getValue(row)??'')}</dd>
           </div>)}</dl>
