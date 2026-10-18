@@ -7,14 +7,6 @@ import { RegionalWorkbench } from './RegionalWorkbench';
 import { ContextHelp } from './ContextHelp';
 import { OperationalWorkbench } from './operational/OperationalWorkbench';
 
-type Row = { id:number; name:string; category:string; status:string };
-type Column = 'name'|'category'|'status';
-const names:Record<Column,string>={name:'Elemento',category:'Categoría',status:'Estado'};
-const sampleRows:Row[]=[
-  {id:1,name:'Documento editorial',category:'Contenido',status:'Activo'},
-  {id:2,name:'Biblioteca visual',category:'Recursos',status:'En revisión'},
-  {id:3,name:'Plantilla social',category:'Distribución',status:'Activo'},
-];
 type DemoFilter = 'all'|'active'|'review'|'paused';
 type DemoModule = 'articles'|'columns'|'media'|'social'|'metrics'|'users'|'storage';
 const demoFilterOptions:readonly ZenitOption<DemoFilter>[]=[
@@ -40,29 +32,9 @@ const iconExamples:{name:IconName;title:string}[]=[
 ];
 
 export function ComponentCatalog() {
-  const [rows,setRows]=useState<Row[]>(sampleRows);
-  const [columns,setColumns]=useState<Column[]>(['name','category','status']);
-  const [selected,setSelected]=useState<number[]>([]);
-  const [filter,setFilter]=useState('');
-  const [compact,setCompact]=useState(false);
   const [demoFilter,setDemoFilter]=useState<DemoFilter|null>('all');
   const [selectedModules,setSelectedModules]=useState<DemoModule[]>(['articles','media']);
   const [notice,setNotice]=useState('');
-  const [confirmDelete,setConfirmDelete]=useState(false);
-  const filtered=rows.filter(row=>Object.values(row).some(value=>String(value).toLocaleLowerCase().includes(filter.toLocaleLowerCase())));
-  const move=(index:number,direction:number)=>{
-    const next=index+direction;
-    if(next<0||next>=columns.length)return;
-    setColumns(previous=>{const copy=[...previous];[copy[index],copy[next]]=[copy[next],copy[index]];return copy;});
-  };
-  const add=()=>setRows(previous=>[...previous,{id:Math.max(0,...previous.map(row=>row.id))+1,name:'Nuevo elemento',category:'General',status:'En revisión'}]);
-  const remove=()=>{
-    setRows(previous=>previous.filter(row=>!selected.includes(row.id)));
-    setSelected([]);setConfirmDelete(false);
-    setNotice('Los registros seleccionados fueron eliminados únicamente de esta demostración.');
-  };
-  const change=(id:number,column:Column,value:string)=>setRows(previous=>previous.map(row=>row.id===id?{...row,[column]:value}:row));
-  const toggle=(id:number,checked:boolean)=>setSelected(previous=>checked?[...new Set([...previous,id])]:previous.filter(value=>value!==id));
   return <div className="catalog">
     <div className="eyebrow">DESIGN LAB / ESTÁNDARES COMPARTIDOS</div>
     <div className="catalog__intro">
@@ -123,83 +95,12 @@ export function ComponentCatalog() {
     <RegionalWorkbench/>
 
     <section className="panel catalog__section" aria-labelledby="catalog-operational">
-      <div className="panel__head"><div><h2 id="catalog-operational">Registros operativos universales</h2>
-        <ContextHelp label="Acerca de los registros universales">Búsqueda, filtros, orden, paginación, selección, acciones y estados se reutilizan en cualquier producto. La demostración no realiza operaciones en Platform.</ContextHelp>
+      <div className="panel__head"><div><h2 id="catalog-operational">Registros y tablas</h2>
+        <ContextHelp label="Acerca de los registros universales">Única implementación de tablas y registros: añadir, editar y renombrar columnas (también las fijadas como guía), fijar encabezados y filas, y utilizar tarjetas móviles. Toda edición es una demostración local, sin llamadas a Platform.</ContextHelp>
       </div></div>
       <OperationalWorkbench/>
     </section>
 
-    <section className="panel catalog__section" aria-labelledby="catalog-table">
-      <div className="panel__head">
-        <div><h2 id="catalog-table">Tabla y registros</h2><ContextHelp label="Funciones disponibles en registros">Selecciona y edita elementos, reorganiza encabezados. En móvil aparecen tarjetas sin desplazamiento horizontal. Arrastrar columnas, portapapeles y deshacer están pendientes.</ContextHelp></div>
-      </div>
-      <div className="catalog__toolbar">
-        <label className="catalog__field"><Icon name="search" size={16}/><span className="sr-only">Buscar elementos</span><input value={filter} onChange={event=>setFilter(event.target.value)} placeholder="Buscar elementos…" aria-label="Buscar elementos"/></label>
-        <label className="catalog__check"><input type="checkbox" checked={compact} onChange={event=>setCompact(event.target.checked)}/> Densidad compacta</label>
-        <div className="catalog__toolbar-actions">
-          <Button variant="secondary" size="compact" onClick={add}><Icon name="plus" size={14}/> Añadir</Button>
-          <Button variant="danger" size="compact" disabled={!selected.length} onClick={()=>setConfirmDelete(true)}><Icon name="trash" size={14}/> Eliminar ({selected.length})</Button>
-        </div>
-      </div>
-      {confirmDelete&&<div className="catalog__confirm" role="group" aria-label="Confirmar eliminación">
-        <Icon name="alert" size={17}/><span>¿Eliminar {selected.length} registro(s) de la demostración?</span>
-        <Button variant="secondary" size="compact" onClick={()=>setConfirmDelete(false)}>Cancelar</Button>
-        <Button variant="danger" size="compact" onClick={remove}>Confirmar</Button>
-      </div>}
-      <div className="catalog__table-scroll"><table className={compact?'catalog__table catalog__table--compact':'catalog__table'}>
-        <thead><tr>
-          <th scope="col"><input type="checkbox" aria-label="Seleccionar todos los elementos visibles" checked={filtered.length>0&&filtered.every(row=>selected.includes(row.id))} onChange={event=>setSelected(previous=>event.target.checked?[...new Set([...previous,...filtered.map(row=>row.id)])]:previous.filter(id=>!filtered.some(row=>row.id===id)))}/></th>
-          {columns.map((column,index)=><th key={column} scope="col"><div className="catalog__th">
-            <button className="icon-button" title={`Mover ${names[column]} a la izquierda`} aria-label={`Mover ${names[column]} a la izquierda`} disabled={index===0} onClick={()=>move(index,-1)}><Icon name="chevron-left" size={12}/></button>
-            <span>{names[column]}</span>
-            <button className="icon-button" title={`Mover ${names[column]} a la derecha`} aria-label={`Mover ${names[column]} a la derecha`} disabled={index===columns.length-1} onClick={()=>move(index,1)}><Icon name="chevron-right" size={12}/></button>
-          </div></th>)}
-        </tr></thead>
-        <tbody>
-          {filtered.map(row=><tr className="catalog__data-row" key={row.id}>
-            <td data-label="Seleccionar"><label className="catalog__row-select"><input type="checkbox" aria-label={`Seleccionar ${row.name}`} checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/></label></td>
-            {columns.map(column=><td data-label={names[column]} key={column}><input aria-label={`${names[column]} de ${row.name}`} value={row[column]} onChange={event=>change(row.id,column,event.target.value)}/></td>)}
-          </tr>)}
-          {!filtered.length&&<tr><td className="catalog__empty" colSpan={columns.length+1}>No hay registros que coincidan con la búsqueda.</td></tr>}
-        </tbody>
-      </table></div>
-      <div className="catalog__mobile-records" role="list" aria-label="Registros">
-        {!!filtered.length && <label className="catalog__mobile-select-all">
-          <input type="checkbox" aria-label="Seleccionar todos los registros visibles"
-            checked={filtered.every(row=>selected.includes(row.id))}
-            onChange={event=>setSelected(previous=>event.target.checked
-              ? [...new Set([...previous,...filtered.map(row=>row.id)])]
-              : previous.filter(id=>!filtered.some(row=>row.id===id)))}/>
-          <span>Seleccionar todos</span>
-          <span className="catalog__mobile-count">{filtered.length}</span>
-        </label>}
-        {filtered.map(row=><article role="listitem" data-mobile-record={row.id}
-          className={`catalog__mobile-card ${selected.includes(row.id)?'catalog__mobile-card--selected':''}`} key={row.id}>
-          <div className="catalog__mobile-card-head">
-            <label className="catalog__mobile-card-select">
-              <input type="checkbox" aria-label={`Seleccionar ${row.name}`}
-                checked={selected.includes(row.id)} onChange={event=>toggle(row.id,event.target.checked)}/>
-            </label>
-            <label className="catalog__mobile-card-title">
-              <span className="sr-only">Nombre del elemento</span>
-              <input aria-label={`Nombre de ${row.name}`} value={row.name}
-                onChange={event=>change(row.id,'name',event.target.value)}/>
-            </label>
-          </div>
-          <div className="catalog__mobile-card-fields">
-            <label className="catalog__mobile-card-field"><span>Categoría</span>
-              <input aria-label={`Categoría de ${row.name}`} value={row.category}
-                onChange={event=>change(row.id,'category',event.target.value)}/>
-            </label>
-            <label className="catalog__mobile-card-field"><span>Estado</span>
-              <input aria-label={`Estado de ${row.name}`} value={row.status}
-                onChange={event=>change(row.id,'status',event.target.value)}/>
-            </label>
-          </div>
-        </article>)}
-        {!filtered.length && <div className="catalog__mobile-empty">No hay registros coincidentes.</div>}
-      </div>
-      <ContextHelp label="Funciones avanzadas pendientes">Arrastre de columnas, redimensionamiento, selección de celdas, portapapeles, deshacer/rehacer y navegación avanzada requieren implementación adicional.</ContextHelp>
-    </section>
+
   </div>;
 }

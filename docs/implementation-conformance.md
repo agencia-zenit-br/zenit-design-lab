@@ -284,3 +284,33 @@ The CEO ran the guarded `--check` followed by `--deploy` through Cloud Shell, wi
 | Current gate | `DEPLOYED_PREVIEW` + `HUMAN_REVIEW_PENDING` |
 
 **Supersession:** the earlier note in this file that the preview still serves `ab7db134` records the state *before* this deployment and is now historical; the new revision above is current. The existing Design Lab service is preserved, no PR was merged and no Platform/ZMC customer data or backend was activated. Further browser/device/assistive-technology and CEO visual acceptance remain open. **This addendum is a documentation-only commit newer than the deployed source SHA; it does not mean the running preview contains this documentation commit.**
+
+
+## 2026-10-18 — Consolidated records and renamable guide headers: PR #13
+
+The CEO approved consolidating the two competing table demos and added editable titles for fixed guide columns. Implementation is isolated in [Design Lab draft PR #13](https://github.com/agencia-zenit-br/zenit-design-lab/pull/13), branch `feat/ui-core-unified-record-guides-20261018`, **stacked on PR #12**, not on `main`.
+
+| Requirement | Implementation evidence | Separate gate |
+| --- | --- | --- |
+| One table component | `ComponentCatalog.tsx` no longer renders the legacy `catalog-table` demo; `OperationalWorkbench` is the sole interactive table. `LabSidebar` has one `Registros y tablas` item | Chromium single-mount and navigation checks |
+| Discoverability from home | `DesignLab.tsx` overview relabels record strip as read-only and links to canonical records and tables | Browser navigation QA |
+| Edit guide header title | The column manager allows renaming base and added column labels keyed by immutable column IDs, including first pinned data column; validation rejects invalid/duplicate names | Browser test rename `Nombre` to `Referencia principal`, unchanged record and sort key |
+| Retain legacy edits | Workbench optional cell editing of sample name/category/status; shared `OperationalRecords` renders editable mobile title; no extra grid | Browser mobile editable title and checkbox geometry |
+| Fixed guides | Existing sticky header/first visible row/first data column controls retained | Real browser pinned scrolling, light/dark, RTL/LTR |
+
+**Boundaries:** the user-approved behavior applies to the **visual titles**, not SQL schema, external data models or mutable tenant authorization. All edits are in-memory synthetic demo changes and reset with the example; mobile cards intentionally do not use horizontal table sticky scrolling. The existing Cloud Run UI Core preview still serves previous revision `00002-c2d`/source `c747fb3985` until a **separately authorized deployment**, and this change requires new CEO visual acceptance. This addendum is implementation description pending fresh CI for exact PR HEAD.
+
+
+### 2026-10-18 — UI Core revision 3 deployed: consolidated tables and editable pinned-guide titles
+
+The CEO's Cloud Shell output confirms successful **isolated** deployment of the functional commit `c31131c1bc8bad4122130155b2ddd63ecacb14c2` from `feat/ui-core-unified-record-guides-20261018`:
+
+- **Cloud Build** `d92fb4de-667a-477f-913d-0bc284d12e73`: **SUCCESS**, duration **1m02s**.
+- **Cloud Run service** `zenit-ui-core-preview`, project `zenit-platform-labs`, region `southamerica-east1`.
+- **Revision** `zenit-ui-core-preview-00003-mrl`, serving **100% of this isolated preview service's traffic**.
+- **Service URL**: https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app
+- **Alternate `PREVIEW_URL` returned by the script**: https://zenit-ui-core-preview-pj3dnprg2a-rj.a.run.app
+- **Preflight**: `Preflight PASS`; deploy script also finished its health verification successfully (no errors).
+- **Source CI**: [Design Lab CI #39175555465](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39175555465) **SUCCESS**, [Verify Chromium #39175555521](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39175555521) **SUCCESS**, both for the exact deployed SHA.
+
+**State: `DEPLOYED_PREVIEW` / `HUMAN_REVIEW_PENDING`.** Earlier sections mentioning revision `00002-c2d` as the current deployment are historical pre-revision-3 checkpoints and superseded by this entry. The design is **not yet visually accepted**. There was **no merge, customer/Platform/ZMC integration, Cloud SQL change or update to the original `zenit-design-lab` service**. This documentation-only change is newer than the deployed application SHA and does not change the live preview code.

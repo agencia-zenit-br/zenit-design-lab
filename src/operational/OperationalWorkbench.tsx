@@ -45,12 +45,34 @@ export function OperationalWorkbench(){
   const [customColumns,setCustomColumns]=useState<{key:string;label:string}[]>([]);
   const [hiddenColumns,setHiddenColumns]=useState<string[]>([]);
   const [columnLabel,setColumnLabel]=useState('');
+  const [columnTitles,setColumnTitles]=useState<Record<string,string>>({});
+  const [titleDrafts,setTitleDrafts]=useState<Record<string,string>>({});
+  const [editingCells,setEditingCells]=useState(false);
   const [columnSerial,setColumnSerial]=useState(1);
   const [freezeHeader,setFreezeHeader]=useState(true);
   const [freezeFirstColumn,setFreezeFirstColumn]=useState(false);
   const [freezeFirstRow,setFreezeFirstRow]=useState(false);
+  const updateExampleField=(id:number,key:'name'|'category'|'status',value:string)=>{
+    setRows(previous=>previous.map(row=>row.id===id?{...row,[key]:value,revision:row.revision+1}:row));
+  };
+  const editableBase=(row:SampleRecord,key:'name'|'category'|'status')=>{
+    if(key==='status')return <select className="operational-records__editable-cell"
+      aria-label={'Estado de '+row.name} value={row.status}
+      onChange={event=>updateExampleField(row.id,'status',event.target.value as SampleRecord['status'])}>
+      <option value="Activo">Activo</option><option value="Pendiente">Pendiente</option>
+      <option value="Completado">Completado</option>
+    </select>;
+    return <input className="operational-records__editable-cell" type="text" maxLength={100}
+      aria-label={(key==='name'?'Nombre':'Categoría')+' de '+row.name} value={row[key]}
+      onChange={event=>updateExampleField(row.id,key,event.target.value)}/>;
+  };
   const allColumns:readonly OperationalColumn<SampleRecord>[]=[
-    ...baseColumns,
+    ...baseColumns.map(column=>({
+      ...column,label:columnTitles[column.key]??column.label,
+      render:editingCells && (column.key==='name'||column.key==='category'||column.key==='status')
+        ? (row:SampleRecord)=>editableBase(row,column.key as 'name'|'category'|'status')
+        : column.render,
+    })),
     ...customColumns.map(column=>({
       key:column.key,label:column.label,
       getValue:(row:SampleRecord)=>row.extras?.[column.key]??'',
@@ -65,6 +87,23 @@ export function OperationalWorkbench(){
     })),
   ];
   const visibleColumns=allColumns.filter(column=>!hiddenColumns.includes(column.key));
+  const commitColumnTitle=(key:string)=>{
+    const column=allColumns.find(item=>item.key===key);
+    if(!column)return;
+    const proposal=(titleDrafts[key]??column.label).trim();
+    setTitleDrafts(previous=>{const next={...previous};delete next[key];return next;});
+    if(!proposal||proposal.length>40){
+      notify('warning','El título debe tener entre 1 y 40 caracteres.');
+      return;
+    }
+    if(allColumns.some(item=>item.key!==key&&item.label.toLocaleLowerCase()===proposal.toLocaleLowerCase())){
+      notify('warning','Ya existe otra columna con ese título.');
+      return;
+    }
+    if(key.startsWith('custom_')){
+      setCustomColumns(previous=>previous.map(item=>item.key===key?{...item,label:proposal}:item));
+    }else setColumnTitles(previous=>({...previous,[key]:proposal}));
+  };
   const addColumn=()=>{
     const label=columnLabel.trim();
     if(!label){notify('warning','Escribe un nombre para la nueva columna.');return;}
@@ -107,6 +146,7 @@ export function OperationalWorkbench(){
   const reset=()=>{
     setQuery(initialQuery);setSelected([]);setRows(sampleRows);setNotice(null);setScenario('ready');setCompact(false);setRemote(false);setConfirm(false);
     setCustomColumns([]);setHiddenColumns([]);setColumnLabel('');setColumnSerial(1);
+    setColumnTitles({});setTitleDrafts({});setEditingCells(false);
     setFreezeHeader(true);setFreezeFirstColumn(false);setFreezeFirstRow(false);
   };
   const select=(ids:RecordIdentity[])=>setSelected(reconcileSelectedIds(ids,rows));
@@ -116,6 +156,8 @@ export function OperationalWorkbench(){
     page:simulated.page,pageSize:simulated.pageSize}:undefined;
   return <div className="operational-workbench" data-operational-workbench="true">
     <div className="operational-workbench__actions">
+      <label className="catalog__check"><input type="checkbox" aria-label="Editar celdas" checked={editingCells}
+        onChange={event=>setEditingCells(event.target.checked)}/> Editar celdas</label>
       <label className="catalog__check"><input type="checkbox" checked={compact}
         onChange={event=>setCompact(event.target.checked)}/> Compacto</label>
       <label className="catalog__check"><input type="checkbox" data-remote-page-demo="true" checked={remote}
@@ -135,8 +177,9 @@ export function OperationalWorkbench(){
       <div className="operational-workbench__columns-head">
         <strong>Columnas de la tabla</strong>
         <ContextHelp label="Gestión de columnas de ejemplo">
-          Las columnas personalizadas y sus valores son locales a esta demostración.
-          Modificar la vista no modifica el esquema ni los permisos de una base de datos.
+          Cambia el título de cualquier columna, incluida la columna fijada como guía.
+          El título visible es independiente de la clave de datos. Estas modificaciones
+          y los valores de ejemplo permanecen solo en esta pestaña; no alteran el esquema ni los permisos.
         </ContextHelp>
       </div>
       <div className="operational-workbench__column-add">
@@ -150,8 +193,22 @@ export function OperationalWorkbench(){
           <Icon name="plus" size={13}/> Añadir columna
         </Button>
       </div>
-      <div className="operational-workbench__column-list" aria-label="Visibilidad y orden de columnas">
+      <div className="operational-workbench__column-list" aria-label="Visibilidad y títulos de columnas">
         {allColumns.map(column=><div className="operational-workbench__column-item" key={column.key}>
+          <label className="operational-workbench__column-title">
+            <span>Título</span>
+            <input type="text" data-column-title={column.key}
+              aria-label={'Título de columna '+column.key}
+              value={titleDrafts[column.key]??column.label} maxLength={40}
+              onChange={event=>setTitleDrafts(previous=>({...previous,[column.key]:event.target.value}))}
+              onBlur={()=>commitColumnTitle(column.key)}
+              onKeyDown={event=>{
+                if(event.key==='Enter'){event.preventDefault();event.currentTarget.blur();}
+                if(event.key==='Escape'){
+                  setTitleDrafts(previous=>{const next={...previous};delete next[column.key];return next;});
+                }
+              }}/>
+          </label>
           <label className="catalog__check"><input type="checkbox"
             checked={!hiddenColumns.includes(column.key)}
             aria-label={'Mostrar columna '+column.label}
@@ -200,6 +257,8 @@ export function OperationalWorkbench(){
     </div>
     <OperationalRecords rows={remote?[]:rows} pageResult={pageResult} columns={visibleColumns} query={query}
       onQueryChange={setQuery} selectedIds={selected} onSelectedIdsChange={select}
+      renderMobileTitle={editingCells?(row:SampleRecord)=>editableBase(row,'name'):undefined}
+      mobileTitleColumnKey={editingCells?'name':undefined}
       getRowLabel={row=>row.name} filters={filters} compact={compact}
       freezeHeader={freezeHeader} freezeFirstRow={freezeFirstRow} freezeFirstColumn={freezeFirstColumn}
       isLoading={scenario==='loading'} error={scenario==='error'?'No se pudieron consultar los registros de demostración.':null}
