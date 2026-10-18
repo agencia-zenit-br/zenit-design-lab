@@ -180,11 +180,11 @@ export function OperationalWorkbench(){
         </div>)}
       </div>
       <div className="operational-workbench__freeze" role="group" aria-label="Filas y columnas guía">
-        <label className="catalog__check"><input type="checkbox" checked={freezeHeader}
+        <label className="catalog__check"><input type="checkbox" aria-label="Fijar encabezado" checked={freezeHeader}
           onChange={event=>setFreezeHeader(event.target.checked)}/> Fijar encabezado</label>
-        <label className="catalog__check"><input type="checkbox" checked={freezeFirstRow}
+        <label className="catalog__check"><input type="checkbox" aria-label="Fijar primera fila" checked={freezeFirstRow}
           onChange={event=>setFreezeFirstRow(event.target.checked)}/> Fijar primera fila</label>
-        <label className="catalog__check"><input type="checkbox" checked={freezeFirstColumn}
+        <label className="catalog__check"><input type="checkbox" aria-label="Fijar primera columna" checked={freezeFirstColumn}
           onChange={event=>setFreezeFirstColumn(event.target.checked)}/> Fijar primera columna</label>
       </div>
     </div>
