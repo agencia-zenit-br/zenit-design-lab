@@ -54,7 +54,7 @@ export function queryCollection<Row extends RecordWithId>(
   const column=sort?byKey.get(sort.key):null;
   const collator=new Intl.Collator(locale,{numeric:true,sensitivity:'base'});
   const allMatching=column?.sortable?[...filtered].sort((first,second)=>{
-    const a=column.getValue(first),b=column.getValue(second);
+    const a=column!.getValue(first),b=column!.getValue(second);
     const compared=typeof a==='number'&&typeof b==='number'?a-b:
       collator.compare(String(a??''),String(b??''));
     return (sort?.direction==='desc'?-1:1)*compared;
