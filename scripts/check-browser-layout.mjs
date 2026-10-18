@@ -557,7 +557,7 @@ try {
       assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(countdown.date)&&/^\d{2}:\d{2}$/.test(countdown.time)&&
         countdown.zone.includes('Zona horaria')&&countdown.status==='Tiempo restante'&&countdown.unitCount===4,
         'Countdown must use local date/time fields, display zone and show live durations');
-      const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Duración del temporizador en segundos"]';
+      const timerFieldSelector='[data-temporal-counter="timer"] input[aria-label="Segundos del temporizador"]';
       await evaluate(`(() => {
         const input=document.querySelector('${timerFieldSelector}');
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
