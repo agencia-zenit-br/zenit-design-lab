@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import {resolveZonedDateTime,zonedInstantFields} from '../src/temporal/zonedClock.ts';
 import assert from 'node:assert/strict';
 import {
  validateCivilDate,parseCivilDate,localeDateOrder,formatEditableCivilDate,civilDayDifference,
@@ -106,3 +107,18 @@ test('Timer runs, pauses, resumes, finishes and resets under injected virtual ti
  assert.ok(error(makeTimer(-3)));
 });
 console.log('PASS Zenit headless temporal core: civil, time, interval, countdown and timer semantics');
+
+test('IANA wall-clock conversion accepts real local hours but rejects DST gaps and overlaps',()=>{
+ const ordinary=resolveZonedDateTime('2026-03-08','03:30','America/New_York');
+ assert.equal(value(ordinary),Date.parse('2026-03-08T07:30:00Z'));
+ assert.equal(value(resolveZonedDateTime('2026-11-01','03:30','America/New_York')),
+   Date.parse('2026-11-01T08:30:00Z'));
+ assert.match(error(resolveZonedDateTime('2026-03-08','02:30','America/New_York')),/no existe/);
+ assert.match(error(resolveZonedDateTime('2026-11-01','01:30','America/New_York')),/se repite/);
+ const sao=value(resolveZonedDateTime('2026-11-15','14:30','America/Sao_Paulo'));
+ assert.equal(sao,Date.parse('2026-11-15T17:30:00Z'));
+ assert.deepEqual(value(zonedInstantFields(sao,'America/Sao_Paulo')),
+   {date:'2026-11-15',time:'14:30',second:0});
+ assert.match(error(resolveZonedDateTime('2026-02-30','14:30','UTC')),/no existe/);
+ assert.match(error(resolveZonedDateTime('2026-11-15','25:30','UTC')),/hora válida/);
+});
