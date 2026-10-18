@@ -1,5 +1,8 @@
 # Design Lab
 
+> **Visual review checkpoint — 2026-10-18:** the approved synthetic UI Core branch `preview/zmc-editorial-20261016` was deployed independently as Cloud Run `zenit-ui-core-preview` (revision `zenit-ui-core-preview-00001-wfs`, SHA `ab7db1345356a5bc736d180d8bc1561c1832a472`) at https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app/ . **Human visual feedback and acceptance remain pending.** Earlier claims below about an initial/partial selector or previous number of demos are historical; use [REVIEW-HANDOFF-2026-10-18.md](docs/REVIEW-HANDOFF-2026-10-18.md) and [implementation conformance](docs/implementation-conformance.md) for current implementation status. This docs-only branch is **not deployed**.
+
+
 Standalone, public visual prototyping workspace for a SaaS product family (commercial name provisional).
 
 All demonstration data must be synthetic. No private Platform code, secrets, customer data, infrastructure configuration or internal documents belong here.
