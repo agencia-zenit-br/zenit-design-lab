@@ -42,14 +42,14 @@ const checks = [
     assert.ok(shell.includes('className="app-nav"'));
   }],
   ['mobile data cards', () => {
-    assert.match(css, /\.catalog__table tbody[^}]*display\s*:\s*grid/is);
-    assert.ok(catalog.includes('data-label={names[column]}'));
+    assert.ok(css.includes('.operational-records__mobile {display:grid;'));
+    assert.ok(operationalRecords.includes('data-label={column.label}'));
   }],
   ['uniform SVG icon component used in navigation and table', () => {
     assert.ok(icons.includes('<svg'));
     assert.ok(shell.includes('<Icon name={item.icon}'));
-    assert.ok(catalog.includes('<Icon name="chevron-left"'));
-    assert.ok(catalog.includes('<Icon name="chevron-right"'));
+    assert.ok(operationalRecords.includes('<Icon name="chevron-left"'));
+    assert.ok(operationalRecords.includes('<Icon name="chevron-right"'));
   }],
   ['storybook shares typed SVG icon vocabulary', () => {
     assert.ok(stories.includes('icon="services"'));
