@@ -260,3 +260,10 @@ The automated static design guard is a regression detector, **not** screenshot/d
 | Structured timer input | Days/hours/minutes/seconds typed fields; pure aggregate validated and used by timer | Node strict boundaries and Chromium start/pause/resume/reset |
 
 **Not included/certified:** persistable per-user view configuration, production schema changes, advanced spreadsheet selection/resizing/clipboard/undo, screen-reader audit, physical mobile QA, pixel-diff V3.0, authorization to deploy, real ZMC backend. The source-of-truth parent is [2026-10-18 design decision](design-decisions.md). This addendum records implemented source pending final CI and visual gates; update check links when CI passes.
+
+### 2026-10-18 — QA verified for functional SHA `c72ac0174d5218cb59739b9274b9ef2d67f20816`
+
+- [Design Lab CI #39171009508](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171009508): **SUCCESS**, TypeScript/Vite production build, unit suites, static invariants and Storybook build.
+- [Verify Design Lab #39171009459](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171009459): **SUCCESS**, including Chromium viewport/RTL/LTR/synthetic operational interactions, fixed six-week calendar, normalized typed `2000`, stable table position when selecting a row, custom column creation and fixed first-column CSS.
+- An earlier Verify job [#39170598796](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39170598796) **failed** because its browser test expected an explicit `aria-label` attribute on a checkbox whose accessible name was originally only inherited from a wrapping `label`. The component was strengthened with explicit `aria-label` and retested successfully. Do not erase failed-run provenance.
+- **Remaining gates:** manual visual comparison to V3.0, physical devices, keyboard/screen reader audit, actual sticky scroll observation in narrow desktop cases and approved Cloud Run redeploy. `zenit-ui-core-preview` still contains earlier SHA `ab7db134` until operator confirms a new revision. PR #12 remains draft.
