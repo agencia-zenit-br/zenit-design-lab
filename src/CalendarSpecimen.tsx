@@ -87,6 +87,7 @@ export function CalendarSpecimen({
                 aria-label={accessible} aria-pressed={selected}
                 title={accessible} disabled={disabled} onClick={()=>select(iso)}>{day}</button>;
             })}
+            {Array.from({length:42-offset-days},(_,i)=><span aria-hidden="true" key={`trailing-blank-${i}`}/>)}
           </div>
         </div>
       </>}
