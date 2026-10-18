@@ -270,8 +270,8 @@ try {
         const title=document.querySelector('.operational-records__card-title input');
         title.focus();title.select();return true;
       })()`);
-      await send('Input.insertText',{text:'Registro corregido'});
-      await waitFor('document.querySelector(".operational-records__card-title input")?.value==="Registro corregido"',
+      await send('Input.insertText',{text:'Registro 01 corregido'});
+      await waitFor('document.querySelector(".operational-records__card-title input")?.value==="Registro 01 corregido"',
         'Universal mobile record title did not synchronize after editing');
       process.stdout.write('PASS unified mobile record cards: adjacent checkbox, aligned metadata, editable title\\n');
       const mobileProfileAlignment=await evaluate(`(() => {
