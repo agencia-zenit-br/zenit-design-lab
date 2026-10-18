@@ -1590,3 +1590,36 @@ button,a,[role="option"],summary {
   .operational-records__desktop {display:none;}
   .operational-records__editable-cell {font-size:16px;min-height:44px;}
 }
+
+
+/* Single canonical records/table destination and view-only overview shortcut. */
+.records-panel__actions { display:flex;align-items:center;justify-content:flex-start;margin-top:14px; }
+.operational-workbench__column-title {
+  display:grid;gap:3px;flex:1 1 140px;min-width:0;color:var(--muted);font-size:10px;
+}
+.operational-workbench__column-title input {
+  display:block;width:100%;min-width:0;min-height:32px;
+  padding:5px 8px;border:1px solid var(--border-strong);border-radius:7px;
+  color:var(--text);background:var(--surface);font-size:12px;
+}
+.operational-workbench__column-item {
+  flex:1 1 235px;max-width:360px;flex-wrap:wrap;padding:8px;gap:6px;
+  align-content:center;align-items:center;
+}
+.operational-workbench__column-item .catalog__check {display:inline-flex;align-items:center;}
+.operational-workbench__column-item .catalog__check span {max-width:none;}
+.operational-workbench__columns-head .context-help {flex:none;}
+.operational-records__card-title {display:flex;min-width:0;flex:1;align-items:center;}
+.operational-records__card-title>strong {overflow-wrap:anywhere;}
+.operational-records__card-title .operational-records__editable-cell {width:100%;min-width:0;}
+.operational-records__editable-cell {width:100%;min-width:0;color:var(--text);}
+@media(max-width:700px) {
+  .operational-workbench__column-item {max-width:none;flex:1 1 100%;}
+  .operational-workbench__column-title {flex-basis:100%;}
+  .operational-records__card dl {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .operational-records__card dl dt {min-height:15px;}
+  .operational-records__card-title input {font-size:16px;}
+}
+@media(max-width:360px) {
+  .operational-records__card dl {grid-template-columns:minmax(0,1fr);}
+}
