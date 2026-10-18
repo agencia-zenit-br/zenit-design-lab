@@ -1,5 +1,8 @@
 # Zenit visual conformance — implementation gate
 
+> **STATUS ADDENDUM — 2026-10-18 (documentation-only, review pending):** The CEO deployed the isolated `zenit-ui-core-preview` at https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app/ from `preview/zmc-editorial-20261016`, SHA `ab7db1345356a5bc736d180d8bc1561c1832a472` (Cloud Run revision `zenit-ui-core-preview-00001-wfs`). [Design Lab CI #39156346912](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39156346912) and [Verify #39156346942](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39156346942) passed for that published SHA. Cloud Build SUCCESS and health `ok` were reported by CEO Cloud Shell. **Human visual acceptance, real-phone QA, screen-reader certification and pixel-parity are still pending.** The previous `zenit-design-lab` service was not replaced. Remote-page UI behavior uses synthetic data; authenticated Platform/ZMC integration remains absent. This documentation branch is not deployed. See [review handoff](REVIEW-HANDOFF-2026-10-18.md). Older implementation snapshots below are preserved, not retroactive deployment proof.
+
+
 Status: **PARTIAL IMPLEMENTATION — NOT FINAL VISUAL APPROVAL**. Updated 2026-10-16.
 
 ## Authority and precedence
