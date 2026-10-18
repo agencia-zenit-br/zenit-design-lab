@@ -99,9 +99,9 @@ try {
       navIconCount: document.querySelectorAll('.nav-item svg').length,
       sidebarVisible: !!sidebar && getComputedStyle(sidebar).visibility !== 'hidden',
       sidebarState: sidebar?.dataset.sidebarState,
-      desktopTableDisplay: document.querySelector('.catalog__table-scroll') ? getComputedStyle(document.querySelector('.catalog__table-scroll')).display : null,
-      mobileRecordsDisplay: document.querySelector('.catalog__mobile-records') ? getComputedStyle(document.querySelector('.catalog__mobile-records')).display : null,
-      mobileCardCount: document.querySelectorAll('.catalog__mobile-card').length,
+      desktopTableDisplay: document.querySelector('.operational-records__desktop') ? getComputedStyle(document.querySelector('.operational-records__desktop')).display : null,
+      mobileRecordsDisplay: document.querySelector('.operational-records__mobile') ? getComputedStyle(document.querySelector('.operational-records__mobile')).display : null,
+      mobileCardCount: document.querySelectorAll('.operational-records__card').length,
     };
   })()`);
   await send('Page.enable');
@@ -127,7 +127,7 @@ try {
       if (width <= 700) {
         assert.equal(state.desktopTableDisplay, 'none', 'Mobile must not inherit desktop table layout');
         assert.equal(state.mobileRecordsDisplay, 'grid', 'Mobile must show dedicated responsive record cards');
-        assert.equal(state.mobileCardCount, 3, 'Mobile list should show every sample record');
+        assert.equal(state.mobileCardCount, 5, 'Canonical mobile list should show the first five paginated synthetic records');
       } else {
         assert.notEqual(state.desktopTableDisplay, 'none', 'Desktop table must remain available');
         assert.equal(state.mobileRecordsDisplay, 'none', 'Dedicated mobile cards must remain hidden on desktop and tablet');
@@ -143,7 +143,7 @@ try {
           `Mobile calendar must be visually centered: ${JSON.stringify(alignment)}`);
       }
       if (width <= 700) {
-        const cards=await evaluate(`[...document.querySelectorAll('.catalog__mobile-card')].map(card=>{
+        const cards=await evaluate(`[...document.querySelectorAll('.operational-records__card')].map(card=>{
           const rect=card.getBoundingClientRect();
           return {left:rect.left,right:rect.right,width:rect.width};
         })`);
@@ -240,40 +240,43 @@ try {
       const stickyAfterScroll = await evaluate('({scrollY:window.scrollY, top:document.querySelector(".app-chrome").getBoundingClientRect().top})');
       assert.ok(stickyAfterScroll.scrollY > 0 && Math.abs(stickyAfterScroll.top) <= 1, `Header not fixed at top while scrolling: ${JSON.stringify(stickyAfterScroll)}`);
       process.stdout.write('PASS sticky header remains at top during real scrolling\n');
+      await evaluate(`document.querySelector('.operational-workbench__actions input[aria-label="Editar celdas"]')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".operational-records__card-title input"))',
+        'Shared mobile records did not expose editable title after editing enabled');
       const cardLayout = await evaluate(`(() => {
-        const card=document.querySelector('.catalog__mobile-card');
-        const box=card?.querySelector('.catalog__mobile-card-select input[type="checkbox"]');
-        const title=card?.querySelector('.catalog__mobile-card-title input');
-        const category=card?.querySelector('.catalog__mobile-card-field:first-child input');
-        const status=card?.querySelector('.catalog__mobile-card-field:last-child input');
+        const card=document.querySelector('.operational-records__card');
+        const box=card?.querySelector('.operational-records__card-head input[type="checkbox"]');
+        const title=card?.querySelector('.operational-records__card-title input');
+        const category=card?.querySelector('.operational-records__card dl input');
+        const status=card?.querySelector('.operational-records__card dl select');
         const r=card?.getBoundingClientRect(),b=box?.getBoundingClientRect(),
-          t=title?.getBoundingClientRect(),c=category?.getBoundingClientRect(),s=status?.getBoundingClientRect();
+          t=title?.getBoundingClientRect(),c=category?.getBoundingClientRect(),st=status?.getBoundingClientRect();
         return {cardLeft:r?.left,cardRight:r?.right,
           checkRight:b?.right,checkCenterY:b?(b.top+b.bottom)/2:null,
           titleLeft:t?.left,titleCenterY:t?(t.top+t.bottom)/2:null,
-          categoryWidth:c?.width,statusWidth:s?.width,
-          categoryTop:c?.top,statusTop:s?.top,categoryHeight:c?.height,statusHeight:s?.height};
+          categoryWidth:c?.width,statusWidth:st?.width,
+          categoryTop:c?.top,statusTop:st?.top,categoryHeight:c?.height,statusHeight:st?.height};
       })()`);
       assert.ok(cardLayout.checkRight<=cardLayout.titleLeft &&
         cardLayout.titleLeft-cardLayout.checkRight<=25,
-        `Mobile checkbox must be next to its own record title: ${JSON.stringify(cardLayout)}`);
+        `Mobile checkbox must be next to its own editable record title: ${JSON.stringify(cardLayout)}`);
       assert.ok(Math.abs(cardLayout.checkCenterY-cardLayout.titleCenterY)<=9,
         `Checkbox and record name must share visual center: ${JSON.stringify(cardLayout)}`);
       assert.ok(Math.abs(cardLayout.categoryWidth-cardLayout.statusWidth)<2 &&
         Math.abs(cardLayout.categoryHeight-cardLayout.statusHeight)<2 &&
         Math.abs(cardLayout.categoryTop-cardLayout.statusTop)<2,
         `Mobile metadata fields must have identical aligned geometry: ${JSON.stringify(cardLayout)}`);
-      const editMobileCard = await evaluate(`(() => {
-        const title=document.querySelector('.catalog__mobile-card-title input');
+      const editMobileCard=await evaluate(`(() => {
+        const title=document.querySelector('.operational-records__card-title input');
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        setter.call(title,'Documento corregido');
+        setter.call(title,'Registro corregido');
         title.dispatchEvent(new Event('input',{bubbles:true}));
         return true;
       })()`);
-      assert.ok(editMobileCard,'Mobile record field must remain editable');
-      await waitFor('document.querySelector(".catalog__mobile-card-title input")?.value === "Documento corregido"',
-        'Mobile record name editing did not synchronize');
-      process.stdout.write('PASS purpose-built mobile record cards: adjacent checkbox, equal metadata fields, live edit\\n');
+      assert.ok(editMobileCard,'Mobile record title must remain editable');
+      await waitFor('document.querySelector(".operational-records__card-title input")?.value==="Registro corregido"',
+        'Universal mobile record title did not synchronize after editing');
+      process.stdout.write('PASS unified mobile record cards: adjacent checkbox, aligned metadata, editable title\\n');
       const mobileProfileAlignment=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
         const appearance=document.querySelector('.header-controls .zenit-select:nth-child(2) .zenit-select__trigger').getBoundingClientRect();
@@ -636,6 +639,12 @@ try {
       await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("1–5 de 17")',
         'Operational reset did not restore initial model');
       process.stdout.write('PASS universal operational records: paging, selection across filters, error retry and reset\\n');
+      assert.equal(await evaluate('document.querySelectorAll("#catalog-operational").length'),1,
+        'One canonical operational/records heading is required');
+      assert.equal(await evaluate('document.querySelectorAll("#catalog-table").length'),0,
+        'Legacy duplicated tables heading must be removed');
+      assert.equal(await evaluate('document.querySelectorAll("[data-operational-workbench]").length'),1,
+        'Only one interactive shared table should be mounted');
       // Synthetic columns and guide controls; never mutate a real product data model.
       await evaluate(`(() => {
         const input=document.querySelector('[aria-label="Nombre de columna nueva"]');
@@ -646,7 +655,18 @@ try {
       await evaluate(`[...document.querySelectorAll('[data-column-manager] button')].find(el=>el.textContent.includes('Añadir columna'))?.click();true`);
       await waitFor('Boolean(document.querySelector("input[aria-label=\\"Responsable de Registro 01\\"]"))',
         'New synthetic editable column not rendered');
-      await evaluate(`document.querySelector('[aria-label="Fijar primera columna"]')?.click();true`);
+      await evaluate(`(() => {
+        const input=document.querySelector('[data-column-title="name"]');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'Referencia principal');
+        input.dispatchEvent(new Event('input',{bubbles:true}));
+        input.blur();return true;
+      })()`);
+      await waitFor('document.querySelector(".operational-records__desktop thead th:nth-child(2)")?.textContent?.includes("Referencia principal")',
+        'Renaming the first (guide) data column did not update the visible header');
+      assert.equal(await evaluate('document.querySelector(".operational-records__desktop tbody tr:first-child td:nth-child(2)")?.textContent?.includes("Registro 01")'),true,
+        'Renaming a guide column must not mutate the underlying record');
+            await evaluate(`document.querySelector('[aria-label="Fijar primera columna"]')?.click();true`);
       await waitFor('document.querySelector(".operational-records--freeze-first-column")!==null',
         'Freeze-first-column toggle not applied');
       const sticky=await evaluate(`(() => ({
