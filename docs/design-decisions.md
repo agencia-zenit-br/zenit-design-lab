@@ -1262,3 +1262,18 @@ The CEO clarified that the current three-visible-value scrolling time selector i
 5. **Portability and verification (C).** Independent host harness, two skins, regression tests, Storybook stories, focus/touch/RTL/LTR and documented version/compatibility status; capture unimplemented engines/adapters explicitly.
 
 **Deliverables:** interactive Design Lab specimens, separate pure temporal core and UI adapter contracts, component usage stories, documentation/QA evidence, preview branch/PR, user manual preview deploy and mobile visual acceptance. No Platform/ZMC production change, no PR merge and no production scheduling engine deployment without separate authorization. Preserve the already signed ZMC/América News delivery priorities. This scope is **approved for next delivery**; features above must not be described as working until they are implemented and tested.
+
+## 2026-10-18 — Zenit UI Core operational components: NEXT STAGE APPROVED
+
+**CEO approval:** Continue development beyond the demonstrated Temporal Core to **Zenit UI Core — Componentes Operativos Universales**, prioritizing stable reusable components, then a properly authorized Platform integration. This is an **ecosystem-wide Zenit foundation** rather than a ZMC-specific UI fork. Tracking: [Design Lab issue #10](https://github.com/agencia-zenit-br/zenit-design-lab/issues/10). It reinforces Platform cross-product modularity [issue #323](https://github.com/agencia-zenit-br/zenit-platform/issues/323).
+
+### Delivery goals
+1. Generic table/collection and mobile card view: queries, search, sort, filters, pagination, selection by stable IDs, empty/loading/errors, action confirmation and accessible feedback, independent of the consumer product.
+2. Public typed contracts for controlled query/selection and future data adapters; separate pure computations, React rendering, tenant data, domain transitions and skins.
+3. Demonstrate component QA at mobile/tablet/desktop, light/dark and RTL/LTR, then assess L1/L2/L3 portability truthfully. Avoid fake certifications.
+4. Bundle previously reported minor UX fixes in this delivery: users select an IANA zone from a searchable human-readable catalog rather than entering technical text; countdown is configured with **Fecha y hora de finalización** and a comprehensible date/time selector rather than a raw ISO string. Store an unambiguous internal instant, rejecting unsupported ambiguous/nonexistent DST times.
+5. Pilot an actual, tenant/instance-scoped integration with Platform **only when the authorized backend read/list contracts exist**. ZMC PR #314 currently has POST create, PUT revision, POST transition, but lacks authorized GET list/detail. Those endpoints and server policy regression tests are dependencies for a real list. Do not claim a live integration based on mock data.
+
+**Implementation boundaries:** The operational component layer has no ZMC-specific business logic; use product adapters. The existing Zenit visual language V3.0–V4.5.1 stays canonical; customer skins remain separately scoped. Maintain signed ZMC delivery dates (beta 2026-12-01, full 2027-02-01) without overengineering hypothetical products. No merge or Platform/ZMC production changes without explicit approval. Design Lab preview deploy is manual by the CEO.
+
+**Current first implementation slice:** `src/operational/collectionCore.ts`, `OperationalRecords.tsx`, `OperationFeedback.tsx`, `OperationalWorkbench.tsx`, `adapter.ts`; IANA timezone catalog and DST-aware countdown fields. This is preview-only, with in-memory fixtures; a types-only adapter is **not** a functioning service integration. Implementation evidence and missing gates must be tracked separately in `docs/implementation-conformance.md`.
