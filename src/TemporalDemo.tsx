@@ -3,13 +3,19 @@ import { Button } from './components';
 import { ContextHelp } from './ContextHelp';
 import { ZenitSelect, type ZenitOption } from './ZenitSelect';
 import { Icon } from './Icon';
+import { defaultRegionalSettings,type RegionalSettings } from './calendarLocale';
+import { friendlyZone } from './timeZoneOptions';
+import { resolveZonedDateTime,zonedInstantFields } from './temporal/zonedClock';
 import {
-  countdownSnapshot,parseExplicitInstant,makeTimer,pauseTimer,resetTimer,startTimer,timerSnapshot,
+  countdownSnapshot,makeTimer,pauseTimer,resetTimer,startTimer,timerSnapshot,
   type DurationParts,type TimerSession,
 } from './temporal/core';
 
 const pad=(n:number)=>String(n).padStart(2,'0');
-const initialTarget=()=>new Date(Date.now()+2*86400000+4*3600000).toISOString().replace(/\.\d{3}Z$/,'Z');
+const initialLocalTarget=(zone:string)=>{
+  const next=zonedInstantFields(Date.now()+2*86400000+4*3600000,zone);
+  return next.ok?{date:next.value.date,time:next.value.time}:{date:'2026-11-15',time:'12:00'};
+};
 type DisplayMode='cards'|'compact'|'progress';
 const displayOptions:readonly ZenitOption<DisplayMode>[]=[
   {value:'cards',label:'Tarjetas'},
@@ -53,12 +59,14 @@ function useWallNow():number {
 }
 
 /** Countdown to explicit, offset-aware instant; derives each frame from target - Date.now. */
-function CountdownDemo({now,display,showSeconds}:{
-  now:number;display:DisplayMode;showSeconds:boolean;
+function CountdownDemo({now,display,showSeconds,settings}:{
+  now:number;display:DisplayMode;showSeconds:boolean;settings:RegionalSettings;
 }) {
-  const [target,setTarget]=useState(initialTarget);
+  const [targetDate,setTargetDate]=useState(()=>initialLocalTarget(settings.timeZone).date);
+  const [targetTime,setTargetTime]=useState(()=>initialLocalTarget(settings.timeZone).time);
   const [base,setBase]=useState(()=>Date.now());
-  const parsed=parseExplicitInstant(target);
+  const parsed=useMemo(()=>resolveZonedDateTime(targetDate,targetTime,settings.timeZone),
+    [targetDate,targetTime,settings.timeZone]);
   const valid=parsed.ok;
   const targetMs=parsed.ok?parsed.value:NaN;
   const result=countdownSnapshot(targetMs,now);
@@ -66,8 +74,9 @@ function CountdownDemo({now,display,showSeconds}:{
   const remainingMs=valid?Math.max(0,targetMs-now):0;
   const progress=baseTotal===0?(result.state==='expired'?100:0):(1-remainingMs/baseTotal)*100;
   const quickSet=(hours:number)=>{
-    setBase(Date.now());
-    setTarget(new Date(Date.now()+hours*3600000).toISOString().replace(/\.\d{3}Z$/,'Z'));
+    const current=Date.now(),local=zonedInstantFields(current+hours*3600000,settings.timeZone);
+    if(!local.ok)return;
+    setBase(current);setTargetDate(local.value.date);setTargetTime(local.value.time);
   };
   return <div className="temporal-live-demo" data-temporal-counter="countdown">
     <div className="temporal-live-demo__quick">
@@ -75,20 +84,35 @@ function CountdownDemo({now,display,showSeconds}:{
       <Button variant="secondary" size="compact" onClick={()=>quickSet(24)}>En 1 día</Button>
       <Button variant="secondary" size="compact" onClick={()=>quickSet(72)}>En 3 días</Button>
     </div>
-    <label className="temporal-live-demo__field">
-      <span>Instante de vencimiento (ISO, UTC u offset)</span>
-      <input type="text" spellCheck={false} value={target}
-        aria-label="Instante objetivo" aria-invalid={!valid}
-        onChange={event=>{setTarget(event.target.value);setBase(Date.now());}}
-        placeholder="2026-11-15T12:00:00Z"/>
-    </label>
-    {!valid&&<span className="temporal-error" role="alert">Introduce fecha, hora y zona explícita: 2026-11-15T12:00:00Z.</span>}
+    <div className="temporal-live-demo__deadline" role="group" aria-label="Fecha y hora de finalización">
+      <label className="temporal-live-demo__field">
+        <span>Fecha de finalización</span>
+        <input type="date" value={targetDate} aria-label="Fecha de finalización"
+          aria-invalid={!valid}
+          onChange={event=>{setTargetDate(event.target.value);setBase(Date.now());}}/>
+      </label>
+      <label className="temporal-live-demo__field">
+        <span>Hora de finalización</span>
+        <input type="time" step="60" value={targetTime} aria-label="Hora de finalización"
+          aria-invalid={!valid}
+          onChange={event=>{setTargetTime(event.target.value);setBase(Date.now());}}/>
+      </label>
+    </div>
+    <div className="temporal-live-demo__timezone" role="note">
+      Zona horaria: <strong>{friendlyZone(settings.timeZone)}</strong>
+      <ContextHelp label="Acerca de la zona horaria de la cuenta regresiva">
+        Cambia la zona desde Preferencias regionales. La hora elegida se convierte internamente a un instante real.
+        Si una hora es inexistente o se repite por un cambio de horario de verano, deberás escoger otra hora.
+      </ContextHelp>
+    </div>
+    {!valid&&<span className="temporal-error" role="alert">{parsed.ok?'':parsed.error}</span>}
     <DurationDisplay parts={valid?result.remaining:zero} mode={display} seconds={showSeconds} progress={progress}/>
     <span className="temporal-live-demo__state" role="status" aria-live="off">
-      {result.state==='pending'?'Tiempo restante':result.state==='expired'?'Plazo vencido':'Fecha objetivo inválida'}
+      {result.state==='pending'?'Tiempo restante':result.state==='expired'?'Plazo vencido':'Fecha y hora no válidas'}
     </span>
     <ContextHelp label="Cómo funciona la cuenta regresiva">
-      El valor se calcula contra la fecha y hora de referencia, no restando un segundo por actualización. Se recalcula al volver de una pestaña suspendida. Este ejemplo no cancela ni confirma operaciones.
+      Selecciona la fecha y hora de finalización. El sistema calcula el tiempo restante sin acumular errores
+      por actualización visual. El contador no ejecuta acciones comerciales o editoriales.
     </ContextHelp>
   </div>;
 }
@@ -147,7 +171,7 @@ function TimerDemo({now,display,showSeconds}:{
 }
 
 /** Universal temporal presentation specimens, no domain workflows or side effects. */
-export function TemporalDemo() {
+export function TemporalDemo({settings=defaultRegionalSettings}:{settings?:RegionalSettings}={}) {
   const now=useWallNow();
   const [display,setDisplay]=useState<DisplayMode>('cards');
   const [seconds,setSeconds]=useState(true);
@@ -163,7 +187,7 @@ export function TemporalDemo() {
     <div className="temporal-counters__grid">
       <section className="temporal-counters__card" aria-labelledby="temporal-countdown-title">
         <h3 id="temporal-countdown-title">Cuenta regresiva</h3>
-        <CountdownDemo now={now} display={display} showSeconds={seconds}/>
+        <CountdownDemo now={now} display={display} showSeconds={seconds} settings={settings}/>
       </section>
       <section className="temporal-counters__card" aria-labelledby="temporal-timer-title">
         <h3 id="temporal-timer-title">Temporizador</h3>
