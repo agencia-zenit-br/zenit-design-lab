@@ -1438,3 +1438,30 @@ button,a,[role="option"],summary {
 @media(prefers-reduced-motion:reduce) {
   .operational-records__spinner {animation:none;}
 }
+
+
+/* Shared timezone pickers and readable user-facing deadline fields. */
+.regional-prefs__timezone-choice {display:flex;flex-direction:column;gap:7px;min-width:0;}
+.regional-prefs__timezone-select {
+  display:flex;flex-direction:column;align-items:stretch;
+  width:100%;min-width:0;gap:7px;
+}
+.regional-prefs__timezone-select .zenit-select__label {font-size:12px;font-weight:600;}
+.regional-prefs__timezone-select .zenit-select__control,
+.regional-prefs__timezone-select .zenit-select__trigger {width:100%;min-width:0;}
+.regional-prefs__timezone-select .zenit-select__trigger {min-height:37px;}
+.regional-prefs__timezone-select .zenit-select__value {font-size:11px;line-height:1.35;}
+.temporal-live-demo__deadline {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0;
+}
+.temporal-live-demo__deadline .temporal-live-demo__field input {width:100%;min-width:0;}
+.temporal-live-demo__timezone {
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  color:var(--muted);font-size:11px;min-width:0;
+}
+.temporal-live-demo__timezone strong {color:var(--text);font-size:11px;}
+@media(max-width:700px) {
+  .regional-prefs__timezone-select .zenit-select__trigger {min-height:44px;}
+  .temporal-live-demo__deadline {grid-template-columns:minmax(0,1fr);}
+  .temporal-live-demo__deadline input {min-height:44px;}
+}
