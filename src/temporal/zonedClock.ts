@@ -2,7 +2,7 @@
  * Rejects nonexistent and ambiguous daylight-saving local times rather than guessing.
  * Real scheduling remains server-validated; this is a UI prototype parser.
  */
-import {parseTimeOfDay,validateCivilDate,type TemporalResult} from './core';
+import {parseTimeOfDay,validateCivilDate,type TemporalResult} from './core.ts';
 
 const good=<T,>(value:T):TemporalResult<T>=>({ok:true,value});
 const bad=(error:string):TemporalResult<never>=>({ok:false,error});
