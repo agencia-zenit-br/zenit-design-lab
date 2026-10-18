@@ -284,3 +284,18 @@ The CEO ran the guarded `--check` followed by `--deploy` through Cloud Shell, wi
 | Current gate | `DEPLOYED_PREVIEW` + `HUMAN_REVIEW_PENDING` |
 
 **Supersession:** the earlier note in this file that the preview still serves `ab7db134` records the state *before* this deployment and is now historical; the new revision above is current. The existing Design Lab service is preserved, no PR was merged and no Platform/ZMC customer data or backend was activated. Further browser/device/assistive-technology and CEO visual acceptance remain open. **This addendum is a documentation-only commit newer than the deployed source SHA; it does not mean the running preview contains this documentation commit.**
+
+
+## 2026-10-18 — Consolidated records and renamable guide headers: PR #13
+
+The CEO approved consolidating the two competing table demos and added editable titles for fixed guide columns. Implementation is isolated in [Design Lab draft PR #13](https://github.com/agencia-zenit-br/zenit-design-lab/pull/13), branch `feat/ui-core-unified-record-guides-20261018`, **stacked on PR #12**, not on `main`.
+
+| Requirement | Implementation evidence | Separate gate |
+| --- | --- | --- |
+| One table component | `ComponentCatalog.tsx` no longer renders the legacy `catalog-table` demo; `OperationalWorkbench` is the sole interactive table. `LabSidebar` has one `Registros y tablas` item | Chromium single-mount and navigation checks |
+| Discoverability from home | `DesignLab.tsx` overview relabels record strip as read-only and links to canonical records and tables | Browser navigation QA |
+| Edit guide header title | The column manager allows renaming base and added column labels keyed by immutable column IDs, including first pinned data column; validation rejects invalid/duplicate names | Browser test rename `Nombre` to `Referencia principal`, unchanged record and sort key |
+| Retain legacy edits | Workbench optional cell editing of sample name/category/status; shared `OperationalRecords` renders editable mobile title; no extra grid | Browser mobile editable title and checkbox geometry |
+| Fixed guides | Existing sticky header/first visible row/first data column controls retained | Real browser pinned scrolling, light/dark, RTL/LTR |
+
+**Boundaries:** the user-approved behavior applies to the **visual titles**, not SQL schema, external data models or mutable tenant authorization. All edits are in-memory synthetic demo changes and reset with the example; mobile cards intentionally do not use horizontal table sticky scrolling. The existing Cloud Run UI Core preview still serves previous revision `00002-c2d`/source `c747fb3985` until a **separately authorized deployment**, and this change requires new CEO visual acceptance. This addendum is implementation description pending fresh CI for exact PR HEAD.
