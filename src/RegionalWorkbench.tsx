@@ -8,6 +8,7 @@ import { FormSpecimen } from './FormSpecimen';
 import { TemporalDemo } from './TemporalDemo';
 import { ContextHelp } from './ContextHelp';
 import { PortabilityDemo } from './temporal/PortabilityDemo';
+import { timeZoneOptions,friendlyZone } from './timeZoneOptions';
 import {
   defaultRegionalSettings, formatInstantInZone, localeOptions,
   resolveDirection, resolveWeekStart, validRegionalSettings,
@@ -89,20 +90,21 @@ export function RegionalWorkbench() {
           value={draft.hourCycle} options={hourOptions} onChange={value=>update('hourCycle',value)}/>
         <ZenitSelect<DirectionPreference> label="Dirección de lectura" className="regional-prefs__select regional-prefs__direction"
           value={draft.direction} options={directionOptions} onChange={value=>update('direction',value)}/>
-        <label className="regional-prefs__timezone">
-          <span>Zona horaria IANA</span>
-          <input type="text" value={draft.timeZone} spellCheck={false}
-            aria-label="Zona horaria IANA" aria-invalid={!timezoneOk}
-            aria-describedby={!timezoneOk?'regional-timezone-error':undefined}
-            onChange={event=>update('timeZone',event.target.value)}/>
-          {!timezoneOk&&<small id="regional-timezone-error" className="regional-prefs__error" role="alert">Introduce una zona horaria válida, como America/Sao_Paulo.</small>}
-        </label>
+        <div className="regional-prefs__timezone-choice">
+          <ZenitSelect<string> label="Zona horaria" className="regional-prefs__timezone-select"
+            searchable searchPlaceholder="Buscar ciudad o región…"
+            value={timezoneOk?draft.timeZone:null}
+            options={timeZoneOptions} onChange={value=>update('timeZone',value)}/>
+          {!timezoneOk&&<small className="regional-prefs__error" role="alert">
+            La zona guardada ya no es válida. Selecciona una del catálogo.
+          </small>}
+        </div>
       </div>
       <div className="regional-prefs__preview">
         <Icon name="globe" size={17}/>
         <div><strong>Vista previa de preferencias</strong>
           <p>Semana desde {resolveWeekStart(draft)===1?'lunes':resolveWeekStart(draft)===6?'sábado':'domingo'} · Lectura {resolveDirection(draft).toUpperCase()} · {draft.hourCycle==='h12'?'AM/PM':'24 h'}.</p>
-          {referenceInstant&&<p>Instante de ejemplo en {draft.timeZone}: {referenceInstant}</p>}
+          {referenceInstant&&<p>Hora de ejemplo en {friendlyZone(draft.timeZone)}: {referenceInstant}</p>}
         </div>
       </div>
       {draft.calendarSystem!=='gregory'&&
@@ -140,7 +142,7 @@ export function RegionalWorkbench() {
     <section className="panel catalog__section" aria-labelledby="catalog-temporal">
       <div className="panel__head"><div><h2 id="catalog-temporal">Cuentas regresivas y temporizadores</h2>
         <ContextHelp label="Sobre los contadores">El temporizador es local a esta demostración y no puede cancelar ni ejecutar operaciones. En producción los vencimientos críticos necesitan reloj de servidor y reglas autorizadas.</ContextHelp></div></div>
-      <TemporalDemo/>
+      <TemporalDemo settings={draft}/>
     </section>
 
     <section className="panel catalog__section" aria-labelledby="catalog-portability">
