@@ -92,9 +92,11 @@ export function OperationalWorkbench(){
       <button type="button" className={scenario==='loading'?'operational-workbench__simulation--active':''} onClick={()=>setScenario('loading')}>Carga</button>
       <button type="button" className={scenario==='error'?'operational-workbench__simulation--active':''} onClick={()=>setScenario('error')}>Error</button>
     </div>
-    <OperationNotice notice={notice} onDismiss={()=>setNotice(null)}/>
-    {confirm&&<ActionConfirm question={`¿Eliminar ${selected.length} registro(s) de esta demostración?`}
-      onConfirm={remove} onCancel={()=>setConfirm(false)}/>}
+    <div className="operational-workbench__feedback-slot" data-feedback-slot="true">
+      <OperationNotice notice={notice} onDismiss={()=>setNotice(null)}/>
+      {confirm&&<ActionConfirm question={`¿Eliminar ${selected.length} registro(s) de esta demostración?`}
+        onConfirm={remove} onCancel={()=>setConfirm(false)}/>}
+    </div>
     <OperationalRecords rows={remote?[]:rows} pageResult={pageResult} columns={columns} query={query}
       onQueryChange={setQuery} selectedIds={selected} onSelectedIdsChange={select}
       getRowLabel={row=>row.name} filters={filters} compact={compact}
