@@ -267,3 +267,20 @@ The automated static design guard is a regression detector, **not** screenshot/d
 - [Verify Design Lab #39171009459](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171009459): **SUCCESS**, including Chromium viewport/RTL/LTR/synthetic operational interactions, fixed six-week calendar, normalized typed `2000`, stable table position when selecting a row, custom column creation and fixed first-column CSS.
 - An earlier Verify job [#39170598796](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39170598796) **failed** because its browser test expected an explicit `aria-label` attribute on a checkbox whose accessible name was originally only inherited from a wrapping `label`. The component was strengthened with explicit `aria-label` and retested successfully. Do not erase failed-run provenance.
 - **Remaining gates:** manual visual comparison to V3.0, physical devices, keyboard/screen reader audit, actual sticky scroll observation in narrow desktop cases and approved Cloud Run redeploy. `zenit-ui-core-preview` still contains earlier SHA `ab7db134` until operator confirms a new revision. PR #12 remains draft.
+
+
+### 2026-10-18 — UI Core review revision 2 DEPLOYED, human review pending
+
+The CEO ran the guarded `--check` followed by `--deploy` through Cloud Shell, with expected branch and **commit `c747fb3985f5d20b080ea9b7beb93a84e5f41925`**. Source CI/Chromium for this exact SHA passed in [Design Lab CI #39171249469](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171249469) and [Verify #39171249453](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39171249453).
+
+| Evidence | Verified outcome |
+| --- | --- |
+| Cloud Build | `321e991a-5f39-4d8f-9ca9-93dffd3d57aa`, SUCCESS (1m06s), per CEO Cloud Shell |
+| Cloud Run service | `zenit-ui-core-preview` in `zenit-platform-labs/southamerica-east1` (independent from original `zenit-design-lab`) |
+| Revision | `zenit-ui-core-preview-00002-c2d` at 100% traffic for **its own preview service** |
+| Preview | https://zenit-ui-core-preview-725877092709.southamerica-east1.run.app |
+| Alternative script URL | https://zenit-ui-core-preview-pj3dnprg2a-rj.a.run.app |
+| Health | The deploy script reported successful verification; visual rendering is **not** certified by health |
+| Current gate | `DEPLOYED_PREVIEW` + `HUMAN_REVIEW_PENDING` |
+
+**Supersession:** the earlier note in this file that the preview still serves `ab7db134` records the state *before* this deployment and is now historical; the new revision above is current. The existing Design Lab service is preserved, no PR was merged and no Platform/ZMC customer data or backend was activated. Further browser/device/assistive-technology and CEO visual acceptance remain open. **This addendum is a documentation-only commit newer than the deployed source SHA; it does not mean the running preview contains this documentation commit.**
