@@ -1300,3 +1300,15 @@ The CEO clarified that the current three-visible-value scrolling time selector i
 - Freeze behavior must honor stacking layers, keyboard navigation, sort/page/selection and mobile reflow. The guide row refers to **current visible page** of a paged collection; no cross-page data pinning is implied. Never interpret a display preference as permission to access data.
 
 **Delivery order:** Lot A layout/controls/time consistency → Lot B flexible operational columns/freeze → CI/Chromium → visual review by CEO → separately authorized production integration. Retain the existing V3.0 + V3.1.2–V4.5.1 design; this decision refines behavior, not palette or brand architecture.
+
+
+## 2026-10-18 — CEO APPROVED: One records/table component with renamable guide titles
+
+**Scope:** after reviewing the deployed UI Core preview revision `zenit-ui-core-preview-00002-c2d` (code SHA `c747fb3985f5d20b080ea9b7beb93a84e5f41925`), the CEO confirmed that the table management controls were not readily discoverable and **approved unifying** the duplicated `Tabla y registros` and `Registros operativos universales` into one canonical component. He added the explicit requirement that **titles of guide/pinned columns must be editable**.
+
+- **Single functional source:** `OperationalWorkbench` + `OperationalRecords`, shared across products. The former catalog-only table implementation must not coexist as a second interactive grid; menu navigation uses a single clearly named "Registros y tablas" destination.
+- **Overview is contextual, not a parallel editor:** the overview records strip may remain a labeled read-only summary, with a direct link to the canonical table. It does not duplicate column management or create a separate data model.
+- **Rename headers:** a user may edit the **visible title of any column, including whichever column is used as a pinned guide**. The display title is not an ID: rewording must not change `column.key`, row data, sort/filter identity, permission checks or the database schema. Reject blank, invalid-length and duplicate titles; allow resetting to defaults. Accessible table headers, mobile field labels and helper text should reflect the display name.
+- **Preserve inline edits:** the replaced legacy specimen previously allowed editing sample cell values and mobile records. Keep that capability within the single universal workbench as an optional controlled edit mode, without forking UI and without live server writes.
+- **Guides:** sticky header, first visible data row and first data column remain independent controls with scoped table scroll. This increment does not introduce arbitrary row pinning across pages, nor a persistent schema change.
+- **Delivery:** implement on a separate stacked draft PR relative to the currently deployed preview; CI and visual approval are separate release gates. Synthetic fixtures only, no Platform or client changes.
