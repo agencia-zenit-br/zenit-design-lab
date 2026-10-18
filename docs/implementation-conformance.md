@@ -210,6 +210,27 @@ Browser verification on the code change (before this documentation commit):
 
 **Security/product semantics:** counter expiration is **informational** and does not authorize any publication, account activity, payment, booking/cancellation or external action. Server-authoritative deadlines and tenant permissions belong to consuming products.
 
+
+## 2026-10-18 — Zenit UI Core operational implementation checkpoint
+
+**Scope:** Approved generic operational components, see [issue #10](https://github.com/agencia-zenit-br/zenit-design-lab/issues/10). This is not production-ready Platform integration and does not certify external package L2/L3 portability.
+
+| Capability | Implementation and evidence | Remaining gates |
+|---|---|---|
+| Pure collection core | `src/operational/collectionCore.ts`: deterministic search with accent normalization, exact opt-in filters, stable ID-based selection, sorting, bounded pagination, no React imports. | Per-service authorization is entirely server responsibility; remote datasets need an adapter. |
+| Universal records presentation | `OperationalRecords.tsx`: controlled filters/query/sort/page/selection with semantic desktop table and no-horizontal-scroll mobile cards. | More complex editing/table UX (drag, resize, clipboard, undo, virtualization) is deliberately not claimed. |
+| Feedback and confirmation | `OperationFeedback.tsx`: typed notice levels and explicit inline confirmation, callback-mediated product operations. | Real audit and server-confirmed operation results; full assistive screen-reader audit. |
+| Demo in catalog | `OperationalWorkbench.tsx`: 17 synthetic records, search/filter/sort/paging/bulk selection, local add/remove, loading/error/retry examples. | Platform API integration, authoritative persistent records, tenant policy tests. |
+| Adapter contract | `src/operational/adapter.ts` documents `list/read/update` and version conflicts. | No real implementation or deployment; ZMC PR #314 still needs authorized GET/list and GET/detail routes. |
+| Time zone UX | `timeZoneOptions.ts` supplies a searchable IANA timezone list with human-friendly city labels. RegionalWorkbench no longer exposes an arbitrary timezone input. | Large catalog virtualization if required; locale label translations and DST-dependent offset enhancements. |
+| Countdown UX | `TemporalDemo.tsx` asks for final **date** and **time** separately, shows selected regional zone; `zonedClock.ts` converts to a real instant or explicitly refuses DST gap/overlap. | Trusted clock, server-side deadline validation and choices for ambiguous DST fall-back cases. |
+
+**QA:** [Design Lab CI #39150860663](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39150860663) and [Verify Design Lab #39150860682](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39150860682) **success** after operational/timezone/date-time changes. Vite + Storybook builds, 28+ static guards, deterministic Node temporal/operational test suites, 11 Chromium viewport widths in light/dark, multi-mode calendar/countdown/timer, IANA selection, new operational table paging/selection/retry and separate temporal host tests.
+
+**Current level:** partial internal preview L1 candidate. The new operational collection has not yet been exercised under two independent *external* hosts/skins or backed by authorized Platform endpoints. Do not claim commercial L3, WordPress L2 or production API readiness.
+
+**Release governance:** The CEO has approved the direction and the work on a preview branch, not merge or production deployment. Keep PR #8 as draft; the CEO manually triggers any Design Lab preview workflow. The original V3.0 design image has not been pixel-diff certified. Physical phone validation and screen-reader audit remain separate gates.
+
 ## Non-negotiable workflow
 
 1. Read the relevant approved sections and newer superseding decisions **before changing code**.
