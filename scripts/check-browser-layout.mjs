@@ -620,6 +620,35 @@ try {
         'Operational reset did not restore initial model');
       process.stdout.write('PASS universal operational records: paging, selection across filters, error retry and reset\\n');
 
+      await evaluate("document.querySelector('[data-remote-page-demo]')?.click();true");
+      await waitFor('document.querySelector("[data-remote-page-demo]")?.checked===true',
+        'Remote-page synthetic mode did not activate');
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("1–5 de 17")',
+        'Remote server total is not displayed');
+      for (let step=0;step<2;step++) {
+        await evaluate("[...document.querySelectorAll('.operational-records__pages button')].find(el=>el.textContent.includes('Siguiente'))?.click();true");
+      }
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("11–15 de 17")',
+        'Remote third page was re-paginated locally or lost server total');
+      const remoteCheck=await evaluate("(() => ({rows:document.querySelectorAll('.operational-records__desktop tbody tr').length,first:document.querySelector('.operational-records__desktop tbody tr td:nth-child(2)')?.textContent}))()");
+      assert.equal(remoteCheck.rows,5,'Remote third page must render all five server-supplied rows');
+      assert.ok(remoteCheck.first?.includes('Registro 11'),'Remote page must keep server-provided row order');
+      await evaluate("document.querySelector('.operational-records__desktop tbody tr input[type=checkbox]')?.click();true");
+      await waitFor('document.querySelector(".operational-records__selected")?.textContent?.includes("1 seleccionado")',
+        'Remote-page selection failed');
+      await evaluate("[...document.querySelectorAll('.operational-records__pages button')].find(el=>el.textContent.includes('Siguiente'))?.click();true");
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("16–17 de 17")',
+        'Remote last page did not preserve its two rows');
+      assert.equal(await evaluate('document.querySelector(".operational-records__selected")?.textContent?.includes("1 seleccionado")'),true,
+        'Remote selection must survive a page change');
+      await evaluate("[...document.querySelectorAll('.operational-records__pages button')].find(el=>el.textContent.includes('Anterior'))?.click();true");
+      await waitFor('document.querySelector(".operational-records__footer")?.textContent?.includes("11–15 de 17")',
+        'Remote previous page navigation failed');
+      assert.equal(await evaluate('document.querySelector(".operational-records__desktop tbody tr input[type=checkbox]")?.checked'),true,
+        'Selected record must remain checked on returning to its server page');
+      await evaluate("[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true");
+      process.stdout.write('PASS synthetic server-owned pagination, third-page rows, authoritative counts and persistent selection\n');
+
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();
         const appearance=document.querySelector('.header-controls .zenit-select:nth-child(2) .zenit-select__trigger').getBoundingClientRect();
