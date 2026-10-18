@@ -3,8 +3,8 @@ import { Button } from '../components';
 import { Icon } from '../Icon';
 import { ZenitSelect, type ZenitOption } from '../ZenitSelect';
 import {
-  nextSort,queryCollection,selectedAllVisible,toggleIds,
-  type CollectionColumn,type CollectionQuery,type RecordIdentity,type RecordWithId,
+  nextSort,queryCollection,presentServerPage,selectedAllVisible,toggleIds,
+  type CollectionColumn,type CollectionQuery,type RecordIdentity,type RecordWithId,type ServerPage,
 } from './collectionCore';
 
 export type OperationalColumn<Row>=CollectionColumn<Row>&{
@@ -14,7 +14,8 @@ export type OperationalFilter=Readonly<{
   key:string;label:string;options:readonly ZenitOption<string>[];
 }>;
 type Props<Row extends RecordWithId>={
-  rows:readonly Row[];
+  rows?:readonly Row[];
+  pageResult?:ServerPage<Row>;
   columns:readonly OperationalColumn<Row>[];
   query:CollectionQuery;
   onQueryChange:(value:CollectionQuery)=>void;
@@ -34,11 +35,13 @@ type Props<Row extends RecordWithId>={
 /** Presentation-only record collection. Never interprets a UI flag as authorization.
  * Loading/errors and domain operations are provided by each product adapter. */
 export function OperationalRecords<Row extends RecordWithId>({
-  rows,columns,query,onQueryChange,selectedIds,onSelectedIdsChange,getRowLabel,
+  rows=[],pageResult,columns,query,onQueryChange,selectedIds,onSelectedIdsChange,getRowLabel,
   filters=[],isLoading=false,error=null,onRetry,onOpenRow,emptyLabel='No hay registros.',
   compact=false,locale='es-ES',
 }:Props<Row>){
-  const result=queryCollection(rows,columns,query,locale);
+  // Remote pages already carry authoritative filtering, sorting and pagination.
+  // In-memory mode remains unchanged for local fixtures and small datasets.
+  const result=pageResult?presentServerPage(pageResult):queryCollection(rows,columns,query,locale);
   const id=useId();
   const selectedOnPage=selectedAllVisible(selectedIds,result.visibleRows);
   const update=(patch:Partial<CollectionQuery>)=>onQueryChange({...query,...patch});
