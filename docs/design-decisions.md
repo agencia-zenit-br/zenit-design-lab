@@ -1277,3 +1277,26 @@ The CEO clarified that the current three-visible-value scrolling time selector i
 **Implementation boundaries:** The operational component layer has no ZMC-specific business logic; use product adapters. The existing Zenit visual language V3.0–V4.5.1 stays canonical; customer skins remain separately scoped. Maintain signed ZMC delivery dates (beta 2026-12-01, full 2027-02-01) without overengineering hypothetical products. No merge or Platform/ZMC production changes without explicit approval. Design Lab preview deploy is manual by the CEO.
 
 **Current first implementation slice:** `src/operational/collectionCore.ts`, `OperationalRecords.tsx`, `OperationFeedback.tsx`, `OperationalWorkbench.tsx`, `adapter.ts`; IANA timezone catalog and DST-aware countdown fields. This is preview-only, with in-memory fixtures; a types-only adapter is **not** a functioning service integration. Implementation evidence and missing gates must be tracked separately in `docs/implementation-conformance.md`.
+
+
+## 2026-10-18 — CEO APPROVED: Spatial stability, time formats, contextual alignment and operational grids
+
+**Authority:** CEO's seven concrete feedback points after inspection of separately deployed UI Core preview `ab7db134`. The CEO explicitly authorized implementation of both lots. **Design requirements are approved; PR #12 implementation and release remain separately gated by automated verification and subsequent human visual acceptance.**
+
+**Cross-product rule — Spatial stability and continuity of interaction**
+- Predictable interaction states must not unexpectedly displace the active control or adjacent operational content. Reserve compact slots for anticipated inline validation, selection summaries and notices, or display contextual overlays without reflow. Avoid huge empty banners; progressive expansion explicitly invoked by the user can legitimately change layout.
+- Gregorian month calendars use a stable **six-week/42-cell day grid**, with inert blank cells that are not keyboard targets. Navigating across months changes content, **not calendar container height**.
+- Error/help text appears in predictable locations; label and corresponding **? contextual icon** are in the same inline group at a visually aligned baseline. No orphaned help icons on a separate line when the label has room; responsive constrained widths may wrap the entire group together.
+- Universal controls share consistent visual/vertical alignment and target geometry for labels, input fields, checkboxes, option rows and action controls; perform browser layout regression checks under light/dark and LTR/RTL at standard viewports.
+- The scroll indicator uses a **semantic primary color token**, not a fixed olive for all product themes; track remains neutral and contrast/focus usability still matter. Native browser scrollbar variability is permitted.
+
+**Temporal entry**
+- The 24-hour text renderer accepts unambiguous compact HHMM / HMM: `2000 → 20:00`, `0930 → 09:30`, `930 → 09:30`. It rejects invalid 24:00/25:99 and does not silently resolve ambiguous 12-hour input; AM/PM remains explicit in `h12`.
+- A timer is **configured** using days/hours/minutes/seconds with bounded integer fields and displayed using the same units. The pure duration engine may continue to store seconds/milliseconds, but user-facing configuration must not force raw seconds. No automatic business action from timer expiry.
+
+**Operational tables and records**
+- Demo and future contracts permit adding configurable columns and managing visibility/order; local demo column edits are **not database schema edits**. Real products need server-authorized schema or view-config contracts and migration gates before changing persisted data.
+- Allow independent options to pin the header row, the first visible data row and the first data column as scrolling guides; tables may have **their own internal scrolling**, while the mobile page remains free of unnecessary horizontal overflow and uses cards.
+- Freeze behavior must honor stacking layers, keyboard navigation, sort/page/selection and mobile reflow. The guide row refers to **current visible page** of a paged collection; no cross-page data pinning is implied. Never interpret a display preference as permission to access data.
+
+**Delivery order:** Lot A layout/controls/time consistency → Lot B flexible operational columns/freeze → CI/Chromium → visual review by CEO → separately authorized production integration. Retain the existing V3.0 + V3.1.2–V4.5.1 design; this decision refines behavior, not palette or brand architecture.
