@@ -33,7 +33,7 @@ function initialMode(): Mode {
 
 function initialSidebarCollapsed():boolean { try { return localStorage.getItem('zenit-design-lab-sidebar') === 'collapsed'; } catch { return false; } }
 
-function Overview({showNotice}:{showNotice:(message:string)=>void}) {
+function Overview({showNotice,onOpenRecords}:{showNotice:(message:string)=>void;onOpenRecords:()=>void}) {
   return <>
     <div className="eyebrow">ZENIT / SISTEMA VISUAL</div>
     <div className="hero">
@@ -65,9 +65,12 @@ function Overview({showNotice}:{showNotice:(message:string)=>void}) {
       </section>
     </div>
     <section className="panel records-panel" aria-labelledby="records-title">
-      <div className="panel__head"><div><h2 id="records-title">Registros</h2><p>Patrón de tabla compartido, con márgenes y adaptación móvil</p></div><StatusPill>Ejemplo visual</StatusPill></div>
+      <div className="panel__head"><div><h2 id="records-title">Vista de registros</h2><p>Resumen de solo lectura. La tabla configurable está en Componentes → Registros y tablas.</p></div><StatusPill>Resumen visual</StatusPill></div>
       <div className="records-grid" role="list">
         {services.map(item=><div className="records-row" role="listitem" key={item.name}><span className="records-name"><Icon name={item.icon} size={16}/>{item.name}</span><span>{item.detail}</span><StatusPill tone="success">{item.status}</StatusPill></div>)}
+      </div>
+      <div className="records-panel__actions">
+        <Button variant="secondary" onClick={onOpenRecords}><Icon name="arrow-right" size={14}/> Abrir registros y tablas</Button>
       </div>
     </section>
   </>;
@@ -117,7 +120,10 @@ export function DesignLab() {
       <div className="context-bar"><div className="breadcrumbs"><span>{products[product]}</span><Icon name="chevron-right" size={13}/><span>Design Lab</span><Icon name="chevron-right" size={13}/><strong>{active}</strong></div><span className="context-bar__demo"><Icon name="shield" size={14}/> Entorno de demostración</span></div>
       <main id="main" className="content">
         {notice && <div className="notice" role="status"><Icon name="help" size={17}/><span>{notice}</span><button type="button" className="icon-button" aria-label="Cerrar aviso" onClick={()=>setNotice('')}><Icon name="x" size={16}/></button></div>}
-        {active==='Componentes'?<ComponentCatalog/>:active==='Redacción'?<EditorialPreview/>:<Overview showNotice={setNotice}/>}
+        {active==='Componentes'?<ComponentCatalog/>:active==='Redacción'?<EditorialPreview/>:<Overview showNotice={setNotice} onOpenRecords={()=>{
+           setActive('Componentes');
+           window.setTimeout(()=>document.getElementById('catalog-operational')?.scrollIntoView({block:'start'}),0);
+         }}/>}
         <footer className="lab-footer">Sistema visual Zenit · Referencia aprobada V3.0–V4.5.1 · Datos sintéticos · Sin conexión al backend</footer>
       </main>
     </div></div>
