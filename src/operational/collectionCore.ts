@@ -31,6 +31,34 @@ export type CollectionResult<Row>=Readonly<{
   hasPrevious:boolean;
   hasNext:boolean;
 }>;
+/** A validated page supplied by an authorized remote data source.
+ * The browser must never re-filter, re-sort or re-slice these rows.
+ */
+export type ServerPage<Row>=Readonly<{
+  rows:readonly Row[];total:number;page:number;pageSize:number;
+}>;
+export type RenderedPage<Row>=Omit<CollectionResult<Row>,'allMatching'>;
+export function presentServerPage<Row extends RecordWithId>(page:ServerPage<Row>):RenderedPage<Row>{
+  if(!Number.isSafeInteger(page.total)||page.total<0||
+    !Number.isSafeInteger(page.page)||page.page<1||
+    !Number.isSafeInteger(page.pageSize)||page.pageSize<1||
+    !Array.isArray(page.rows)||page.rows.length>page.pageSize){
+    throw new RangeError('Invalid authorized server page.');
+  }
+  const pageCount=Math.max(1,Math.ceil(page.total/page.pageSize));
+  const hasRows=page.rows.length>0;
+  return {
+    visibleRows:page.rows,
+    total:page.total,
+    page:page.page,
+    pageSize:page.pageSize,
+    pageCount,
+    from:hasRows?(page.page-1)*page.pageSize+1:0,
+    to:hasRows?(page.page-1)*page.pageSize+page.rows.length:0,
+    hasPrevious:page.page>1,
+    hasNext:page.page<pageCount,
+  };
+}
 const fold=(text:unknown)=>String(text??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
 const safePage=(n:number)=>Number.isSafeInteger(n)&&n>0?n:1;
 const safeSize=(n:number)=>Number.isSafeInteger(n)&&n>=1&&n<=250?n:10;
