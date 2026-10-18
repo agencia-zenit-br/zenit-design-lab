@@ -120,6 +120,19 @@ export function secondsToDuration(totalSeconds:number):TemporalResult<DurationPa
     minutes:Math.floor(totalSeconds%3600/60),seconds:totalSeconds%60,totalSeconds
   });
 }
+/** Structured timer configuration; rejects overflows instead of silently rolling minutes/hours. */
+export function parseTimerDuration(fields:Readonly<{days:string;hours:string;minutes:string;seconds:string}>):TemporalResult<number> {
+  const raw=[fields.days,fields.hours,fields.minutes,fields.seconds];
+  if(raw.some(item=>!/^[0-9]{1,4}$/.test(item.trim())))
+    return failure('Introduce números enteros no negativos en días, horas, minutos y segundos.');
+  const [days,hours,minutes,seconds]=raw.map(item=>Number(item.trim()));
+  if(days>365||hours>23||minutes>59||seconds>59)
+    return failure('Máximo 365 días; horas hasta 23 y minutos/segundos hasta 59.');
+  const total=days*86400+hours*3600+minutes*60+seconds;
+  if(total===0||total>365*86400)
+    return failure('La duración debe ser mayor que cero y no superar 365 días.');
+  return success(total);
+}
 export function timeRangeDuration(start:TimeOfDay,end:TimeOfDay,allowNextDay=false):TemporalResult<DurationParts> {
   if(!validateTimeOfDay(start).ok||!validateTimeOfDay(end).ok)return failure('El intervalo contiene una hora inválida.');
   let delta=timeOfDaySeconds(end)-timeOfDaySeconds(start);
