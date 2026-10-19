@@ -78,8 +78,10 @@ jobs:
           test -n "$DEPLOY_SA" || { echo "::error::Configure GCP_UI_CORE_DEPLOY_SERVICE_ACCOUNT in ui-core-preview environment"; exit 1; }
           test "$GITHUB_REF" = 'refs/heads/preview/ui-core'
           test "$GITHUB_REPOSITORY" = 'agencia-zenit-br/zenit-design-lab'
-          case "$DEPLOY_SA" in *@"$PROJECT".iam.gserviceaccount.com) ;; *) echo "::error::Wrong GCP deployer account project"; exit 1;; esac
-          test "$DEPLOY_SA" != "$RUNTIME_IDENTITY" || { echo "::error::The runtime identity must not deploy"; exit 1; }
+          expected_provider='projects/725877092709/locations/global/workloadIdentityPools/zenit-ui-core-preview/providers/github-actions'
+          expected_deployer='zenit-ui-core-preview-deployer@zenit-platform-labs.iam.gserviceaccount.com'
+          test "$WIF_PROVIDER" = "$expected_provider" || { echo "::error::Expected dedicated UI Core WIF pool/provider; never reuse original Design Lab WIF"; exit 1; }
+          test "$DEPLOY_SA" = "$expected_deployer" || { echo "::error::Expected dedicated UI Core deployer, never use original Design Lab deployer/runtime"; exit 1; }
       - name: Authenticate with short-lived GitHub OIDC token
         uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
         with:
