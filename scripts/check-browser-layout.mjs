@@ -739,6 +739,25 @@ try {
       assert.equal(initialSheet.columns,5,'Sheet must start with five data columns');
       assert.equal(initialSheet.checkboxes,0,'Sheet must select directly, not by radio or checkbox');
       assert.ok(['auto','scroll'].includes(initialSheet.scroll),'Sheet scrolling must be internal');
+      assert.equal(await evaluate('document.querySelector(".zenit-sheet__corner")?.textContent'), '',
+        'Spreadsheet intersection must not contain the decorative #');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__head-select .zenit-sheet__axis-token").length'),5,
+        'Column letters must be styled as explicit axis tokens');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__row-select .zenit-sheet__axis-token").length'),5,
+        'Row numbers must be styled as explicit axis tokens');
+      assert.equal(await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__head-title")).textAlign'), 'center',
+        'Spreadsheet column titles must be centered');
+      assert.ok(await evaluate('document.querySelectorAll("[data-sheet-placeholder-row]").length>=1'),
+        'Viewport-fill rows must be presentational and not fake source records');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.dispatchEvent(
+        new PointerEvent('pointerdown',{bubbles:true,button:0}));true`);
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:nth-child(2) td:nth-of-type(2)')?.dispatchEvent(
+        new PointerEvent('pointerover',{bubbles:true,button:0}));true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table td[data-selected=true]").length>=4',
+        'Drag must select the complete rectangular cell range');
+      assert.equal(await evaluate('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.getAttribute("data-range-edge")?.includes("top")'),true,
+        'Selected rectangular range must expose perimeter styling');
+      await evaluate(`window.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,button:0}));true`);
       await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__head-select')?.click();true`);
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__table th.is-selected").length'),1,
         'Clicking column letter must select column');
@@ -783,6 +802,25 @@ try {
       assert.equal(await evaluate('document.querySelector("[data-sheet-column=responsible]")?.dataset.sheetColumn'), 'responsible',
         'Renaming visible header must preserve immutable column key');
       await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
+      await evaluate(`(() => {
+        const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
+        input.focus();
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'50');input.dispatchEvent(new Event('input',{bubbles:true}));
+        input.blur();return true;
+      })()`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
+        'Custom 50 rows/page should show all 17 synthetic rows, not silently clamp at 25');
+      await evaluate(`(() => {
+        const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
+        input.focus();
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'5');input.dispatchEvent(new Event('input',{bubbles:true}));
+        input.blur();return true;
+      })()`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===5',
+        'Restoring custom page size must preserve five-row view');
+      process.stdout.write('PASS spreadsheet viewport fillers, axis chips, drag-range border, and custom pagination\\n');
       process.stdout.write('PASS spreadsheet 5x5, no checkboxes, contextual row/column pinning and guide renaming\\n');
 
       const avatarGeometry=await evaluate(`(() => {

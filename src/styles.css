@@ -1715,3 +1715,35 @@ button,a,[role="option"],summary {
 }
 .zenit-sheet__card dd input {font-size:16px;min-height:44px;}
 .zenit-sheet__card-head button,.zenit-sheet__head-select,.zenit-sheet__row-select {touch-action:manipulation;}
+
+
+/* UI Core: spreadsheet viewport-fill, axis chips and continuous range framing. */
+.zenit-sheet__head-title {text-align:center;justify-content:center;}
+.zenit-sheet__head-select {display:grid;place-items:center;padding:3px 1px;min-width:27px;}
+.zenit-sheet__axis-token {
+  display:inline-grid;place-items:center;min-width:23px;height:23px;padding:0 4px;
+  border:1px solid var(--border-strong);background:var(--surface);color:var(--text);
+  border-radius:6px;font-size:11px;font-weight:700;line-height:1;
+}
+.zenit-sheet__rowhead {white-space:nowrap;vertical-align:middle!important;padding:0 2px!important;}
+ .zenit-sheet__rowhead .zenit-sheet__row-select {display:inline-grid;place-items:center;vertical-align:middle;min-width:26px;padding:1px 0;}
+ .zenit-sheet__rowhead .zenit-sheet__more {display:inline-grid;place-items:center;vertical-align:middle;min-width:16px;min-height:28px;padding:0;}
+.zenit-sheet__head .zenit-sheet__head-title {text-align:center;}
+.zenit-sheet__table td[data-selected="true"] {box-shadow:inset 0 0 0 1px var(--brand);}
+.zenit-sheet__table td[data-range-edge*="top"] {border-top:2px solid var(--brand);}
+.zenit-sheet__table td[data-range-edge*="bottom"] {border-bottom:2px solid var(--brand);}
+.zenit-sheet__table td[data-range-edge*="left"] {border-left:2px solid var(--brand);}
+.zenit-sheet__table td[data-range-edge*="right"] {border-right:2px solid var(--brand);}
+.zenit-sheet__scroll {height:clamp(250px,43vh,530px);max-height:none;align-self:stretch;overflow:auto;}
+.zenit-sheet__table {user-select:none;}
+.zenit-sheet__cell-editor {user-select:text;}
+.zenit-sheet__table .zenit-sheet__placeholder {background:var(--surface);color:var(--muted);text-align:center;}
+.zenit-sheet__placeholder .zenit-sheet__axis-token {opacity:.65;}
+.zenit-sheet__placeholder-row {
+  display:flex;min-width:max-content;height:48px;border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.zenit-sheet__placeholder-row>span {flex:none;box-sizing:border-box;border-right:1px solid var(--border);height:48px;}
+.zenit-sheet__placeholder-index {width:48px;display:grid;place-items:center;position:sticky;left:0;z-index:3;background:var(--surface-muted);}
+.zenit-sheet__toolbar input[type="number"] {width:92px;max-width:100%;}
+@media(max-width:700px){.zenit-sheet__scroll{display:none;}}
