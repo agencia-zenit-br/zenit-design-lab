@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
@@ -55,6 +55,18 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const tableRef=useRef<HTMLDivElement>(null);
   const menuRef=useRef<HTMLDivElement>(null);
   const resizeRef=useRef<(()=>void)|null>(null);
+  const touchRef=useRef<ReturnType<typeof setTimeout>|null>(null);
+  const menuTriggerRef=useRef<HTMLElement|null>(null);
+  const cancelLongPress=()=>{
+    if(touchRef.current!==null){clearTimeout(touchRef.current);touchRef.current=null;}
+  };
+  const longPress=(kind:'row'|'column',key:string,label:string,event:TouchEvent<HTMLElement>)=>{
+    cancelLongPress();
+    const touch=event.touches[0];
+    if(!touch)return;
+    const x=touch.clientX,y=touch.clientY;
+    touchRef.current=setTimeout(()=>{openMenu(kind,key,label,x,y);touchRef.current=null;},550);
+  };
   const isVisible=(key:string)=>columns.some(col=>col.key===key);
   const pinnedCol=guideColumn&&isVisible(guideColumn.target)?guideColumn:null;
   const pinnedRow=guideRow&&rows.some(row=>row.id===guideRow.target)?guideRow:null;
@@ -90,15 +102,19 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       if(!menuRef.current?.contains(e.target as Node))setMenu(null);
     };
     const escape=(e:globalThis.KeyboardEvent)=>{
-      if(e.key==='Escape')setMenu(null);
+      if(e.key==='Escape'){setMenu(null);menuTriggerRef.current?.focus();}
     };
     document.addEventListener('pointerdown',close);
     document.addEventListener('keydown',escape);
     return()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',escape);};
   },[menu]);
-  useEffect(()=>()=>resizeRef.current?.(),[]);
+  useEffect(()=>()=>{resizeRef.current?.();cancelLongPress();},[]);
+  useEffect(()=>{
+    if(menu)menuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+  },[menu]);
   const openMenu=(kind:'row'|'column',key:string,label:string,x:number,y:number)=>{
     setEditing(null);
+    menuTriggerRef.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
     const selectedRow=rows.find(row=>String(row.id)===key);
     setSelection(kind==='row'?{kind:'row',rowId:selectedRow?.id}:{kind:'column',colKey:key});
     setMenu({kind,key,label,left:Math.max(6,Math.min(x,window.innerWidth-240)),
@@ -126,7 +142,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         if(kind==='clear')onGuideRow(null);
       }
     }
-    setMenu(null);
+    setMenu(null);menuTriggerRef.current?.focus();
   };
   const beginResize=(event:PointerEvent<HTMLSpanElement>,key:string)=>{
     if(event.button!==0)return;
@@ -202,7 +218,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
     <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table className="zenit-sheet__table" style={{width:48+orderedCols.reduce((n,col)=>n+colWidth(col.key),0)}}>
+      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+orderedCols.reduce((n,col)=>n+colWidth(col.key),0)}>
         <colgroup><col style={{width:48}}/>{orderedCols.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}>#</th>
@@ -218,6 +234,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <div className="zenit-sheet__head-inner">
                 <button type="button" className="zenit-sheet__head-select"
                   draggable onDragStart={event=>event.dataTransfer.setData('text/plain',col.key)}
+                  onTouchStart={event=>longPress('column',col.key,col.label,event)}
+                  onTouchMove={cancelLongPress} onTouchEnd={cancelLongPress}
                   onClick={()=>setSelection({kind:'column',colKey:col.key})}
                   onContextMenu={event=>columnMenu(event,col.key,col.label)}
                   aria-label={'Seleccionar columna '+col.label}>{letter}</button>
@@ -248,6 +266,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               onContextMenu={event=>rowMenu(event,row.id,getRowLabel(row))}>
               <button type="button" className="zenit-sheet__row-select"
                 aria-label={'Seleccionar fila '+String(from+r)}
+                onTouchStart={event=>longPress('row',String(row.id),getRowLabel(row),event)}
+                onTouchMove={cancelLongPress} onTouchEnd={cancelLongPress}
                 onClick={()=>setSelection({kind:'row',rowId:row.id})}>{from+r}</button>
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
@@ -302,12 +322,29 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {orderedRows.map((row,r)=><article key={String(row.id)} role="listitem" className="zenit-sheet__card">
         <div className="zenit-sheet__card-head">
           <strong>Fila {from+r}</strong>
-          <button type="button" aria-label={'Opciones de fila '+String(from+r)} onClick={event=>{
+          <button type="button" aria-label={'Opciones de fila '+String(from+r)}
+            onTouchStart={event=>longPress('row',String(row.id),getRowLabel(row),event)}
+            onTouchMove={cancelLongPress} onTouchEnd={cancelLongPress}
+            onClick={event=>{
             const box=event.currentTarget.getBoundingClientRect();
             openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);
           }}><Icon name="more" size={15}/></button>
         </div>
-        <dl>{orderedCols.map(col=><div key={col.key}><dt>{col.label}</dt><dd>{String(col.getValue(row)??'')}</dd></div>)}</dl>
+        <dl>{orderedCols.map(col=><div key={col.key}>
+          <dt>{col.label}</dt>
+          <dd>{editing?.rowId===row.id&&editing.key===col.key
+            ?<input autoFocus className="zenit-sheet__cell-editor"
+              aria-label={'Editar '+col.label+' de '+getRowLabel(row)} value={draft}
+              onChange={event=>setDraft(event.target.value)} onBlur={commit}
+              onKeyDown={event=>{
+                if(event.key==='Enter'){event.preventDefault();commit();}
+                if(event.key==='Escape'){event.preventDefault();setEditing(null);}
+              }}/>
+            :<button type="button" className="zenit-sheet__mobile-value"
+              aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
+              onClick={()=>beginEdit(row,col)}>{String(col.getValue(row)??'')||'—'}</button>}
+          </dd>
+        </div>)}</dl>
       </article>)}
     </div>
     <div className="zenit-sheet__footer">
@@ -329,7 +366,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         <button type="button" role="menuitem" onClick={()=>act('left')}>Mover a la izquierda</button>
         <button type="button" role="menuitem" onClick={()=>act('right')}>Mover a la derecha</button>
       </>}
-      <button type="button" role="menuitem" onClick={()=>setMenu(null)}>Cerrar menú</button>
+      <button type="button" role="menuitem" onClick={()=>{setMenu(null);menuTriggerRef.current?.focus();}}>Cerrar menú</button>
     </div>}
   </section>;
 }
