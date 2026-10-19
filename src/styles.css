@@ -1725,9 +1725,9 @@ button,a,[role="option"],summary {
   border:1px solid var(--border-strong);background:var(--surface);color:var(--text);
   border-radius:6px;font-size:11px;font-weight:700;line-height:1;
 }
-.zenit-sheet__rowhead {display:flex;justify-content:space-between;align-items:center;gap:1px;min-height:48px;padding:0 3px!important;}
-.zenit-sheet__rowhead .zenit-sheet__row-select {display:inline-grid;place-items:center;flex:1;min-width:0;padding:1px 0;}
-.zenit-sheet__rowhead .zenit-sheet__more {display:inline-grid;place-items:center;flex:none;min-width:18px;min-height:28px;padding:0;}
+.zenit-sheet__rowhead {white-space:nowrap;vertical-align:middle!important;padding:0 2px!important;}
+ .zenit-sheet__rowhead .zenit-sheet__row-select {display:inline-grid;place-items:center;vertical-align:middle;min-width:26px;padding:1px 0;}
+ .zenit-sheet__rowhead .zenit-sheet__more {display:inline-grid;place-items:center;vertical-align:middle;min-width:16px;min-height:28px;padding:0;}
 .zenit-sheet__head .zenit-sheet__head-title {text-align:center;}
 .zenit-sheet__table td[data-selected="true"] {box-shadow:inset 0 0 0 1px var(--brand);}
 .zenit-sheet__table td[data-range-edge*="top"] {border-top:2px solid var(--brand);}
