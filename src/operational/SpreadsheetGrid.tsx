@@ -142,7 +142,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         if(kind==='clear')onGuideRow(null);
       }
     }
-    setMenu(null);menuTriggerRef.current?.focus();
+    setMenu(null);
+    if(kind!=='rename')menuTriggerRef.current?.focus();
   };
   const beginResize=(event:PointerEvent<HTMLSpanElement>,key:string)=>{
     if(event.button!==0)return;
