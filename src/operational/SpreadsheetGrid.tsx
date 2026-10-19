@@ -209,14 +209,24 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   };
   const beginEdit=(row:Row,col:OperationalColumn<Row>,origin:'desktop'|'mobile'='desktop')=>{
     if(readOnly)return;
+    skipBlurCommit.current=false;
     setEditing({rowId:row.id,key:col.key,origin});
     setDraft(String(col.getValue(row)??''));
     setMenu(null);
   };
+  const skipBlurCommit=useRef(false);
+  const cancelEdit=()=>{
+    skipBlurCommit.current=true;
+    setEditing(null);
+  };
   const commit=(value:string)=>{
-    if(!editing)return;
+    if(!editing||skipBlurCommit.current){skipBlurCommit.current=false;return;}
     onUpdateCell(editing.rowId,editing.key,value);
     setEditing(null);
+  };
+  const blurCommit=(value:string)=>{
+    if(skipBlurCommit.current){skipBlurCommit.current=false;return;}
+    commit(value);
   };
   const endDrag=()=>{dragAnchor.current=null;setDragging(false);};
   useEffect(()=>{
@@ -253,7 +263,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       cell?.focus();return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
-      event.preventDefault();setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
+      event.preventDefault();skipBlurCommit.current=false;setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
     }
   };
   const rowOffset=48;
@@ -380,10 +390,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 onKeyDown={event=>{if(!isEditing)onCellKey(event,r,c,row,col);}}>
                 {isEditing?<input autoFocus className="zenit-sheet__cell-editor" aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
                   value={draft} onChange={event=>setDraft(event.target.value)}
-                  onBlur={event=>commit(event.currentTarget.value)}
+                  onBlur={event=>blurCommit(event.currentTarget.value)}
                   onKeyDown={event=>{
                     if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
-                    if(event.key==='Escape'){event.preventDefault();setEditing(null);}
+                    if(event.key==='Escape'){event.preventDefault();cancelEdit();}
                     event.stopPropagation();
                   }}/>:String(col.getValue(row)??'')}
               </td>;
@@ -426,10 +436,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <dd>{editing?.origin==='mobile'&&editing.rowId===row.id&&editing.key===col.key
             ?<input autoFocus className="zenit-sheet__cell-editor"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)} value={draft}
-              onChange={event=>setDraft(event.target.value)} onBlur={event=>commit(event.currentTarget.value)}
+              onChange={event=>setDraft(event.target.value)} onBlur={event=>blurCommit(event.currentTarget.value)}
               onKeyDown={event=>{
                 if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
-                if(event.key==='Escape'){event.preventDefault();setEditing(null);}
+                if(event.key==='Escape'){event.preventDefault();cancelEdit();}
               }}/>
             :<button type="button" className="zenit-sheet__mobile-value"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
