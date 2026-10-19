@@ -221,7 +221,14 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   };
   const commit=(value:string)=>{
     if(!editing||skipBlurCommit.current){skipBlurCommit.current=false;return;}
-    onUpdateCell(editing.rowId,editing.key,value);
+    const source=rows.find(row=>row.id===editing.rowId);
+    const column=columns.find(col=>col.key===editing.key);
+    const before=source&&column?String(column.getValue(source)??''):null;
+    if(before!==null&&before!==value){
+      undoStack.current.push({rowId:editing.rowId,key:editing.key,before,after:value});
+      if(undoStack.current.length>100)undoStack.current.shift();
+    }
+    if(before!==value)onUpdateCell(editing.rowId,editing.key,value);
     setEditing(null);
   };
   const blurCommit=(value:string)=>{
@@ -241,6 +248,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     }else{
       setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
     }
+  };
+  const undoStack=useRef<Array<{rowId:RecordIdentity;key:string;before:string;after:string}>>([]);
+  const undoLastEdit=()=>{
+    const last=undoStack.current.pop();
+    if(!last||readOnly)return;
+    onUpdateCell(last.rowId,last.key,last.before);
   };
   const exportCsv=()=>{
     // Export only the authorized, currently loaded page. Never include visual filler cells.
@@ -273,6 +286,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     event.preventDefault();
   };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){
+      event.preventDefault();undoLastEdit();return;
+    }
     if(event.key==='Tab'){
       event.preventDefault();
       const index=r*orderedCols.length+c+(event.shiftKey?-1:1);
@@ -327,6 +343,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
         {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
       </div>
+      <button type="button" disabled={readOnly} onClick={undoLastEdit}>Deshacer última edición</button>
       <button type="button" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}>Exportar página CSV</button>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
       <label>Filas por página
