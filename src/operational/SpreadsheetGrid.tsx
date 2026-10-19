@@ -48,6 +48,25 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
+  const [rowTitles,setRowTitles]=useState<Record<string,string>>({});
+  const [cellFormats,setCellFormats]=useState<Record<string,{align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>>({});
+  const formatKey=(id:RecordIdentity,key:string)=>String(id)+'::'+key;
+  const applyFormat=(change:Partial<{align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>)=>{
+    if(selection?.kind!=='cell')return;
+    const rowStart=Math.min(selection.anchorRow??0,selection.endRow??0);
+    const rowEnd=Math.max(selection.anchorRow??0,selection.endRow??0);
+    const colStart=Math.min(selection.anchorCol??0,selection.endCol??0);
+    const colEnd=Math.max(selection.anchorCol??0,selection.endCol??0);
+    setCellFormats(previous=>{
+      const next={...previous};
+      for(let r=rowStart;r<=rowEnd;r++)for(let c=colStart;c<=colEnd;c++){
+        const row=orderedRows[r],col=orderedCols[c];if(!row||!col)continue;
+        const key=formatKey(row.id,col.key);
+        next[key]={align:'left',bold:false,italic:false,underline:false,highlight:false,...previous[key],...change};
+      }
+      return next;
+    });
+  };
   const [menu,setMenu]=useState<Menu|null>(null);
   const [widths,setWidths]=useState<Record<string,number>>({});
   const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string;origin:'desktop'|'mobile'}|null>(null);
@@ -249,6 +268,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   return <section className="zenit-sheet" data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
+      <div className="zenit-sheet__format-toolbar" role="group" aria-label="Formato de celdas">
+        {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
+        {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
+      </div>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
       <label>Filas por página
         <input type="number" min="1" max="10000" step="1" inputMode="numeric"
@@ -323,6 +346,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
+              {guideRow?.target===row.id&&<input className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título" value={rowTitles[String(row.id)]??""} onChange={event=>setRowTitles(previous=>({...previous,[String(row.id)]:event.target.value}))}/>}
             </th>
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
@@ -338,7 +362,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
                 data-selected={active?'true':undefined} data-range-edge={rangeEdge}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
-                style={freezeStyle(r,c,col.key)}
+                style={{...freezeStyle(r,c,col.key),textAlign:cellFormats[formatKey(row.id,col.key)]?.align??"left",fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:undefined,fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?"italic":undefined,textDecoration:cellFormats[formatKey(row.id,col.key)]?.underline?"underline":undefined,backgroundColor:cellFormats[formatKey(row.id,col.key)]?.highlight?"#fff1a8":undefined}}
                 tabIndex={0} role="gridcell" aria-selected={active}
                 onClick={event=>{if(!dragging)selectCell(row.id,col.key,r,c,event.shiftKey);}}
                 onPointerDown={event=>{
