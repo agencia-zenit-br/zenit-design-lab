@@ -48,10 +48,10 @@ test('container compiles the validated application without copying GitHub intern
   const docker=readFileSync(new URL('../Dockerfile',import.meta.url),'utf8');
   const ignore=readFileSync(new URL('../.dockerignore',import.meta.url),'utf8');
   const pkg=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
-  assert.match(ignore,/^\\.github$/m);
+  assert.match(ignore,/^\.github$/m);
   assert.match(docker,/RUN npm ci --no-audit --no-fund/);
   assert.match(docker,/RUN npm run build:runtime/);
-  assert.ok(!docker.includes('RUN npm run build\\n'),'Docker may not rerun CI checks dependent on ignored files');
+  assert.doesNotMatch(docker,/^RUN npm run build$/m,'Docker may not rerun CI checks dependent on ignored files');
   assert.equal(pkg.scripts['build:runtime'],'tsc -b && vite build');
   assert.match(pkg.scripts.build,/npm run check:design/);
   assert.match(pkg.scripts.build,/npm run test:temporal/);
