@@ -252,7 +252,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         <input type="number" min="1" max="10000" step="1" inputMode="numeric"
           aria-label="Filas por página" value={customSize}
           onChange={event=>setCustomSize(event.target.value)}
-          onBlur={()=>{const n=Number(customSize);if(Number.isSafeInteger(n)&&n>=1&&n<=10000)onPageSize(n);else setCustomSize(String(pageSize));}}
+          onBlur={event=>{const n=Number(event.currentTarget.value);if(Number.isSafeInteger(n)&&n>=1&&n<=10000)onPageSize(n);else setCustomSize(String(pageSize));}}
           onKeyDown={event=>{if(event.key==='Enter')event.currentTarget.blur();}}/>
       </label>
       <span className="zenit-sheet__hint">Selecciona letras o números; botón secundario o menú contextual para fijar guías</span>
