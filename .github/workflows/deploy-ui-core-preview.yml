@@ -60,7 +60,7 @@ jobs:
       REGION: southamerica-east1
       SERVICE: zenit-ui-core-preview
       RUNTIME_IDENTITY: zenit-ui-core-preview@zenit-platform-labs.iam.gserviceaccount.com
-      IMAGE: southamerica-east1-docker.pkg.dev/zenit-platform-labs/zenit-design-lab/zenit-ui-core-preview
+      IMAGE: southamerica-east1-docker.pkg.dev/zenit-platform-labs/zenit-ui-core-preview/ui-core
     steps:
       - name: Checkout the same verified source SHA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -103,6 +103,12 @@ jobs:
           previous="$(jq -r '[.status.traffic[]? | select(.percent == 100) | .revisionName][0] // empty' <<<"$details")"
           test -n "$previous" || { echo "::error::Preview must be serving a single revision at 100% before deployment"; exit 1; }
           echo "PREVIOUS_REVISION=$previous" >> "$GITHUB_ENV"
+      - name: Verify dedicated Artifact Registry repository exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud artifacts repositories describe zenit-ui-core-preview \
+            --project="$PROJECT" --location="$REGION" --format='value(name)' >/dev/null
       - name: Build immutable preview image on GitHub runner
         shell: bash
         run: |
