@@ -804,6 +804,7 @@ try {
       await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
       await evaluate(`(() => {
         const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
+        input.focus();
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
         setter.call(input,'50');input.dispatchEvent(new Event('input',{bubbles:true}));
         input.blur();return true;
@@ -812,6 +813,7 @@ try {
         'Custom 50 rows/page should show all 17 synthetic rows, not silently clamp at 25');
       await evaluate(`(() => {
         const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
+        input.focus();
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
         setter.call(input,'5');input.dispatchEvent(new Event('input',{bubbles:true}));
         input.blur();return true;
