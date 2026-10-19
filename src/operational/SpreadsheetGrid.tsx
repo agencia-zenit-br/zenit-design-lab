@@ -117,11 +117,19 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     ?Math.max(0,orderedRows.findIndex(row=>row.id===pinnedRow.target)+1):0;
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
-  const extraColumns=Math.max(0,Math.min(24,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164)));
+  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
   } as OperationalColumn<Row>))];
-  const extraRows=Math.max(0,Math.min(40,Math.ceil((viewport.height-44-orderedRows.length*48)/48)));
+  // Grow the visual canvas in bounded batches as users approach its last visible guides.
+  // Placeholders remain display-only: no synthetic records are sent to the adapter.
+  const [rowCanvasReserve,setRowCanvasReserve]=useState(0);
+  const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
+  const extraRows=Math.max(0,Math.min(160,Math.max(rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48))));
+  const expandCanvas=()=>{
+    setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
+    setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
+  };
   const isBlankColumn=(key:string)=>key.startsWith('__blank_col_');
   const columnLetter=(index:number)=>{
     let value='',n=index+1;
@@ -346,6 +354,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
         {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
       </div>
+      <button type="button" onClick={expandCanvas} disabled={extraRows>=160&&extraColumns>=64}>Ampliar cuadrícula</button>
       <button type="button" disabled={readOnly} onClick={undoLastEdit}>Deshacer última edición</button>
       <button type="button" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}>Exportar página CSV</button>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
@@ -364,7 +373,13 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
-    <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
+    <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true" onScroll={event=>{
+      const element=event.currentTarget;
+      if(element.scrollHeight-element.scrollTop-element.clientHeight<110&&extraRows<160)
+        setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
+      if(element.scrollWidth-element.scrollLeft-element.clientWidth<220&&extraColumns<64)
+        setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
+    }}>
       <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
