@@ -314,3 +314,12 @@ The CEO's Cloud Shell output confirms successful **isolated** deployment of the 
 - **Source CI**: [Design Lab CI #39175555465](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39175555465) **SUCCESS**, [Verify Chromium #39175555521](https://github.com/agencia-zenit-br/zenit-design-lab/actions/runs/39175555521) **SUCCESS**, both for the exact deployed SHA.
 
 **State: `DEPLOYED_PREVIEW` / `HUMAN_REVIEW_PENDING`.** Earlier sections mentioning revision `00002-c2d` as the current deployment are historical pre-revision-3 checkpoints and superseded by this entry. The design is **not yet visually accepted**. There was **no merge, customer/Platform/ZMC integration, Cloud SQL change or update to the original `zenit-design-lab` service**. This documentation-only change is newer than the deployed application SHA and does not change the live preview code.
+
+
+### 2026-10-18 — SpreadsheetGrid draft PR #14
+
+The spreadsheet presentation is a new reusable renderer over the same in-memory queryCollection records already consumed by OperationalRecords, with no duplicate data model. The visible default has 5 business columns and 5 rows per page, with direct letter/number/cell selections and no checkboxes or radio controls. Contextual row/column guide actions offer pin-only, pin-through and remove; column menus include rename and move. It retains renamable headers keyed by stable IDs, keyboard cell navigation, typed/Enter/double-click edit, desktop resizer and drag/drop, internal sticky scrolling, responsive mobile cards with tap-to-edit and long-press/menu alternatives.
+
+Test plan: existing CI static guards plus new Chromium checks for initial 5x5, right-click pinning, keyboard resizing, data-safe guide renaming and mobile editing. **CI must be checked on the exact final SHA**; do not infer verification from earlier jobs. Physical mobile/touch, assistive technology, screen-reader testing and RTL scroll-inversion behavior are not yet certified. Demo data are synthetic: never claim Platform/ZMC authorization, production persistence, backend wiring or a merge.
+
+Prior deployed baseline is Cloud Run preview 00003-mrl, code SHA c31131c1bc8bad4122130155b2ddd63ecacb14c2. This draft branch is not deployed, and a future preview needs a separate CEO Cloud Shell action.
