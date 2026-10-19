@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
@@ -242,6 +242,22 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
     }
   };
+  const copySelection=(event:ClipboardEvent<HTMLTableElement>)=>{
+    if(selection?.kind!=='cell'||selection.anchorRow===undefined||selection.endRow===undefined||
+      selection.anchorCol===undefined||selection.endCol===undefined)return;
+    const top=Math.max(0,Math.min(selection.anchorRow,selection.endRow));
+    const bottom=Math.min(orderedRows.length-1,Math.max(selection.anchorRow,selection.endRow));
+    const left=Math.max(0,Math.min(selection.anchorCol,selection.endCol));
+    const right=Math.min(orderedCols.length-1,Math.max(selection.anchorCol,selection.endCol));
+    if(bottom<top||right<left)return;
+    // TSV is interoperable with Excel and Google Sheets. Only authorized loaded cells are exported.
+    const escapeValue=(value:unknown)=>String(value??'').replace(/\t/g,' ').replace(/\r?\n/g,' ');
+    const text=orderedRows.slice(top,bottom+1).map(row=>
+      orderedCols.slice(left,right+1).map(col=>escapeValue(col.getValue(row))).join('\t')
+    ).join('\n');
+    event.clipboardData.setData('text/plain',text);
+    event.preventDefault();
+  };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
     if(event.key==='Tab'){
       event.preventDefault();
@@ -314,7 +330,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
     <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table role="grid" aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
