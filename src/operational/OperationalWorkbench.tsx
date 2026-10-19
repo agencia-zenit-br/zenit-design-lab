@@ -169,7 +169,7 @@ export function OperationalWorkbench(){
   const open=(row:SampleRecord)=>notify('info',`Se seleccionó «${row.name}». La apertura de detalles se implementará en cada producto consumidor.`);
   const reset=()=>{
     setQuery(initialQuery);setSelected([]);setRows(sampleRows);setNotice(null);setScenario('ready');setCompact(false);setRemote(false);setConfirm(false);
-    setView('sheet');setGuideColumn(null);setGuideRow(null);
+    setGuideColumn(null);setGuideRow(null);
     setColumnOrder(['name','category','status','responsible','updated']);
     setCustomColumns([]);setHiddenColumns([]);setColumnLabel('');setColumnSerial(1);
     setColumnTitles({});setTitleDrafts({});setEditingCells(false);
