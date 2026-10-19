@@ -752,7 +752,7 @@ try {
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.dispatchEvent(
         new PointerEvent('pointerdown',{bubbles:true,button:0}));true`);
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:nth-child(2) td:nth-of-type(2)')?.dispatchEvent(
-        new PointerEvent('pointerenter',{bubbles:true,button:0}));true`);
+        new PointerEvent('pointerover',{bubbles:true,button:0}));true`);
       await waitFor('document.querySelectorAll(".zenit-sheet__table td[data-selected=true]").length>=4',
         'Drag must select the complete rectangular cell range');
       assert.equal(await evaluate('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.getAttribute("data-range-edge")?.includes("top")'),true,
