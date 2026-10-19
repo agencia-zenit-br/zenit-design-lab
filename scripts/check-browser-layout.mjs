@@ -116,6 +116,23 @@ try {
 
     await evaluate(`Array.from(document.querySelectorAll('.nav-item')).find(node => node.textContent.includes('Componentes'))?.click()`);
     await waitFor('Boolean(document.getElementById("catalog-select"))', 'Component catalogue did not render');
+    assert.ok(await evaluate('Boolean(document.querySelector("[data-spreadsheet]"))'),
+      'Spreadsheet must be the default table presentation');
+    if(width===375){
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
+        'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd input"))',
+        'Mobile sheet must allow editing a field by tapping it');
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.select();true`);
+      await send('Input.insertText',{text:'Área móvil'});
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.blur();true`);
+      await waitFor('document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value")?.textContent==="Área móvil"',
+        'Mobile sheet edit did not commit to synthetic records');
+    }
+    await evaluate(`[...document.querySelectorAll('.zenit-sheet__view-switch button')].find(el=>el.textContent.includes('Vista registros'))?.click();true`);
+    await waitFor('Boolean(document.querySelector("[data-operational-records]"))',
+      'Operational records list must remain available as the second shared-data adapter');
     for (const theme of ['light', 'dark']) {
       await evaluate(`document.querySelector('.lab').dataset.theme = '${theme}'; true`);
       const state = await snapshot();
@@ -707,7 +724,66 @@ try {
       assert.equal(await evaluate('document.querySelector(".operational-records__desktop tbody tr input[type=checkbox]")?.checked'),true,
         'Selected record must remain checked on returning to its server page');
       await evaluate("[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true");
-      process.stdout.write('PASS synthetic server-owned pagination, third-page rows, authoritative counts and persistent selection\n');
+      process.stdout.write('PASS synthetic server-owned pagination, third-page rows, authoritative counts and persistent selection\\n');
+
+      // Return to the default Excel-like adapter without creating another data source.
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__view-switch button')].find(el=>el.textContent.includes('Hoja editable'))?.click();true`);
+      await waitFor('Boolean(document.querySelector("[data-spreadsheet]"))','Sheet view did not mount');
+      const initialSheet=await evaluate(`(() => ({
+        rows:document.querySelectorAll('.zenit-sheet__table tbody tr').length,
+        columns:document.querySelectorAll('.zenit-sheet__table thead th').length-1,
+        checkboxes:document.querySelectorAll('.zenit-sheet__table input[type=checkbox]').length,
+        scroll:getComputedStyle(document.querySelector('.zenit-sheet__scroll')).overflowX
+      }))()`);
+      assert.equal(initialSheet.rows,5,'Sheet must start with five visible rows');
+      assert.equal(initialSheet.columns,5,'Sheet must start with five data columns');
+      assert.equal(initialSheet.checkboxes,0,'Sheet must select directly, not by radio or checkbox');
+      assert.ok(['auto','scroll'].includes(initialSheet.scroll),'Sheet scrolling must be internal');
+      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__head-select')?.click();true`);
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__table th.is-selected").length'),1,
+        'Clicking column letter must select column');
+      await evaluate(`(() => {
+        const header=document.querySelector('[data-sheet-column="responsible"]');
+        return header?.dispatchEvent(new MouseEvent('contextmenu',
+          {bubbles:true,cancelable:true,button:2,clientX:320,clientY:300}));
+      })()`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__menu"))',
+        'Accessible contextual menu did not open for column');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(el=>el.textContent.includes('Fijar esta columna'))?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__table th.is-guide"))',
+        'Pinned guide CSS did not apply');
+      const pinnedColumn=await evaluate(`(() => ({
+        first:document.querySelector('.zenit-sheet__table thead th:nth-child(2)')?.dataset.sheetColumn,
+        sticky:getComputedStyle(document.querySelector('.zenit-sheet__table thead th:nth-child(2)')).position
+      }))()`);
+      assert.equal(pinnedColumn.first,'responsible','Pin-only should make selected column the first data guide');
+      assert.equal(pinnedColumn.sticky,'sticky','Pinned guide must stay sticky');
+      const beforeWidth=await evaluate('document.querySelector(".zenit-sheet__table colgroup col:nth-child(2)")?.style.width');
+      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__resizer')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+      await waitFor('document.querySelector(".zenit-sheet__table colgroup col:nth-child(2)")?.style.width!=="'+beforeWidth+'"',
+        'ArrowRight must allow accessible keyboard width changes');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:nth-child(3) .zenit-sheet__row-select')?.click();true`);
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__rowhead.is-selected").length'),1,
+        'Clicking the row number must select the row');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:nth-child(3) .zenit-sheet__rowhead .zenit-sheet__more')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__menu"))','Row guide context menu absent');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(el=>el.textContent.includes('Fijar esta fila'))?.click();true`);
+      assert.equal(await evaluate('document.querySelector(".zenit-sheet__table tbody tr:nth-child(1) .zenit-sheet__rowhead")?.classList.contains("is-guide")'),true,
+        'Pinned row should appear as first frozen guide on current page');
+      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__more')?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(el=>el.textContent.includes('Cambiar título'))?.click();true`);
+      await waitFor('document.activeElement?.getAttribute("data-column-title")==="responsible"',
+        'Contextual rename should focus shared header editor');
+      await send('Input.insertText',{text:'Referente'});
+      await evaluate(`document.querySelector('[data-column-title="responsible"]')?.blur();true`);
+      await waitFor('document.querySelector("[data-sheet-column=responsible] .zenit-sheet__head-title")?.textContent==="Referente"',
+        'Renaming a pinned guide must update the sheet header');
+      assert.equal(await evaluate('document.querySelector("[data-sheet-column=responsible]")?.dataset.sheetColumn'), 'responsible',
+        'Renaming visible header must preserve immutable column key');
+      await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
+      process.stdout.write('PASS spreadsheet 5x5, no checkboxes, contextual row/column pinning and guide renaming\\n');
 
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();

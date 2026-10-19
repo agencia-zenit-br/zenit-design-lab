@@ -1312,3 +1312,18 @@ The CEO clarified that the current three-visible-value scrolling time selector i
 - **Preserve inline edits:** the replaced legacy specimen previously allowed editing sample cell values and mobile records. Keep that capability within the single universal workbench as an optional controlled edit mode, without forking UI and without live server writes.
 - **Guides:** sticky header, first visible data row and first data column remain independent controls with scoped table scroll. This increment does not introduce arbitrary row pinning across pages, nor a persistent schema change.
 - **Delivery:** implement on a separate stacked draft PR relative to the currently deployed preview; CI and visual approval are separate release gates. Synthetic fixtures only, no Platform or client changes.
+
+
+## 2026-10-18 — CEO APPROVED: spreadsheet-like direct selection and contextual guides
+
+**Explicit approval:** avoid radio/checkbox-driven freezing in the spreadsheet presentation. Adopt Excel-like interaction: click a column-letter header to select its visible column or a row number to select its row; right-click for pin this column/row, pin through this column/row, remove pin, rename/move where applicable. Any selected header can be a guide. Row and column guides can coexist.
+
+**UX and architecture contract:** 
+- The default sheet starts with **five business columns** (Name, Category, Status, Responsible, Updated) and **five visible rows** from a synthetic paginated set of 17. The technical row numbers do not count as data columns.
+- **Hoja editable** is default; **Vista registros** is a second presentation **of the same source rows** for list/mass-action workflows. Only the list retains checkboxes.
+- Cell click selects, Shift-click extends a rectangular range, Enter/F2 or double click edits, and arrow keys navigate. Keyboard Tab and accessible row/column labels remain available. Resizing via pointer and keyboard, and reordering through context menu/drag, affect the view only.
+- Context command pin-only places the chosen row or column at the start of the **visible current page** and freezes it without mutating the underlying data order. Pin-through freezes all visible rows/columns from the beginning through the chosen item. Pinned axes can coexist; cross-page pinning is not implied.
+- Mobile cards prevent viewport horizontal scrolling; card fields allow edit-on-tap and menus via ellipsis/long press. Real-device and screen-reader certifications remain open.
+- Renamed headers retain immutable column keys, data identity, and authorization boundaries. **No database schema, tenant API, customer data, formulas, macros, personal view persistence or server-integrated write operations** are approved here.
+
+Delivery is isolated as draft Design Lab PR #14 stacked on #13. Cloud Run original review remains revision 00003-mrl until a separate operator-approved deploy; CI and human acceptance are independent gates.

@@ -21,6 +21,7 @@ const temporalCore = readFileSync(new URL('../src/temporal/core.ts', import.meta
 const collectionCore = readFileSync(new URL('../src/operational/collectionCore.ts', import.meta.url), 'utf8');
 const operationalRecords = readFileSync(new URL('../src/operational/OperationalRecords.tsx', import.meta.url), 'utf8');
 const operationalWorkbench = readFileSync(new URL('../src/operational/OperationalWorkbench.tsx', import.meta.url), 'utf8');
+const spreadsheet = readFileSync(new URL('../src/operational/SpreadsheetGrid.tsx', import.meta.url), 'utf8');
 const timeInput = readFileSync(new URL('../src/temporal/TimeInput.tsx', import.meta.url), 'utf8');
 const dateInput = readFileSync(new URL('../src/temporal/CivilDateField.tsx', import.meta.url), 'utf8');
 const liveTemporal = readFileSync(new URL('../src/TemporalDemo.tsx', import.meta.url), 'utf8');
@@ -286,6 +287,30 @@ const checks = [
     assert.ok(operationalRecords.includes('data-record-scroll-region="true"'));
     assert.ok(css.includes('.operational-records--freeze-first-column'));
     assert.ok(css.includes('.operational-records--freeze-first-row'));
+  }],
+  ['sheet-style direct selection and context guides are product-neutral', () => {
+    assert.ok(operationalWorkbench.includes("'sheet'|'records'"));
+    assert.ok(operationalWorkbench.includes("setView('records')"));
+    assert.ok(operationalWorkbench.includes("key:'responsible'"));
+    assert.ok(operationalWorkbench.includes('pageSize:5'));
+    assert.ok(operationalWorkbench.includes('<SpreadsheetGrid'));
+    assert.ok(spreadsheet.includes('data-spreadsheet="true"'));
+    assert.ok(spreadsheet.includes('role="grid"'));
+    assert.ok(spreadsheet.includes("onContextMenu={event=>columnMenu"));
+    assert.ok(spreadsheet.includes("onContextMenu={event=>rowMenu"));
+    assert.ok(spreadsheet.includes("kind:'cell'|'column'|'row'"));
+    assert.ok(spreadsheet.includes("onGuideColumn({mode:kind,target:menu.key})"));
+    assert.ok(spreadsheet.includes("onGuideRow({mode:kind,target:row.id})"));
+    assert.ok(spreadsheet.includes('data-sheet-cell='));
+    assert.ok(spreadsheet.includes('onPointerDown={event=>beginResize'));
+    assert.ok(spreadsheet.includes('onDrop={event=>'));
+    assert.ok(spreadsheet.includes('onTouchStart={event=>longPress'));
+    assert.ok(spreadsheet.includes("onUpdateCell(editing.rowId,editing.key,value)"));
+    assert.ok(!spreadsheet.includes('type="checkbox"'));
+    assert.ok(!spreadsheet.includes('type="radio"'));
+    assert.ok(css.includes('.zenit-sheet__scroll'));
+    assert.ok(css.includes('.zenit-sheet__menu'));
+    assert.ok(css.includes('.zenit-sheet__mobile-value'));
   }],
   ['container and compact spacing tokens', () => {
     assert.ok(css.includes('--container-pad:16px'));
