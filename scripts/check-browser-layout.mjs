@@ -127,7 +127,7 @@ try {
       await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.select();true`);
       await send('Input.insertText',{text:'Área móvil'});
       await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.blur();true`);
-      await waitFor('document.querySelector(".zenit-sheet__card dl dd .zenit-sheet__mobile-value")?.textContent==="Área móvil"',
+      await waitFor('document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value")?.textContent==="Área móvil"',
         'Mobile sheet edit did not commit to synthetic records');
     }
     await evaluate(`[...document.querySelectorAll('.zenit-sheet__view-switch button')].find(el=>el.textContent.includes('Vista registros'))?.click();true`);
