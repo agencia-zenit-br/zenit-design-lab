@@ -52,8 +52,23 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string;origin:'desktop'|'mobile'}|null>(null);
   const [draft,setDraft]=useState('');
   const [mobileColumn,setMobileColumn]=useState(columns[0]?.key??'');
+  const [viewport,setViewport]=useState({width:820,height:300});
+  const [customSize,setCustomSize]=useState(String(pageSize));
+  const [dragging,setDragging]=useState(false);
+  const dragAnchor=useRef<{row:number;col:number}|null>(null);
+  useEffect(()=>setCustomSize(String(pageSize)),[pageSize]);
   const tableRef=useRef<HTMLDivElement>(null);
   const menuRef=useRef<HTMLDivElement>(null);
+  useEffect(()=>{
+    const element=tableRef.current;
+    if(!element)return;
+    const observer=new ResizeObserver(()=>{
+      setViewport({width:element.clientWidth,height:element.clientHeight});
+    });
+    observer.observe(element);
+    setViewport({width:element.clientWidth,height:element.clientHeight});
+    return()=>observer.disconnect();
+  },[]);
   const resizeRef=useRef<(()=>void)|null>(null);
   const touchRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const menuTriggerRef=useRef<HTMLElement|null>(null);
@@ -81,8 +96,20 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const pinnedRowCount=pinnedRow?.mode==='only'?1:pinnedRow
     ?Math.max(0,orderedRows.findIndex(row=>row.id===pinnedRow.target)+1):0;
   const colWidth=(key:string)=>widths[key]??164;
-  const colOffsets=orderedCols.reduce<Record<string,number>>((all,col,index)=>{
-    all[col.key]=index===0?48:48+orderedCols.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
+  // Display-only cells complete the available grid; they are never records or writes.
+  const extraColumns=Math.max(0,Math.min(24,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164)));
+  const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
+    key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
+  } as OperationalColumn<Row>))];
+  const extraRows=Math.max(0,Math.min(40,Math.ceil((viewport.height-44-orderedRows.length*48)/48)));
+  const isBlankColumn=(key:string)=>key.startsWith('__blank_col_');
+  const columnLetter=(index:number)=>{
+    let value='',n=index+1;
+    while(n>0){n--;value=String.fromCharCode(65+(n%26))+value;n=Math.floor(n/26);}
+    return value;
+  };
+  const colOffsets=visualColumns.reduce<Record<string,number>>((all,col,index)=>{
+    all[col.key]=index===0?48:48+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
     return all;
   },{});
   const selected=(rowId:RecordIdentity,key:string,r:number,c:number)=>{
@@ -171,6 +198,20 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     onUpdateCell(editing.rowId,editing.key,value);
     setEditing(null);
   };
+  const endDrag=()=>{dragAnchor.current=null;setDragging(false);};
+  useEffect(()=>{
+    if(!dragging)return;
+    window.addEventListener('pointerup',endDrag);
+    window.addEventListener('pointercancel',endDrag);
+    return()=>{window.removeEventListener('pointerup',endDrag);window.removeEventListener('pointercancel',endDrag);};
+  },[dragging]);
+  const selectCell=(rowId:RecordIdentity,key:string,r:number,c:number,extend=false)=>{
+    if(extend&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
+      setSelection({...selection,endRow:r,endCol:c});
+    }else{
+      setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
+    }
+  };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
     if(event.key==='Enter'||event.key==='F2'){
       event.preventDefault();beginEdit(row,col);return;
@@ -184,8 +225,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       const nextRow=Math.max(0,Math.min(orderedRows.length-1,r+move[0]));
       const nextCol=Math.max(0,Math.min(orderedCols.length-1,c+move[1]));
       const next=orderedRows[nextRow],column=orderedCols[nextCol];
-      setSelection({kind:'cell',rowId:next.id,colKey:column.key,anchorRow:nextRow,
-        endRow:event.shiftKey?nextRow:nextRow,anchorCol:nextCol,endCol:nextCol});
+      if(event.shiftKey&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
+        setSelection({...selection,endRow:nextRow,endCol:nextCol});
+      }else selectCell(next.id,column.key,nextRow,nextCol);
       const cell=[...tableRef.current?.querySelectorAll<HTMLElement>('[data-sheet-cell]')??[]]
         .find(el=>el.dataset.sheetCell===String(next.id)+'::'+column.key);
       cell?.focus();return;
@@ -206,10 +248,13 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   return <section className="zenit-sheet" data-spreadsheet="true" aria-label="Hoja de registros">
     <div className="zenit-sheet__toolbar">
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
-      <label>Filas por página <select aria-label="Filas por página" value={pageSize}
-        onChange={event=>onPageSize(Number(event.target.value))}>
-        {[5,10,25].map(size=><option value={size} key={size}>{size}</option>)}
-      </select></label>
+      <label>Filas por página
+        <input type="number" min="1" max="10000" step="1" inputMode="numeric"
+          aria-label="Filas por página" value={customSize}
+          onChange={event=>setCustomSize(event.target.value)}
+          onBlur={()=>{const n=Number(customSize);if(Number.isSafeInteger(n)&&n>=1&&n<=10000)onPageSize(n);else setCustomSize(String(pageSize));}}
+          onKeyDown={event=>{if(event.key==='Enter')event.currentTarget.blur();}}/>
+      </label>
       <span className="zenit-sheet__hint">Selecciona letras o números; botón secundario o menú contextual para fijar guías</span>
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
@@ -219,12 +264,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
     <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+orderedCols.reduce((n,col)=>n+colWidth(col.key),0)}}>
-        <colgroup><col style={{width:48}}/>{orderedCols.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
+      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+        <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
-          <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}>#</th>
-          {orderedCols.map((col,c)=>{
-            const letter=String.fromCharCode(65+c);
+          <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}}></th>
+          {visualColumns.map((col,c)=>{
+            const letter=columnLetter(c);
+            if(isBlankColumn(col.key))return <th key={col.key} className="zenit-sheet__head zenit-sheet__placeholder" scope="col" data-sheet-placeholder-column={col.key} style={freezeStyle(-1,c,col.key,true)}>
+              <span className="zenit-sheet__axis-token" aria-hidden="true">{letter}</span>
+            </th>;
             return <th key={col.key} scope="col" className={'zenit-sheet__head'+(selection?.kind==='column'&&selection.colKey===col.key?' is-selected':'')+(c<pinnedColCount?' is-guide':'')}
               style={freezeStyle(-1,c,col.key,true)}
               data-sheet-column={col.key}
@@ -239,7 +287,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                   onTouchMove={cancelLongPress} onTouchEnd={cancelLongPress}
                   onClick={()=>setSelection({kind:'column',colKey:col.key})}
                   onContextMenu={event=>columnMenu(event,col.key,col.label)}
-                  aria-label={'Seleccionar columna '+col.label}>{letter}</button>
+                  aria-label={'Seleccionar columna '+col.label}><span className="zenit-sheet__axis-token">{letter}</span></button>
                 <button type="button" className="zenit-sheet__head-title"
                   onClick={()=>setSelection({kind:'column',colKey:col.key})}
                   onDoubleClick={()=>onRenameColumn(col.key)}
@@ -269,12 +317,13 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 aria-label={'Seleccionar fila '+String(from+r)}
                 onTouchStart={event=>longPress('row',String(row.id),getRowLabel(row),event)}
                 onTouchMove={cancelLongPress} onTouchEnd={cancelLongPress}
-                onClick={()=>setSelection({kind:'row',rowId:row.id})}>{from+r}</button>
+                onClick={()=>setSelection({kind:'row',rowId:row.id})}><span className="zenit-sheet__axis-token">{from+r}</span></button>
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
             </th>
-            {orderedCols.map((col,c)=>{
+            {visualColumns.map((col,c)=>{
+              if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
               const active=selected(row.id,col.key,r,c);
               const isEditing=editing?.origin==='desktop'&&editing.rowId===row.id&&editing.key===col.key;
               return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
@@ -282,11 +331,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
                 style={freezeStyle(r,c,col.key)}
                 tabIndex={0} role="gridcell" aria-selected={active}
-                onClick={event=>{
-                  if(event.shiftKey&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
-                    setSelection({...selection,kind:'cell',endRow:r,endCol:c});
-                  }else setSelection({kind:'cell',rowId:row.id,colKey:col.key,
-                    anchorRow:r,anchorCol:c,endRow:r,endCol:c});
+                onClick={event=>{if(!dragging)selectCell(row.id,col.key,r,c,event.shiftKey);}}
+                onPointerDown={event=>{
+                  if(event.button!==0||editing)return;
+                  dragAnchor.current={row:r,col:c};setDragging(true);
+                  selectCell(row.id,col.key,r,c,event.shiftKey);
+                }}
+                onPointerEnter={()=>{
+                  if(!dragAnchor.current)return;
+                  setSelection(prev=>prev?.kind==='cell'?{...prev,endRow:r,endCol:c}:prev);
                 }}
                 onContextMenu={event=>{if(selection?.kind==='column')columnMenu(event,col.key,col.label);
                   else if(selection?.kind==='row')rowMenu(event,row.id,getRowLabel(row));}}
@@ -305,7 +358,11 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           </tr>)}
         </tbody>
       </table>
-      {!orderedRows.length&&<p className="zenit-sheet__empty">No hay registros coincidentes.</p>}
+      {Array.from({length:extraRows},(_,index)=><div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row" aria-hidden="true">
+        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span>
+        {visualColumns.map(col=><span key={col.key} style={{width:colWidth(col.key)}}/>)}
+      </div>)}
+      {!orderedRows.length&&total>0&&<p className="zenit-sheet__empty">No hay registros coincidentes.</p>}
     </div>
     <div className="zenit-sheet__mobile" role="list" aria-label="Registros de la hoja en tarjetas">
       <div className="zenit-sheet__mobile-guide">
