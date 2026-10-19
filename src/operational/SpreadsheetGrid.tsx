@@ -47,6 +47,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,readOnly=false,isLoading=false,error=null,onRetry,
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
+  const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
   const [menu,setMenu]=useState<Menu|null>(null);
   const [widths,setWidths]=useState<Record<string,number>>({});
   const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string;origin:'desktop'|'mobile'}|null>(null);
@@ -245,8 +246,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     };
   };
   const busy=isLoading||Boolean(error);
-  return <section className="zenit-sheet" data-spreadsheet="true" aria-label="Hoja de registros">
+  return <section className="zenit-sheet" data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
+      <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
       <label>Filas por página
         <input type="number" min="1" max="10000" step="1" inputMode="numeric"
@@ -264,7 +266,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
     <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+      <table role="grid" aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
