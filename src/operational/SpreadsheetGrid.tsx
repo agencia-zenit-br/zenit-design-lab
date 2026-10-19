@@ -117,6 +117,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     ?Math.max(0,orderedRows.findIndex(row=>row.id===pinnedRow.target)+1):0;
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
+  const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
   const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
@@ -124,7 +125,6 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   // Grow the visual canvas in bounded batches as users approach its last visible guides.
   // Placeholders remain display-only: no synthetic records are sent to the adapter.
   const [rowCanvasReserve,setRowCanvasReserve]=useState(0);
-  const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
   const extraRows=Math.max(0,Math.min(160,Math.max(rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48))));
   const expandCanvas=()=>{
     setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
