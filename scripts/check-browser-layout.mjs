@@ -118,6 +118,23 @@ try {
     await waitFor('Boolean(document.getElementById("catalog-select"))', 'Component catalogue did not render');
     assert.ok(await evaluate('Boolean(document.querySelector("[data-spreadsheet]"))'),
       'Spreadsheet must be the default table presentation');
+    if(width===820){
+      const guide=await evaluate(`(() => {
+        const populated=document.querySelector('.zenit-sheet__rowhead .zenit-sheet__axis-token');
+        const empty=document.querySelector('.zenit-sheet__placeholder-index .zenit-sheet__axis-token');
+        if(!populated||!empty)return null;
+        const a=populated.getBoundingClientRect(),b=empty.getBoundingClientRect();
+        const overflow=document.querySelector('.zenit-sheet__scroll');
+        return {delta:Math.abs((a.left+a.right)/2-(b.left+b.right)/2),numbers:
+          [...document.querySelectorAll('.zenit-sheet__placeholder-index .zenit-sheet__axis-token')].slice(0,2).map(el=>el.textContent),
+          hasExpansion:!![...document.querySelectorAll('.zenit-sheet__toolbar button')].find(el=>el.textContent.includes('Ampliar cuadrícula')),
+          scrollable:!!overflow};
+      })()`);
+      assert.ok(guide,'Real and placeholder row guides must both render');
+      assert.ok(guide.delta<=2,`Real and placeholder row numbers must align: ${JSON.stringify(guide)}`);
+      assert.ok(guide.hasExpansion&&guide.scrollable,'Expanded spreadsheet canvas controls must render');
+      assert.ok(guide.numbers.length>0,'Blank canvas rows must render without persisted records');
+    }
     if(width===375){
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
         'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
