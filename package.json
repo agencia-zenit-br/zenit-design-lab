@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "npm run check:design && npm run test:temporal && npm run test:operational && tsc -b && vite build",
+    "build": "npm run check:design && npm run test:temporal && npm run test:operational && npm run build:runtime",
+    "build:runtime": "tsc -b && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
