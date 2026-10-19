@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
@@ -12,6 +12,7 @@ export type SheetSelection = {
   endRow?:number;
   endCol?:number;
 };
+export type SheetCellFormat = {align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean};
 export type Guide<T> = {mode:'only'|'through';target:T}|null;
 type Menu = {kind:'row'|'column';key:string;label:string;left:number;top:number};
 type Props<Row extends RecordWithId> = {
@@ -34,6 +35,10 @@ type Props<Row extends RecordWithId> = {
   guideRow?:Guide<RecordIdentity>;
   onGuideColumn:(guide:Guide<string>)=>void;
   onGuideRow:(guide:Guide<RecordIdentity>)=>void;
+  cellFormats?:Readonly<Record<string,SheetCellFormat>>;
+  onCellFormatsChange?:(formats:Record<string,SheetCellFormat>)=>void;
+  rowTitles?:Readonly<Record<string,string>>;
+  onRowTitlesChange?:(titles:Record<string,string>)=>void;
   readOnly?:boolean;
   isLoading?:boolean;
   error?:string|null;
@@ -44,9 +49,42 @@ type Props<Row extends RecordWithId> = {
 export function SpreadsheetGrid<Row extends RecordWithId>({
   rows,columns,getRowLabel,from,total,page,pageCount,pageSize,search,onSearch,onPage,onPageSize,
   onUpdateCell,onRenameColumn,onReorderColumn,
-  guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,readOnly=false,isLoading=false,error=null,onRetry,
+  guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,
+  cellFormats:controlledFormats,onCellFormatsChange,rowTitles:controlledRowTitles,onRowTitlesChange,
+  readOnly=false,isLoading=false,error=null,onRetry,
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
+  const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
+  const [localRowTitles,setLocalRowTitles]=useState<Record<string,string>>({});
+  const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
+  const rowTitles=controlledRowTitles??localRowTitles;
+  const cellFormats=controlledFormats??localFormats;
+  const updateRowTitle=(id:RecordIdentity,title:string)=>{
+    if(readOnly)return;
+    const next={...rowTitles,[String(id)]:title};
+    if(controlledRowTitles===undefined)setLocalRowTitles(next);
+    onRowTitlesChange?.(next);
+  };
+  const formatKey=(id:RecordIdentity,key:string)=>String(id)+'::'+key;
+  const applyFormat=(change:Partial<{align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>)=>{
+    if(selection?.kind!=='cell')return;
+    const rowStart=Math.min(selection.anchorRow??0,selection.endRow??0);
+    const rowEnd=Math.max(selection.anchorRow??0,selection.endRow??0);
+    const colStart=Math.min(selection.anchorCol??0,selection.endCol??0);
+    const colEnd=Math.max(selection.anchorCol??0,selection.endCol??0);
+    if(readOnly)return;
+    const previous=cellFormats;
+    {
+      const next={...previous};
+      for(let r=rowStart;r<=rowEnd;r++)for(let c=colStart;c<=colEnd;c++){
+        const row=orderedRows[r],col=orderedCols[c];if(!row||!col)continue;
+        const key=formatKey(row.id,col.key);
+        next[key]={...(previous[key]??{align:'left',bold:false,italic:false,underline:false,highlight:false}),...change};
+      }
+      if(controlledFormats===undefined)setLocalFormats(next);
+      onCellFormatsChange?.(next);
+    }
+  };
   const [menu,setMenu]=useState<Menu|null>(null);
   const [widths,setWidths]=useState<Record<string,number>>({});
   const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string;origin:'desktop'|'mobile'}|null>(null);
@@ -97,11 +135,19 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     ?Math.max(0,orderedRows.findIndex(row=>row.id===pinnedRow.target)+1):0;
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
-  const extraColumns=Math.max(0,Math.min(24,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164)));
+  const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
+  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
   } as OperationalColumn<Row>))];
-  const extraRows=Math.max(0,Math.min(40,Math.ceil((viewport.height-44-orderedRows.length*48)/48)));
+  // Grow the visual canvas in bounded batches as users approach its last visible guides.
+  // Placeholders remain display-only: no synthetic records are sent to the adapter.
+  const [rowCanvasReserve,setRowCanvasReserve]=useState(0);
+  const extraRows=Math.max(0,Math.min(160,Math.max(rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48))));
+  const expandCanvas=()=>{
+    setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
+    setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
+  };
   const isBlankColumn=(key:string)=>key.startsWith('__blank_col_');
   const columnLetter=(index:number)=>{
     let value='',n=index+1;
@@ -189,14 +235,31 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   };
   const beginEdit=(row:Row,col:OperationalColumn<Row>,origin:'desktop'|'mobile'='desktop')=>{
     if(readOnly)return;
+    skipBlurCommit.current=false;
     setEditing({rowId:row.id,key:col.key,origin});
     setDraft(String(col.getValue(row)??''));
     setMenu(null);
   };
-  const commit=(value:string)=>{
-    if(!editing)return;
-    onUpdateCell(editing.rowId,editing.key,value);
+  const skipBlurCommit=useRef(false);
+  const cancelEdit=()=>{
+    skipBlurCommit.current=true;
     setEditing(null);
+  };
+  const commit=(value:string)=>{
+    if(!editing||skipBlurCommit.current){skipBlurCommit.current=false;return;}
+    const source=rows.find(row=>row.id===editing.rowId);
+    const column=columns.find(col=>col.key===editing.key);
+    const before=source&&column?String(column.getValue(source)??''):null;
+    if(before!==null&&before!==value){
+      undoStack.current.push({rowId:editing.rowId,key:editing.key,before,after:value});
+      if(undoStack.current.length>100)undoStack.current.shift();
+    }
+    if(before!==value)onUpdateCell(editing.rowId,editing.key,value);
+    setEditing(null);
+  };
+  const blurCommit=(value:string)=>{
+    if(skipBlurCommit.current){skipBlurCommit.current=false;return;}
+    commit(value);
   };
   const endDrag=()=>{dragAnchor.current=null;setDragging(false);};
   useEffect(()=>{
@@ -212,7 +275,61 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
     }
   };
+  const undoStack=useRef<Array<{rowId:RecordIdentity;key:string;before:string;after:string}>>([]);
+  const undoLastEdit=()=>{
+    const last=undoStack.current.pop();
+    if(!last||readOnly)return;
+    onUpdateCell(last.rowId,last.key,last.before);
+  };
+  const exportCsv=()=>{
+    // Export only the authorized, currently loaded page. Never include visual filler cells.
+    const quote=(value:unknown)=>'"'+String(value??'').replace(/"/g,'""')+'"';
+    const lines=[
+      orderedCols.map(col=>quote(col.label)).join(','),
+      ...orderedRows.map(row=>orderedCols.map(col=>quote(col.getValue(row))).join(','))
+    ];
+    const csv='\uFEFF'+lines.join('\r\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const link=document.createElement('a');
+    link.href=url;link.download='zenit-hoja-pagina-'+page+'.csv';
+    document.body.appendChild(link);link.click();link.remove();
+    URL.revokeObjectURL(url);
+  };
+  const copySelection=(event:ClipboardEvent<HTMLTableElement>)=>{
+    // Do not intercept native copying from an active editor or a text selection.
+    if(editing||event.target instanceof HTMLInputElement||event.target instanceof HTMLTextAreaElement||
+      (typeof window!=='undefined'&&window.getSelection()?.toString()))return;
+    if(selection?.kind!=='cell'||selection.anchorRow===undefined||selection.endRow===undefined||
+      selection.anchorCol===undefined||selection.endCol===undefined)return;
+    const top=Math.max(0,Math.min(selection.anchorRow,selection.endRow));
+    const bottom=Math.min(orderedRows.length-1,Math.max(selection.anchorRow,selection.endRow));
+    const left=Math.max(0,Math.min(selection.anchorCol,selection.endCol));
+    const right=Math.min(orderedCols.length-1,Math.max(selection.anchorCol,selection.endCol));
+    if(bottom<top||right<left)return;
+    // TSV is interoperable with Excel and Google Sheets. Only authorized loaded cells are exported.
+    const escapeValue=(value:unknown)=>String(value??'').replace(/\t/g,' ').replace(/\r?\n/g,' ');
+    const text=orderedRows.slice(top,bottom+1).map(row=>
+      orderedCols.slice(left,right+1).map(col=>escapeValue(col.getValue(row))).join('\t')
+    ).join('\n');
+    event.clipboardData.setData('text/plain',text);
+    event.preventDefault();
+  };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){
+      event.preventDefault();undoLastEdit();return;
+    }
+    if(event.key==='Tab'){
+      event.preventDefault();
+      const index=r*orderedCols.length+c+(event.shiftKey?-1:1);
+      if(index<0||index>=orderedRows.length*orderedCols.length)return;
+      const nextRow=Math.floor(index/orderedCols.length),nextCol=index%orderedCols.length;
+      const next=orderedRows[nextRow],column=orderedCols[nextCol];
+      if(!next||!column)return;
+      selectCell(next.id,column.key,nextRow,nextCol);
+      const cell=[...tableRef.current?.querySelectorAll<HTMLElement>('[data-sheet-cell]')??[]]
+        .find(el=>el.dataset.sheetCell===String(next.id)+'::'+column.key);
+      cell?.focus();return;
+    }
     if(event.key==='Enter'||event.key==='F2'){
       event.preventDefault();beginEdit(row,col);return;
     }
@@ -222,9 +339,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     const move=moves[event.key];
     if(move){
       event.preventDefault();
-      const nextRow=Math.max(0,Math.min(orderedRows.length-1,r+move[0]));
-      const nextCol=Math.max(0,Math.min(orderedCols.length-1,c+move[1]));
+      const baseRow=event.shiftKey&&selection?.kind==='cell'&&selection.endRow!==undefined?selection.endRow:r;
+      const baseCol=event.shiftKey&&selection?.kind==='cell'&&selection.endCol!==undefined?selection.endCol:c;
+      const nextRow=Math.max(0,Math.min(orderedRows.length-1,baseRow+move[0]));
+      const nextCol=Math.max(0,Math.min(orderedCols.length-1,baseCol+move[1]));
       const next=orderedRows[nextRow],column=orderedCols[nextCol];
+      if(!next||!column)return;
       if(event.shiftKey&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
         setSelection({...selection,endRow:nextRow,endCol:nextCol});
       }else selectCell(next.id,column.key,nextRow,nextCol);
@@ -233,7 +353,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       cell?.focus();return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
-      event.preventDefault();setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
+      event.preventDefault();skipBlurCommit.current=false;setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
     }
   };
   const rowOffset=48;
@@ -245,8 +365,16 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     };
   };
   const busy=isLoading||Boolean(error);
-  return <section className="zenit-sheet" data-spreadsheet="true" aria-label="Hoja de registros">
+  return <section className="zenit-sheet" data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
+      <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
+      <div className="zenit-sheet__format-toolbar" role="group" aria-label="Formato de celdas">
+        {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
+        {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
+      </div>
+      <button type="button" onClick={expandCanvas} disabled={extraRows>=160&&extraColumns>=64}>Ampliar cuadrícula</button>
+      <button type="button" disabled={readOnly} onClick={undoLastEdit}>Deshacer última edición</button>
+      <button type="button" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}>Exportar página CSV</button>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
       <label>Filas por página
         <input type="number" min="1" max="10000" step="1" inputMode="numeric"
@@ -263,8 +391,14 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
-    <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+    <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true" onScroll={event=>{
+      const element=event.currentTarget;
+      if(element.scrollHeight-element.scrollTop-element.clientHeight<110&&extraRows<160)
+        setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
+      if(element.scrollWidth-element.scrollLeft-element.clientWidth<220&&extraColumns<64)
+        setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
+    }}>
+      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
@@ -321,6 +455,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
+              {guideRow?.target===row.id&&<input className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título" value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} disabled={readOnly}/>}
             </th>
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
@@ -336,7 +471,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
                 data-selected={active?'true':undefined} data-range-edge={rangeEdge}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
-                style={freezeStyle(r,c,col.key)}
+                style={{...freezeStyle(r,c,col.key),textAlign:cellFormats[formatKey(row.id,col.key)]?.align??"left",fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:undefined,fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?"italic":undefined,textDecoration:cellFormats[formatKey(row.id,col.key)]?.underline?"underline":undefined,backgroundColor:cellFormats[formatKey(row.id,col.key)]?.highlight?"#fff1a8":undefined}}
                 tabIndex={0} role="gridcell" aria-selected={active}
                 onClick={event=>{if(!dragging)selectCell(row.id,col.key,r,c,event.shiftKey);}}
                 onPointerDown={event=>{
@@ -354,10 +489,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 onKeyDown={event=>{if(!isEditing)onCellKey(event,r,c,row,col);}}>
                 {isEditing?<input autoFocus className="zenit-sheet__cell-editor" aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
                   value={draft} onChange={event=>setDraft(event.target.value)}
-                  onBlur={event=>commit(event.currentTarget.value)}
+                  onBlur={event=>blurCommit(event.currentTarget.value)}
                   onKeyDown={event=>{
                     if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
-                    if(event.key==='Escape'){event.preventDefault();setEditing(null);}
+                    if(event.key==='Escape'){event.preventDefault();cancelEdit();}
                     event.stopPropagation();
                   }}/>:String(col.getValue(row)??'')}
               </td>;
@@ -366,7 +501,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </tbody>
       </table>
       {Array.from({length:extraRows},(_,index)=><div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row" aria-hidden="true">
-        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span>
+        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__placeholder-row-select"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span><span className="zenit-sheet__placeholder-row-menu" aria-hidden="true"/></span>
         {visualColumns.map(col=><span key={col.key} style={{width:colWidth(col.key)}}/>)}
       </div>)}
       {!orderedRows.length&&total>0&&<p className="zenit-sheet__empty">No hay registros coincidentes.</p>}
@@ -400,10 +535,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <dd>{editing?.origin==='mobile'&&editing.rowId===row.id&&editing.key===col.key
             ?<input autoFocus className="zenit-sheet__cell-editor"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)} value={draft}
-              onChange={event=>setDraft(event.target.value)} onBlur={event=>commit(event.currentTarget.value)}
+              onChange={event=>setDraft(event.target.value)} onBlur={event=>blurCommit(event.currentTarget.value)}
               onKeyDown={event=>{
                 if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
-                if(event.key==='Escape'){event.preventDefault();setEditing(null);}
+                if(event.key==='Escape'){event.preventDefault();cancelEdit();}
               }}/>
             :<button type="button" className="zenit-sheet__mobile-value"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)}

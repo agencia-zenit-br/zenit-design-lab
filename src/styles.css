@@ -1747,3 +1747,18 @@ button,a,[role="option"],summary {
 .zenit-sheet__placeholder-index {width:48px;display:grid;place-items:center;position:sticky;left:0;z-index:3;background:var(--surface-muted);}
 .zenit-sheet__toolbar input[type="number"] {width:92px;max-width:100%;}
 @media(max-width:700px){.zenit-sheet__scroll{display:none;}}
+
+/* R6: display-only guide rows retain the same axis-token geometry as real rows. */
+.zenit-sheet__placeholder-index {display:flex;align-items:center;justify-content:center;gap:0;}
+.zenit-sheet__placeholder-index .zenit-sheet__axis-token {display:inline-flex;align-items:center;justify-content:center;min-width:28px;min-height:28px;box-sizing:border-box;}
+
+/* R6 formatting controls remain available without overflowing the viewport. */
+.zenit-sheet__format-toolbar {display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.zenit-sheet__format-toolbar button {border:1px solid var(--border);border-radius:6px;padding:5px 7px;background:var(--surface);color:var(--text);cursor:pointer;}
+.zenit-sheet__format-toolbar button:disabled {opacity:.4;cursor:not-allowed;}
+.zenit-sheet__row-title {max-width:100%;min-width:0;width:100%;font-size:11px;box-sizing:border-box;}
+
+/* R6: the empty row guide reserves the same select and menu geometry as real rows. */
+.zenit-sheet__placeholder-index {box-sizing:border-box;padding:0 2px;justify-content:center;}
+.zenit-sheet__placeholder-row-select {display:inline-grid;place-items:center;flex:none;min-width:26px;padding:1px 0;}
+.zenit-sheet__placeholder-row-menu {display:inline-block;flex:none;width:16px;min-height:28px;}
