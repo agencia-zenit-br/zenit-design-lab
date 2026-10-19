@@ -118,6 +118,18 @@ try {
     await waitFor('Boolean(document.getElementById("catalog-select"))', 'Component catalogue did not render');
     assert.ok(await evaluate('Boolean(document.querySelector("[data-spreadsheet]"))'),
       'Spreadsheet must be the default table presentation');
+    if(width===375){
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
+        'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
+      await evaluate(`document.querySelector('.zenit-sheet__card dl dd .zenit-sheet__mobile-value')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl dd input"))',
+        'Mobile sheet must allow editing a field by tapping it');
+      await evaluate(`document.querySelector('.zenit-sheet__card dl dd input')?.select();true`);
+      await send('Input.insertText',{text:'Registro móvil'});
+      await evaluate(`document.querySelector('.zenit-sheet__card dl dd input')?.blur();true`);
+      await waitFor('document.querySelector(".zenit-sheet__card dl dd .zenit-sheet__mobile-value")?.textContent==="Registro móvil"',
+        'Mobile sheet edit did not commit to synthetic records');
+    }
     await evaluate(`[...document.querySelectorAll('.zenit-sheet__view-switch button')].find(el=>el.textContent.includes('Vista registros'))?.click();true`);
     await waitFor('Boolean(document.querySelector("[data-operational-records]"))',
       'Operational records list must remain available as the second shared-data adapter');
@@ -730,7 +742,11 @@ try {
       await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__head-select')?.click();true`);
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__table th.is-selected").length'),1,
         'Clicking column letter must select column');
-      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__more')?.click();true`);
+      await evaluate(`(() => {
+        const header=document.querySelector('[data-sheet-column="responsible"]');
+        return header?.dispatchEvent(new MouseEvent('contextmenu',
+          {bubbles:true,cancelable:true,button:2,clientX:320,clientY:300}));
+      })()`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__menu"))',
         'Accessible contextual menu did not open for column');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(el=>el.textContent.includes('Fijar esta columna'))?.click();true`);
@@ -742,6 +758,12 @@ try {
       }))()`);
       assert.equal(pinnedColumn.first,'responsible','Pin-only should make selected column the first data guide');
       assert.equal(pinnedColumn.sticky,'sticky','Pinned guide must stay sticky');
+      const beforeWidth=await evaluate('document.querySelector(".zenit-sheet__table colgroup col:nth-child(2)")?.style.width');
+      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__resizer')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+      await waitFor('document.querySelector(".zenit-sheet__table colgroup col:nth-child(2)")?.style.width!=="'+beforeWidth+'"',
+        'ArrowRight must allow accessible keyboard width changes');
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:nth-child(3) .zenit-sheet__row-select')?.click();true`);
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__rowhead.is-selected").length'),1,
         'Clicking the row number must select the row');
