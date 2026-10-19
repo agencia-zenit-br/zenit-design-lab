@@ -121,13 +121,13 @@ try {
     if(width===375){
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
         'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
-      await evaluate(`document.querySelector('.zenit-sheet__card dl dd .zenit-sheet__mobile-value')?.click();true`);
-      await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl dd input"))',
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd input"))',
         'Mobile sheet must allow editing a field by tapping it');
-      await evaluate(`document.querySelector('.zenit-sheet__card dl dd input')?.select();true`);
-      await send('Input.insertText',{text:'Registro móvil'});
-      await evaluate(`document.querySelector('.zenit-sheet__card dl dd input')?.blur();true`);
-      await waitFor('document.querySelector(".zenit-sheet__card dl dd .zenit-sheet__mobile-value")?.textContent==="Registro móvil"',
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.select();true`);
+      await send('Input.insertText',{text:'Área móvil'});
+      await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd input')?.blur();true`);
+      await waitFor('document.querySelector(".zenit-sheet__card dl dd .zenit-sheet__mobile-value")?.textContent==="Área móvil"',
         'Mobile sheet edit did not commit to synthetic records');
     }
     await evaluate(`[...document.querySelectorAll('.zenit-sheet__view-switch button')].find(el=>el.textContent.includes('Vista registros'))?.click();true`);
