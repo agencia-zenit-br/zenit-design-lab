@@ -49,7 +49,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [menu,setMenu]=useState<Menu|null>(null);
   const [widths,setWidths]=useState<Record<string,number>>({});
-  const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string}|null>(null);
+  const [editing,setEditing]=useState<{rowId:RecordIdentity;key:string;origin:'desktop'|'mobile'}|null>(null);
   const [draft,setDraft]=useState('');
   const [mobileColumn,setMobileColumn]=useState(columns[0]?.key??'');
   const tableRef=useRef<HTMLDivElement>(null);
@@ -160,9 +160,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     window.addEventListener('pointerup',stop);
     window.addEventListener('pointercancel',stop);
   };
-  const beginEdit=(row:Row,col:OperationalColumn<Row>)=>{
+  const beginEdit=(row:Row,col:OperationalColumn<Row>,origin:'desktop'|'mobile'='desktop')=>{
     if(readOnly)return;
-    setEditing({rowId:row.id,key:col.key});
+    setEditing({rowId:row.id,key:col.key,origin});
     setDraft(String(col.getValue(row)??''));
     setMenu(null);
   };
@@ -191,7 +191,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       cell?.focus();return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
-      event.preventDefault();setEditing({rowId:row.id,key:col.key});setDraft(event.key);
+      event.preventDefault();setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
     }
   };
   const rowOffset=48;
@@ -276,7 +276,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
             </th>
             {orderedCols.map((col,c)=>{
               const active=selected(row.id,col.key,r,c);
-              const isEditing=editing?.rowId===row.id&&editing.key===col.key;
+              const isEditing=editing?.origin==='desktop'&&editing.rowId===row.id&&editing.key===col.key;
               return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
                 data-selected={active?'true':undefined}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
@@ -333,7 +333,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>
         <dl>{orderedCols.map(col=><div key={col.key}>
           <dt>{col.label}</dt>
-          <dd>{editing?.rowId===row.id&&editing.key===col.key
+          <dd>{editing?.origin==='mobile'&&editing.rowId===row.id&&editing.key===col.key
             ?<input autoFocus className="zenit-sheet__cell-editor"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)} value={draft}
               onChange={event=>setDraft(event.target.value)} onBlur={event=>commit(event.currentTarget.value)}
@@ -343,7 +343,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               }}/>
             :<button type="button" className="zenit-sheet__mobile-value"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
-              onClick={()=>beginEdit(row,col)}>{String(col.getValue(row)??'')||'—'}</button>}
+              onClick={()=>beginEdit(row,col,'mobile')}>{String(col.getValue(row)??'')||'—'}</button>}
           </dd>
         </div>)}</dl>
       </article>)}
