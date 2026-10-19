@@ -28,7 +28,8 @@ test('preview has dedicated least-privilege credentials and immutable source',()
   assert.match(yaml,/never use original Design Lab deployer\/runtime/);
   assert.match(yaml,/ref: \$\{\{ github.sha \}\}/);
   assert.match(yaml,/zenit-ui-core-preview@zenit-platform-labs\.iam\.gserviceaccount\.com/);
-  assert.match(yaml,/IMAGE: southamerica-east1-docker\.pkg\.dev\/zenit-platform-labs\/zenit-design-lab\/zenit-ui-core-preview/);
+  assert.match(yaml,/IMAGE: southamerica-east1-docker\.pkg\.dev\/zenit-platform-labs\/zenit-ui-core-preview\/ui-core/);
+  assert.match(yaml,/repositories describe zenit-ui-core-preview/);
   assert.match(yaml,/docker push "\$IMAGE:\$GITHUB_SHA"/);
   assert.match(yaml,/\$IMAGE@\$IMAGE_DIGEST/);
 });
