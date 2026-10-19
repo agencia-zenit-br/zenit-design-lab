@@ -5,14 +5,16 @@ import { ContextHelp } from '../ContextHelp';
 import { OperationalRecords, type OperationalColumn, type OperationalFilter } from './OperationalRecords';
 import { ActionConfirm, OperationNotice, type FeedbackMessage } from './OperationFeedback';
 import { queryCollection, reconcileSelectedIds, type CollectionQuery, type RecordIdentity } from './collectionCore';
+import { SpreadsheetGrid, type Guide } from './SpreadsheetGrid';
 
-type SampleRecord={id:number;name:string;category:string;status:'Activo'|'Pendiente'|'Completado';updated:string;revision:number;extras?:Record<string,string>};
+type SampleRecord={id:number;name:string;category:string;status:'Activo'|'Pendiente'|'Completado';responsible:string;updated:string;revision:number;extras?:Record<string,string>};
 const categories=['General','Contenido','Diseño','Soporte'];
 const sampleRows:SampleRecord[]=Array.from({length:17},(_,index)=>({
   id:index+1,name:`Registro ${String(index+1).padStart(2,'0')}`,
   category:categories[index%categories.length],
   status:index%4===0?'Pendiente':index%3===0?'Completado':'Activo',
-  updated:`2026-10-${String((index%17)+1).padStart(2,'0')}`,
+  responsible:['María','José','Ana','Luis','Sofía'][index%5],
+  updated:`2026-10-${String((index%17)+1).padStart(2,'0')}`, 
   revision:1,
 }));
 const initialQuery:CollectionQuery={search:'',filters:{status:''},sort:{key:'name',direction:'asc'},page:1,pageSize:5};
@@ -21,6 +23,7 @@ const baseColumns:readonly OperationalColumn<SampleRecord>[]=[
   {key:'category',label:'Categoría',getValue:row=>row.category,sortable:true,filterable:true},
   {key:'status',label:'Estado',getValue:row=>row.status,sortable:true,filterable:true,
     render:row=><StatusPill tone={row.status==='Completado'?'success':row.status==='Pendiente'?'warning':'neutral'}>{row.status}</StatusPill>},
+  {key:'responsible',label:'Responsable',getValue:row=>row.responsible,sortable:true},
   {key:'updated',label:'Actualizado',getValue:row=>row.updated,sortable:true},
 ];
 const filters:readonly OperationalFilter[]=[{key:'status',label:'Estado',options:[
@@ -39,6 +42,10 @@ export function OperationalWorkbench(){
   const [notice,setNotice]=useState<FeedbackMessage|null>(null);
   const [confirm,setConfirm]=useState(false);
   const [compact,setCompact]=useState(false);
+  const [view,setView]=useState<'sheet'|'records'>('sheet');
+  const [columnOrder,setColumnOrder]=useState(['name','category','status','responsible','updated']);
+  const [guideColumn,setGuideColumn]=useState<Guide<string>>(null);
+  const [guideRow,setGuideRow]=useState<Guide<RecordIdentity>>(null);
   const [remote,setRemote]=useState(false);
   const [scenario,setScenario]=useState<'ready'|'loading'|'error'>('ready');
   const [sequence,setSequence]=useState(1);
@@ -86,7 +93,32 @@ export function OperationalWorkbench(){
         }}/>,
     })),
   ];
-  const visibleColumns=allColumns.filter(column=>!hiddenColumns.includes(column.key));
+  const visibleColumns=allColumns.filter(column=>!hiddenColumns.includes(column.key))
+    .sort((a,b)=>columnOrder.indexOf(a.key)-columnOrder.indexOf(b.key));
+  const reorderColumn=(source:string,destination:string)=>{
+    setColumnOrder(previous=>{
+      const next=[...previous],from=next.indexOf(source),to=next.indexOf(destination);
+      if(from<0||to<0||from===to)return previous;
+      next.splice(from,1);next.splice(to,0,source);return next;
+    });
+  };
+  const renameFromGrid=(key:string)=>{
+    const field=document.querySelector<HTMLInputElement>('[data-column-title="'+key+'"]');
+    field?.focus();field?.select();
+    field?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  };
+  const updateGridCell=(id:RecordIdentity,key:string,value:string)=>{
+    if(key==='status'&&!['Activo','Pendiente','Completado'].includes(value)){
+      notify('warning','Estado inválido. Usa Activo, Pendiente o Completado.');return;
+    }
+    setRows(previous=>previous.map(row=>{
+      if(row.id!==id)return row;
+      if(key==='name'||key==='category'||key==='status'||key==='responsible'||key==='updated'){
+        return {...row,[key]:value,revision:row.revision+1};
+      }
+      return {...row,extras:{...row.extras,[key]:value},revision:row.revision+1};
+    }));
+  };
   const commitColumnTitle=(key:string)=>{
     const column=allColumns.find(item=>item.key===key);
     if(!column)return;
@@ -111,17 +143,9 @@ export function OperationalWorkbench(){
     const key='custom_'+columnSerial;
     setCustomColumns(previous=>[...previous,{key,label}]);
     setColumnSerial(value=>value+1);
+    setColumnOrder(previous=>[...previous,key]);
     setColumnLabel('');
     notify('success','Se añadió una columna editable solo a la demostración.');
-  };
-  const shiftColumn=(key:string,delta:number)=>{
-    setCustomColumns(previous=>{
-      const index=previous.findIndex(column=>column.key===key),next=index+delta;
-      if(index<0||next<0||next>=previous.length)return previous;
-      const reordered=[...previous];
-      [reordered[index],reordered[next]]=[reordered[next],reordered[index]];
-      return reordered;
-    });
   };
   const notify=(level:FeedbackMessage['level'],message:string)=>{
     setNotice({id:sequence,level,message});setSequence(previous=>previous+1);
@@ -129,7 +153,7 @@ export function OperationalWorkbench(){
   const add=()=>{
     const id=Math.max(0,...rows.map(row=>row.id))+1;
     setRows(previous=>[...previous,{
-      id,name:`Registro ${String(id).padStart(2,'0')}`,category:'General',
+      id,name:`Registro ${String(id).padStart(2,'0')}`,category:'General',responsible:'',
       status:'Pendiente',updated:'2026-10-18',revision:1,
     }]);
     setQuery(previous=>({...previous,search:'',filters:{status:''},sort:null,page:1}));
@@ -145,6 +169,8 @@ export function OperationalWorkbench(){
   const open=(row:SampleRecord)=>notify('info',`Se seleccionó «${row.name}». La apertura de detalles se implementará en cada producto consumidor.`);
   const reset=()=>{
     setQuery(initialQuery);setSelected([]);setRows(sampleRows);setNotice(null);setScenario('ready');setCompact(false);setRemote(false);setConfirm(false);
+    setView('sheet');setGuideColumn(null);setGuideRow(null);
+    setColumnOrder(['name','category','status','responsible','updated']);
     setCustomColumns([]);setHiddenColumns([]);setColumnLabel('');setColumnSerial(1);
     setColumnTitles({});setTitleDrafts({});setEditingCells(false);
     setFreezeHeader(true);setFreezeFirstColumn(false);setFreezeFirstRow(false);
@@ -155,17 +181,22 @@ export function OperationalWorkbench(){
   const pageResult=remote?{rows:simulated.visibleRows,total:simulated.total,
     page:simulated.page,pageSize:simulated.pageSize}:undefined;
   return <div className="operational-workbench" data-operational-workbench="true">
+    <div className="zenit-sheet__view-switch" aria-label="Modo de visualización">
+      <button type="button" aria-pressed={view==='sheet'} onClick={()=>setView('sheet')}>Hoja editable</button>
+      <button type="button" aria-pressed={view==='records'} onClick={()=>setView('records')}>Vista registros</button>
+      <span>Una fuente de datos · dos presentaciones, sin modificar el backend</span>
+    </div>
     <div className="operational-workbench__actions">
-      <label className="catalog__check"><input type="checkbox" aria-label="Editar celdas" checked={editingCells}
-        onChange={event=>setEditingCells(event.target.checked)}/> Editar celdas</label>
-      <label className="catalog__check"><input type="checkbox" checked={compact}
-        onChange={event=>setCompact(event.target.checked)}/> Compacto</label>
+      {view==='records'&&<label className="catalog__check"><input type="checkbox" aria-label="Editar celdas" checked={editingCells}
+        onChange={event=>setEditingCells(event.target.checked)}/> Editar celdas</label>}
+      {view==='records'&&<label className="catalog__check"><input type="checkbox" checked={compact}
+        onChange={event=>setCompact(event.target.checked)}/> Compacto</label>}
       <label className="catalog__check"><input type="checkbox" data-remote-page-demo="true" checked={remote}
         onChange={event=>setRemote(event.target.checked)}/> Servidor simulado</label>
       <div className="operational-workbench__action-buttons">
         <Button variant="secondary" size="compact" onClick={add}><Icon name="plus" size={14}/> Añadir</Button>
-        <Button variant="danger" size="compact" disabled={!selected.length}
-          onClick={()=>setConfirm(true)}><Icon name="trash" size={14}/> Eliminar ({selected.length})</Button>
+        {view==='records'&&<Button variant="danger" size="compact" disabled={!selected.length}
+          onClick={()=>setConfirm(true)}><Icon name="trash" size={14}/> Eliminar ({selected.length})</Button>}
         <Button variant="ghost" size="compact" onClick={reset}>Restablecer ejemplo</Button>
       </div>
       <ContextHelp label="Simular estados de consulta">
@@ -221,29 +252,31 @@ export function OperationalWorkbench(){
             <button className="icon-button" type="button"
               aria-label={'Mover '+column.label+' a la izquierda'}
               disabled={customColumns.findIndex(item=>item.key===column.key)===0}
-              onClick={()=>shiftColumn(column.key,-1)}><Icon name="chevron-left" size={14}/></button>
+              onClick={()=>reorderColumn(column.key,visibleColumns[Math.max(0,visibleColumns.findIndex(item=>item.key===column.key)-1)]?.key??column.key)}><Icon name="chevron-left" size={14}/></button>
             <button className="icon-button" type="button"
               aria-label={'Mover '+column.label+' a la derecha'}
               disabled={customColumns.findIndex(item=>item.key===column.key)===customColumns.length-1}
-              onClick={()=>shiftColumn(column.key,1)}><Icon name="chevron-right" size={14}/></button>
+              onClick={()=>reorderColumn(column.key,visibleColumns[Math.min(visibleColumns.length-1,visibleColumns.findIndex(item=>item.key===column.key)+1)]?.key??column.key)}><Icon name="chevron-right" size={14}/></button>
             <button className="icon-button" type="button"
               aria-label={'Eliminar columna '+column.label}
               onClick={()=>{
                 setCustomColumns(previous=>previous.filter(item=>item.key!==column.key));
                 setHiddenColumns(previous=>previous.filter(key=>key!==column.key));
+                setColumnOrder(previous=>previous.filter(key=>key!==column.key));
+                if(guideColumn?.target===column.key)setGuideColumn(null);
                 if(query.sort?.key===column.key)setQuery(previous=>({...previous,sort:null,page:1}));
               }}><Icon name="x" size={14}/></button>
           </>}
         </div>)}
       </div>
-      <div className="operational-workbench__freeze" role="group" aria-label="Filas y columnas guía">
+      {view==='records'&&<div className="operational-workbench__freeze" role="group" aria-label="Opciones técnicas de registros">
         <label className="catalog__check"><input type="checkbox" aria-label="Fijar encabezado" checked={freezeHeader}
           onChange={event=>setFreezeHeader(event.target.checked)}/> Fijar encabezado</label>
         <label className="catalog__check"><input type="checkbox" aria-label="Fijar primera fila" checked={freezeFirstRow}
           onChange={event=>setFreezeFirstRow(event.target.checked)}/> Fijar primera fila</label>
         <label className="catalog__check"><input type="checkbox" aria-label="Fijar primera columna" checked={freezeFirstColumn}
           onChange={event=>setFreezeFirstColumn(event.target.checked)}/> Fijar primera columna</label>
-      </div>
+      </div>}
     </div>
     <div className="operational-workbench__simulation" aria-label="Estados de demostración">
       <button type="button" className={scenario==='ready'?'operational-workbench__simulation--active':''} onClick={()=>setScenario('ready')}>Datos</button>
@@ -255,7 +288,19 @@ export function OperationalWorkbench(){
       {confirm&&<ActionConfirm question={`¿Eliminar ${selected.length} registro(s) de esta demostración?`}
         onConfirm={remove} onCancel={()=>setConfirm(false)}/>}
     </div>
-    <OperationalRecords rows={remote?[]:rows} pageResult={pageResult} columns={visibleColumns} query={query}
+    {view==='sheet'
+      ?<SpreadsheetGrid rows={simulated.visibleRows} columns={visibleColumns}
+        getRowLabel={row=>row.name} from={simulated.from} total={simulated.total}
+        page={simulated.page} pageCount={simulated.pageCount} pageSize={simulated.pageSize}
+        search={query.search} onSearch={value=>setQuery(previous=>({...previous,search:value,page:1}))}
+        onPage={value=>setQuery(previous=>({...previous,page:value}))}
+        onPageSize={value=>setQuery(previous=>({...previous,pageSize:value,page:1}))}
+        onUpdateCell={updateGridCell} onRenameColumn={renameFromGrid}
+        onReorderColumn={reorderColumn} guideColumn={guideColumn} guideRow={guideRow}
+        onGuideColumn={setGuideColumn} onGuideRow={setGuideRow}
+        isLoading={scenario==='loading'} error={scenario==='error'?'No se pudieron consultar los registros de demostración.':null}
+        onRetry={()=>setScenario('ready')}/>
+      :<OperationalRecords rows={remote?[]:rows} pageResult={pageResult} columns={visibleColumns} query={query}
       onQueryChange={setQuery} selectedIds={selected} onSelectedIdsChange={select}
       renderMobileTitle={editingCells?(row:SampleRecord)=>editableBase(row,'name'):undefined}
       mobileTitleColumnKey={editingCells?'name':undefined}
@@ -263,6 +308,6 @@ export function OperationalWorkbench(){
       freezeHeader={freezeHeader} freezeFirstRow={freezeFirstRow} freezeFirstColumn={freezeFirstColumn}
       isLoading={scenario==='loading'} error={scenario==='error'?'No se pudieron consultar los registros de demostración.':null}
       onRetry={()=>{setScenario('ready');notify('info','Consulta restablecida en el laboratorio.');}}
-      onOpenRow={open} emptyLabel="No hay registros para estos filtros."/>
+      onOpenRow={open} emptyLabel="No hay registros para estos filtros."/>}
   </div>;
 }
