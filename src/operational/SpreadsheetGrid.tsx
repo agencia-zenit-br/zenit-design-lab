@@ -218,7 +218,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
     <div className="zenit-sheet__scroll" ref={tableRef} data-sheet-scroll="true">
-      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+orderedCols.reduce((n,col)=>n+colWidth(col.key),0)}>
+      <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+orderedCols.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{orderedCols.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}>#</th>
