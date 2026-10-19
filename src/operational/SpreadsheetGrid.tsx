@@ -252,9 +252,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     const move=moves[event.key];
     if(move){
       event.preventDefault();
-      const nextRow=Math.max(0,Math.min(orderedRows.length-1,r+move[0]));
-      const nextCol=Math.max(0,Math.min(orderedCols.length-1,c+move[1]));
+      const baseRow=event.shiftKey&&selection?.kind==='cell'&&selection.endRow!==undefined?selection.endRow:r;
+      const baseCol=event.shiftKey&&selection?.kind==='cell'&&selection.endCol!==undefined?selection.endCol:c;
+      const nextRow=Math.max(0,Math.min(orderedRows.length-1,baseRow+move[0]));
+      const nextCol=Math.max(0,Math.min(orderedCols.length-1,baseCol+move[1]));
       const next=orderedRows[nextRow],column=orderedCols[nextCol];
+      if(!next||!column)return;
       if(event.shiftKey&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
         setSelection({...selection,endRow:nextRow,endCol:nextCol});
       }else selectCell(next.id,column.key,nextRow,nextCol);
