@@ -243,6 +243,18 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     }
   };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
+    if(event.key==='Tab'){
+      event.preventDefault();
+      const index=r*orderedCols.length+c+(event.shiftKey?-1:1);
+      if(index<0||index>=orderedRows.length*orderedCols.length)return;
+      const nextRow=Math.floor(index/orderedCols.length),nextCol=index%orderedCols.length;
+      const next=orderedRows[nextRow],column=orderedCols[nextCol];
+      if(!next||!column)return;
+      selectCell(next.id,column.key,nextRow,nextCol);
+      const cell=[...tableRef.current?.querySelectorAll<HTMLElement>('[data-sheet-cell]')??[]]
+        .find(el=>el.dataset.sheetCell===String(next.id)+'::'+column.key);
+      cell?.focus();return;
+    }
     if(event.key==='Enter'||event.key==='F2'){
       event.preventDefault();beginEdit(row,col);return;
     }
