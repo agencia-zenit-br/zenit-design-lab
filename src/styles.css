@@ -1747,3 +1747,7 @@ button,a,[role="option"],summary {
 .zenit-sheet__placeholder-index {width:48px;display:grid;place-items:center;position:sticky;left:0;z-index:3;background:var(--surface-muted);}
 .zenit-sheet__toolbar input[type="number"] {width:92px;max-width:100%;}
 @media(max-width:700px){.zenit-sheet__scroll{display:none;}}
+
+/* R6: display-only guide rows retain the same axis-token geometry as real rows. */
+.zenit-sheet__placeholder-index {display:flex;align-items:center;justify-content:center;gap:0;}
+.zenit-sheet__placeholder-index .zenit-sheet__axis-token {display:inline-flex;align-items:center;justify-content:center;min-width:28px;min-height:28px;box-sizing:border-box;}
