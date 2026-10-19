@@ -242,6 +242,20 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
     }
   };
+  const exportCsv=()=>{
+    // Export only the authorized, currently loaded page. Never include visual filler cells.
+    const quote=(value:unknown)=>'"'+String(value??'').replace(/"/g,'""')+'"';
+    const lines=[
+      orderedCols.map(col=>quote(col.label)).join(','),
+      ...orderedRows.map(row=>orderedCols.map(col=>quote(col.getValue(row))).join(','))
+    ];
+    const csv='\uFEFF'+lines.join('\r\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const link=document.createElement('a');
+    link.href=url;link.download='zenit-hoja-pagina-'+page+'.csv';
+    document.body.appendChild(link);link.click();link.remove();
+    URL.revokeObjectURL(url);
+  };
   const copySelection=(event:ClipboardEvent<HTMLTableElement>)=>{
     if(selection?.kind!=='cell'||selection.anchorRow===undefined||selection.endRow===undefined||
       selection.anchorCol===undefined||selection.endCol===undefined)return;
@@ -313,6 +327,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
         {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
       </div>
+      <button type="button" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}>Exportar página CSV</button>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
       <label>Filas por página
         <input type="number" min="1" max="10000" step="1" inputMode="numeric"
