@@ -1,0 +1,163 @@
+name: Deploy UI Core preview
+
+# This workflow NEVER deploys to the original Design Lab or to Platform/ZMC.
+# Only a push to the dedicated preview branch can initiate a deployment.
+on:
+  push:
+    branches:
+      - preview/ui-core
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zenit-ui-core-preview-deploy
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify exact preview source
+    if: github.repository == 'agencia-zenit-br/zenit-design-lab' && github.ref == 'refs/heads/preview/ui-core'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate shared design contracts
+        run: npm run check:design
+      - name: Compile exact source
+        run: npm run build
+      - name: Compile reference catalog
+        run: npm run build-storybook -- --quiet
+      - name: Exercise Chromium responsive layout and interactions
+        run: npm run check:browser
+
+  deploy:
+    name: Update isolated Cloud Run preview
+    needs: verify
+    if: github.repository == 'agencia-zenit-br/zenit-design-lab' && github.ref == 'refs/heads/preview/ui-core' && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: ui-core-preview
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT: zenit-platform-labs
+      REGION: southamerica-east1
+      SERVICE: zenit-ui-core-preview
+      RUNTIME_IDENTITY: zenit-ui-core-preview@zenit-platform-labs.iam.gserviceaccount.com
+      IMAGE: southamerica-east1-docker.pkg.dev/zenit-platform-labs/zenit-ui-core-preview/ui-core
+    steps:
+      - name: Checkout the same verified source SHA
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require dedicated Workload Identity deployment credentials
+        shell: bash
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_UI_CORE_WIF_PROVIDER }}
+          DEPLOY_SA: ${{ vars.GCP_UI_CORE_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test -n "$WIF_PROVIDER" || { echo "::error::Configure GCP_UI_CORE_WIF_PROVIDER in ui-core-preview environment"; exit 1; }
+          test -n "$DEPLOY_SA" || { echo "::error::Configure GCP_UI_CORE_DEPLOY_SERVICE_ACCOUNT in ui-core-preview environment"; exit 1; }
+          test "$GITHUB_REF" = 'refs/heads/preview/ui-core'
+          test "$GITHUB_REPOSITORY" = 'agencia-zenit-br/zenit-design-lab'
+          expected_provider='projects/725877092709/locations/global/workloadIdentityPools/zenit-ui-core-preview/providers/github-actions'
+          expected_deployer='zenit-ui-core-preview-deployer@zenit-platform-labs.iam.gserviceaccount.com'
+          test "$WIF_PROVIDER" = "$expected_provider" || { echo "::error::Expected dedicated UI Core WIF pool/provider; never reuse original Design Lab WIF"; exit 1; }
+          test "$DEPLOY_SA" = "$expected_deployer" || { echo "::error::Expected dedicated UI Core deployer, never use original Design Lab deployer/runtime"; exit 1; }
+      - name: Authenticate with short-lived GitHub OIDC token
+        uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed # v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_UI_CORE_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_UI_CORE_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f # v2
+      - name: Verify the existing isolated service and its runtime identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SERVICE" = zenit-ui-core-preview
+          test "$PROJECT" = zenit-platform-labs
+          test "$REGION" = southamerica-east1
+          details="$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format=json)"
+          test "$(jq -r '.spec.template.spec.serviceAccountName // empty' <<<"$details")" = "$RUNTIME_IDENTITY"
+          test "$(jq -r '.metadata.labels.zenit_scope // empty' <<<"$details")" = ui-core
+          test "$(jq -r '.metadata.labels.zenit_purpose // empty' <<<"$details")" = visual-preview
+          previous="$(jq -r '[.status.traffic[]? | select(.percent == 100) | .revisionName][0] // empty' <<<"$details")"
+          test -n "$previous" || { echo "::error::Preview must be serving a single revision at 100% before deployment"; exit 1; }
+          echo "PREVIOUS_REVISION=$previous" >> "$GITHUB_ENV"
+      - name: Verify dedicated Artifact Registry repository exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud artifacts repositories describe zenit-ui-core-preview \
+            --project="$PROJECT" --location="$REGION" --format='value(name)' >/dev/null
+      - name: Build immutable preview image on GitHub runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull --tag "$IMAGE:$GITHUB_SHA" .
+          docker image inspect "$IMAGE:$GITHUB_SHA" >/dev/null
+      - name: Publish only the preview image in existing Artifact Registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker push "$IMAGE:$GITHUB_SHA"
+      - name: Resolve pushed image digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          digest="$(gcloud artifacts docker images describe "$IMAGE:$GITHUB_SHA" --project="$PROJECT" --format='value(image_summary.digest)')"
+          test -n "$digest"
+          echo "IMAGE_DIGEST=$digest" >> "$GITHUB_ENV"
+      - name: Deploy ONLY preview and rollback if health fails
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SERVICE" = zenit-ui-core-preview
+          gcloud run deploy "$SERVICE" \
+            --project="$PROJECT" --region="$REGION" --platform=managed \
+            --image="$IMAGE@$IMAGE_DIGEST" --service-account="$RUNTIME_IDENTITY" \
+            --port=8080 --cpu=1 --memory=512Mi \
+            --min-instances=0 --max-instances=1 --concurrency=20 --timeout=60 \
+            --quiet
+          url="$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.url)')"
+          case "$url" in https://*.run.app) ;; *) echo "::error::Unexpected preview URL"; exit 1;; esac
+          if ! response="$(curl --fail --silent --show-error --retry 5 --retry-delay 3 "$url/__zenit_health")" || test "$response" != ok; then
+            echo "::error::Preview health failed; restoring previous Cloud Run traffic"
+            gcloud run services update-traffic "$SERVICE" --project="$PROJECT" --region="$REGION" \
+              --to-revisions="$PREVIOUS_REVISION=100" --quiet || \
+              echo "::error::Automatic rollback failed; inspect the preview immediately"
+            exit 1
+          fi
+          revision="$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format='value(status.latestReadyRevisionName)')"
+          echo "PREVIEW_URL=$url"
+          echo "PREVIEW_COMMIT=$GITHUB_SHA"
+          echo "PREVIEW_SERVICE=$SERVICE"
+          echo "PREVIEW_REVISION=$revision"
+          {
+            echo '### UI Core preview deployed'
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Revision: \`$revision\`"
+            echo "- Service: \`$SERVICE\`"
+            echo "- URL: $url"
+            echo '- Human visual approval is still required.'
+          } >> "$GITHUB_STEP_SUMMARY"

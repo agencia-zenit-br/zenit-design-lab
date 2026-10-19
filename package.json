@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "check:design": "node scripts/check-design-contract.mjs",
+    "check:design": "node scripts/check-design-contract.mjs && node --test scripts/check-preview-cd.test.mjs",
     "check:browser": "node scripts/check-browser-layout.mjs",
     "test:temporal": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test scripts/temporal.test.mjs",
     "test:operational": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test scripts/operational.test.mjs"
