@@ -1703,3 +1703,15 @@ button,a,[role="option"],summary {
   .zenit-sheet__card dd {font-size:12px;color:var(--text);margin:0;overflow-wrap:anywhere;}
 }
 @media(max-width:360px) {.zenit-sheet__card dl {grid-template-columns:1fr;}}
+
+
+.zenit-sheet__mobile-value {
+  display:block;width:100%;min-width:0;min-height:30px;text-align:start;
+  border:0;border-radius:5px;background:transparent;color:var(--text);
+  font:inherit;font-size:12px;padding:4px 2px;cursor:text;overflow-wrap:anywhere;
+}
+.zenit-sheet__mobile-value:hover,.zenit-sheet__mobile-value:focus-visible {
+  outline:1px solid var(--brand);outline-offset:1px;
+}
+.zenit-sheet__card dd input {font-size:16px;min-height:44px;}
+.zenit-sheet__card-head button,.zenit-sheet__head-select,.zenit-sheet__row-select {touch-action:manipulation;}
