@@ -62,7 +62,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       for(let r=rowStart;r<=rowEnd;r++)for(let c=colStart;c<=colEnd;c++){
         const row=orderedRows[r],col=orderedCols[c];if(!row||!col)continue;
         const key=formatKey(row.id,col.key);
-        next[key]={align:'left',bold:false,italic:false,underline:false,highlight:false,...previous[key],...change};
+        next[key]={...(previous[key]??{align:'left',bold:false,italic:false,underline:false,highlight:false}),...change};
       }
       return next;
     });
