@@ -165,9 +165,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     setDraft(String(col.getValue(row)??''));
     setMenu(null);
   };
-  const commit=()=>{
+  const commit=(value:string)=>{
     if(!editing)return;
-    onUpdateCell(editing.rowId,editing.key,draft);
+    onUpdateCell(editing.rowId,editing.key,value);
     setEditing(null);
   };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
@@ -293,9 +293,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 onKeyDown={event=>{if(!isEditing)onCellKey(event,r,c,row,col);}}>
                 {isEditing?<input autoFocus className="zenit-sheet__cell-editor" aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
                   value={draft} onChange={event=>setDraft(event.target.value)}
-                  onBlur={commit}
+                  onBlur={event=>commit(event.currentTarget.value)}
                   onKeyDown={event=>{
-                    if(event.key==='Enter'){event.preventDefault();commit();}
+                    if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
                     if(event.key==='Escape'){event.preventDefault();setEditing(null);}
                     event.stopPropagation();
                   }}/>:String(col.getValue(row)??'')}
@@ -335,9 +335,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <dd>{editing?.rowId===row.id&&editing.key===col.key
             ?<input autoFocus className="zenit-sheet__cell-editor"
               aria-label={'Editar '+col.label+' de '+getRowLabel(row)} value={draft}
-              onChange={event=>setDraft(event.target.value)} onBlur={commit}
+              onChange={event=>setDraft(event.target.value)} onBlur={event=>commit(event.currentTarget.value)}
               onKeyDown={event=>{
-                if(event.key==='Enter'){event.preventDefault();commit();}
+                if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
                 if(event.key==='Escape'){event.preventDefault();setEditing(null);}
               }}/>
             :<button type="button" className="zenit-sheet__mobile-value"
