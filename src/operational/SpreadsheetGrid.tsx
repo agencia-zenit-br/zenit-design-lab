@@ -270,6 +270,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     URL.revokeObjectURL(url);
   };
   const copySelection=(event:ClipboardEvent<HTMLTableElement>)=>{
+    // Do not intercept native copying from an active editor or a text selection.
+    if(editing||event.target instanceof HTMLInputElement||event.target instanceof HTMLTextAreaElement||
+      (typeof window!=='undefined'&&window.getSelection()?.toString()))return;
     if(selection?.kind!=='cell'||selection.anchorRow===undefined||selection.endRow===undefined||
       selection.anchorCol===undefined||selection.endCol===undefined)return;
     const top=Math.max(0,Math.min(selection.anchorRow,selection.endRow));
