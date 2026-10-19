@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type PointerEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
+import { Icon } from '../Icon';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
 export type SheetSelection = {
@@ -29,7 +30,6 @@ type Props<Row extends RecordWithId> = {
   onUpdateCell:(rowId:RecordIdentity,columnKey:string,value:string)=>void;
   onRenameColumn:(key:string)=>void;
   onReorderColumn:(from:string,to:string)=>void;
-  onRemoveRows?:(ids:RecordIdentity[])=>void;
   guideColumn?:Guide<string>;
   guideRow?:Guide<RecordIdentity>;
   onGuideColumn:(guide:Guide<string>)=>void;
@@ -43,7 +43,7 @@ type Props<Row extends RecordWithId> = {
 /** A presentation adapter over an authorized page. It does not fetch, persist or authorize anything. */
 export function SpreadsheetGrid<Row extends RecordWithId>({
   rows,columns,getRowLabel,from,total,page,pageCount,pageSize,search,onSearch,onPage,onPageSize,
-  onUpdateCell,onRenameColumn,onReorderColumn,onRemoveRows,
+  onUpdateCell,onRenameColumn,onReorderColumn,
   guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,readOnly=false,isLoading=false,error=null,onRetry,
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
@@ -99,7 +99,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   useEffect(()=>()=>resizeRef.current?.(),[]);
   const openMenu=(kind:'row'|'column',key:string,label:string,x:number,y:number)=>{
     setEditing(null);
-    setSelection(kind==='row'?{kind:'row',rowId:key}:{kind:'column',colKey:key});
+    const selectedRow=rows.find(row=>String(row.id)===key);
+    setSelection(kind==='row'?{kind:'row',rowId:selectedRow?.id}:{kind:'column',colKey:key});
     setMenu({kind,key,label,left:Math.max(6,Math.min(x,window.innerWidth-240)),
       top:Math.max(6,Math.min(y,window.innerHeight-265))});
   };
@@ -177,7 +178,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     }
   };
   const rowOffset=48;
-  const freezeStyle=(rowIndex:number,colIndex:number,colKey:string,head=false):React.CSSProperties=>{
+  const freezeStyle=(rowIndex:number,colIndex:number,colKey:string,head=false):CSSProperties=>{
     const pinnedX=colIndex<pinnedColCount,pinnedY=head||rowIndex<pinnedRowCount;
     return {
       ...(pinnedX?{position:'sticky',left:colOffsets[colKey],zIndex:pinnedY?8:4}:{}),
@@ -192,7 +193,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         onChange={event=>onPageSize(Number(event.target.value))}>
         {[5,10,25].map(size=><option value={size} key={size}>{size}</option>)}
       </select></label>
-      <span className="zenit-sheet__hint">Clic en letras o números para seleccionar · botón secundario o ⋯ para fijar guías</span>
+      <span className="zenit-sheet__hint">Selecciona letras o números; botón secundario o menú contextual para fijar guías</span>
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
@@ -226,7 +227,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                   onContextMenu={event=>columnMenu(event,col.key,col.label)}>{col.label}</button>
                 <button type="button" className="zenit-sheet__more" aria-label={'Opciones de columna '+col.label}
                   onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
-                    openMenu('column',col.key,col.label,box.left,box.bottom+4);}}>⋯</button>
+                    openMenu('column',col.key,col.label,box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
                 <span role="separator" aria-orientation="vertical" tabIndex={0} className="zenit-sheet__resizer"
                   aria-label={'Redimensionar '+col.label}
                   onPointerDown={event=>beginResize(event,col.key)}
@@ -250,7 +251,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 onClick={()=>setSelection({kind:'row',rowId:row.id})}>{from+r}</button>
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
-                  openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}>⋯</button>
+                  openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
             </th>
             {orderedCols.map((col,c)=>{
               const active=selected(row.id,col.key,r,c);
@@ -266,6 +267,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                   }else setSelection({kind:'cell',rowId:row.id,colKey:col.key,
                     anchorRow:r,anchorCol:c,endRow:r,endCol:c});
                 }}
+                onContextMenu={event=>{if(selection?.kind==='column')columnMenu(event,col.key,col.label);
+                  else if(selection?.kind==='row')rowMenu(event,row.id,getRowLabel(row));}}
                 onDoubleClick={()=>beginEdit(row,col)}
                 onKeyDown={event=>{if(!isEditing)onCellKey(event,r,c,row,col);}}>
                 {isEditing?<input autoFocus className="zenit-sheet__cell-editor" aria-label={'Editar '+col.label+' de '+getRowLabel(row)}
@@ -294,7 +297,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         <button type="button" onClick={event=>{const col=columns.find(item=>item.key===(isVisible(mobileColumn)?mobileColumn:columns[0]?.key));
           if(!col)return;const box=event.currentTarget.getBoundingClientRect();
           openMenu('column',col.key,col.label,box.left,box.bottom+4);
-        }}>Opciones de columna ⋯</button>
+        }}>Opciones de columna <Icon name="more" size={15}/></button>
       </div>
       {orderedRows.map((row,r)=><article key={String(row.id)} role="listitem" className="zenit-sheet__card">
         <div className="zenit-sheet__card-head">
@@ -302,7 +305,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <button type="button" aria-label={'Opciones de fila '+String(from+r)} onClick={event=>{
             const box=event.currentTarget.getBoundingClientRect();
             openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);
-          }}>⋯</button>
+          }}><Icon name="more" size={15}/></button>
         </div>
         <dl>{orderedCols.map(col=><div key={col.key}><dt>{col.label}</dt><dd>{String(col.getValue(row)??'')}</dd></div>)}</dl>
       </article>)}
