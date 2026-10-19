@@ -325,9 +325,16 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
               const active=selected(row.id,col.key,r,c);
+              const minRow=Math.min(selection?.anchorRow??r,selection?.endRow??r);
+              const maxRow=Math.max(selection?.anchorRow??r,selection?.endRow??r);
+              const minCol=Math.min(selection?.anchorCol??c,selection?.endCol??c);
+              const maxCol=Math.max(selection?.anchorCol??c,selection?.endCol??c);
+              const rangeEdge=selection?.kind==='cell'&&active?[
+                r===minRow?'top':'',r===maxRow?'bottom':'',c===minCol?'left':'',c===maxCol?'right':''
+              ].filter(Boolean).join(' '):undefined;
               const isEditing=editing?.origin==='desktop'&&editing.rowId===row.id&&editing.key===col.key;
               return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
-                data-selected={active?'true':undefined}
+                data-selected={active?'true':undefined} data-range-edge={rangeEdge}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
                 style={freezeStyle(r,c,col.key)}
                 tabIndex={0} role="gridcell" aria-selected={active}
