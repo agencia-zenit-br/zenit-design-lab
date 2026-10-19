@@ -1757,3 +1757,8 @@ button,a,[role="option"],summary {
 .zenit-sheet__format-toolbar button {border:1px solid var(--border);border-radius:6px;padding:5px 7px;background:var(--surface);color:var(--text);cursor:pointer;}
 .zenit-sheet__format-toolbar button:disabled {opacity:.4;cursor:not-allowed;}
 .zenit-sheet__row-title {max-width:100%;min-width:0;width:100%;font-size:11px;box-sizing:border-box;}
+
+/* R6: the empty row guide reserves the same select and menu geometry as real rows. */
+.zenit-sheet__placeholder-index {box-sizing:border-box;padding:0 2px;justify-content:center;}
+.zenit-sheet__placeholder-row-select {display:inline-grid;place-items:center;flex:none;min-width:26px;padding:1px 0;}
+.zenit-sheet__placeholder-row-menu {display:inline-block;flex:none;width:16px;min-height:28px;}
