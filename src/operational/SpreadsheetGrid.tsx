@@ -267,7 +267,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <table role="grid" aria-label="Hoja editable" className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
         <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
-          <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}}></th>
+          <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
           {visualColumns.map((col,c)=>{
             const letter=columnLetter(c);
             if(isBlankColumn(col.key))return <th key={col.key} className="zenit-sheet__head zenit-sheet__placeholder" scope="col" data-sheet-placeholder-column={col.key} style={freezeStyle(-1,c,col.key,true)}>
