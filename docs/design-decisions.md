@@ -1327,3 +1327,14 @@ The CEO clarified that the current three-visible-value scrolling time selector i
 - Renamed headers retain immutable column keys, data identity, and authorization boundaries. **No database schema, tenant API, customer data, formulas, macros, personal view persistence or server-integrated write operations** are approved here.
 
 Delivery is isolated as draft Design Lab PR #14 stacked on #13. Cloud Run original review remains revision 00003-mrl until a separate operator-approved deploy; CI and human acceptance are independent gates.
+
+
+## 2026-10-19 — UI Core Spreadsheet: MVP visual y reserva de capacidades avanzadas
+
+Decisión CEO: implementar antes de conectar los contratos reales (1) extender visualmente el área vacía hasta completar el viewport sin crear registros persistentes; (2) letras A/B/C y números de filas dentro de chips diferenciados, alineados con el menú de tres puntos; (3) centrar títulos de columnas; (5) selección de rango contigua con arrastre y borde perimetral, además de Shift y teclado; (6) cantidad de filas/página personalizada, no limitada a 25 (límite defensivo demostrativo: 10.000; la capacidad efectiva de fuentes remotas depende de contrato); (7) retirar el signo # de la intersección.
+
+Se conservan los cinco campos y cinco registros iniciales como conjunto sintético; los espacios adicionales para rellenar el viewport son placeholders de presentación no persistidos y no consultables/escribibles. La cuadrícula responde a su contenedor mediante ResizeObserver, restringiendo el total de placeholders para evitar render masivo accidental. Los títulos centrados no cambian la alineación de valores. La tarjeta móvil mantiene acceso a los registros reales y evita scrolling horizontal del documento.
+
+**Pendiente explícito (no implementado en este lote):** (4) tipos y formatos de fecha, hora, duración, moneda multi-BRL/USD/EUR, entero, decimales y porcentaje; cálculo tipo hoja de cálculo con fórmulas, referencias, rangos, errores, recálculo, formatos regionales, precisión, y un motor especializado aislado del renderer. Evaluar alcance frente a Excel sin prometer VBA/macros ni compatibilidad total. Para tablas de registros remotos, cálculos deben basarse en identificadores estables para no romperse por sort/paginación, y persistencia/autorización deben ser contratos explícitos de Platform.
+
+No modificar todavía los contratos reales de Zenit Platform/ZMC, IAM, SQL ni WordPress. Esta fase solo actualiza el Design Lab y debe pasar CI + QA Chromium; revisión visual CEO posterior.
