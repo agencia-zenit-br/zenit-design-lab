@@ -468,7 +468,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </tbody>
       </table>
       {Array.from({length:extraRows},(_,index)=><div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row" aria-hidden="true">
-        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span>
+        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__placeholder-row-select"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span><span className="zenit-sheet__placeholder-row-menu" aria-hidden="true"/></span>
         {visualColumns.map(col=><span key={col.key} style={{width:colWidth(col.key)}}/>)}
       </div>)}
       {!orderedRows.length&&total>0&&<p className="zenit-sheet__empty">No hay registros coincidentes.</p>}
