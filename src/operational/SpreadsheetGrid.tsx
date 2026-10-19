@@ -12,6 +12,7 @@ export type SheetSelection = {
   endRow?:number;
   endCol?:number;
 };
+export type SheetCellFormat = {align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean};
 export type Guide<T> = {mode:'only'|'through';target:T}|null;
 type Menu = {kind:'row'|'column';key:string;label:string;left:number;top:number};
 type Props<Row extends RecordWithId> = {
@@ -34,6 +35,10 @@ type Props<Row extends RecordWithId> = {
   guideRow?:Guide<RecordIdentity>;
   onGuideColumn:(guide:Guide<string>)=>void;
   onGuideRow:(guide:Guide<RecordIdentity>)=>void;
+  cellFormats?:Readonly<Record<string,SheetCellFormat>>;
+  onCellFormatsChange?:(formats:Record<string,SheetCellFormat>)=>void;
+  rowTitles?:Readonly<Record<string,string>>;
+  onRowTitlesChange?:(titles:Record<string,string>)=>void;
   readOnly?:boolean;
   isLoading?:boolean;
   error?:string|null;
@@ -44,12 +49,22 @@ type Props<Row extends RecordWithId> = {
 export function SpreadsheetGrid<Row extends RecordWithId>({
   rows,columns,getRowLabel,from,total,page,pageCount,pageSize,search,onSearch,onPage,onPageSize,
   onUpdateCell,onRenameColumn,onReorderColumn,
-  guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,readOnly=false,isLoading=false,error=null,onRetry,
+  guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,
+  cellFormats:controlledFormats,onCellFormatsChange,rowTitles:controlledRowTitles,onRowTitlesChange,
+  readOnly=false,isLoading=false,error=null,onRetry,
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
-  const [rowTitles,setRowTitles]=useState<Record<string,string>>({});
-  const [cellFormats,setCellFormats]=useState<Record<string,{align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>>({});
+  const [localRowTitles,setLocalRowTitles]=useState<Record<string,string>>({});
+  const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
+  const rowTitles=controlledRowTitles??localRowTitles;
+  const cellFormats=controlledFormats??localFormats;
+  const updateRowTitle=(id:RecordIdentity,title:string)=>{
+    if(readOnly)return;
+    const next={...rowTitles,[String(id)]:title};
+    if(controlledRowTitles===undefined)setLocalRowTitles(next);
+    onRowTitlesChange?.(next);
+  };
   const formatKey=(id:RecordIdentity,key:string)=>String(id)+'::'+key;
   const applyFormat=(change:Partial<{align:'left'|'center'|'right'|'justify';bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>)=>{
     if(selection?.kind!=='cell')return;
@@ -57,15 +72,18 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     const rowEnd=Math.max(selection.anchorRow??0,selection.endRow??0);
     const colStart=Math.min(selection.anchorCol??0,selection.endCol??0);
     const colEnd=Math.max(selection.anchorCol??0,selection.endCol??0);
-    setCellFormats(previous=>{
+    if(readOnly)return;
+    const previous=cellFormats;
+    {
       const next={...previous};
       for(let r=rowStart;r<=rowEnd;r++)for(let c=colStart;c<=colEnd;c++){
         const row=orderedRows[r],col=orderedCols[c];if(!row||!col)continue;
         const key=formatKey(row.id,col.key);
         next[key]={...(previous[key]??{align:'left',bold:false,italic:false,underline:false,highlight:false}),...change};
       }
-      return next;
-    });
+      if(controlledFormats===undefined)setLocalFormats(next);
+      onCellFormatsChange?.(next);
+    }
   };
   const [menu,setMenu]=useState<Menu|null>(null);
   const [widths,setWidths]=useState<Record<string,number>>({});
@@ -437,7 +455,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
-              {guideRow?.target===row.id&&<input className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título" value={rowTitles[String(row.id)]??""} onChange={event=>setRowTitles(previous=>({...previous,[String(row.id)]:event.target.value}))}/>}
+              {guideRow?.target===row.id&&<input className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título" value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} disabled={readOnly}/>}
             </th>
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
