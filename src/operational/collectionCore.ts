@@ -61,7 +61,7 @@ export function presentServerPage<Row extends RecordWithId>(page:ServerPage<Row>
 }
 const fold=(text:unknown)=>String(text??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
 const safePage=(n:number)=>Number.isSafeInteger(n)&&n>0?n:1;
-const safeSize=(n:number)=>Number.isSafeInteger(n)&&n>=1&&n<=250?n:10;
+const safeSize=(n:number)=>Number.isSafeInteger(n)&&n>=1&&n<=10000?n:10;
 export function queryCollection<Row extends RecordWithId>(
   rows:readonly Row[],
   columns:readonly CollectionColumn<Row>[],
