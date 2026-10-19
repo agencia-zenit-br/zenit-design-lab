@@ -305,7 +305,7 @@ const checks = [
     assert.ok(spreadsheet.includes('onPointerDown={event=>beginResize'));
     assert.ok(spreadsheet.includes('onDrop={event=>'));
     assert.ok(spreadsheet.includes('onTouchStart={event=>longPress'));
-    assert.ok(spreadsheet.includes("onUpdateCell(editing.rowId,editing.key,draft)"));
+    assert.ok(spreadsheet.includes("onUpdateCell(editing.rowId,editing.key,value)"));
     assert.ok(!spreadsheet.includes('type="checkbox"'));
     assert.ok(!spreadsheet.includes('type="radio"'));
     assert.ok(css.includes('.zenit-sheet__scroll'));
