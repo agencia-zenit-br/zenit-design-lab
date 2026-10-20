@@ -11,7 +11,7 @@ const rows=[
 ];
 const get=(row,key)=>row[key];
 test('clothing size axis is semantic and case/accent insensitive',()=>{
-  assert.deepEqual(['P','M','G','GG','Tamaño Único'].map(clothingSizeRank),[1,2,3,4,7]);
+  assert.deepEqual(['P','M','G','GG','Tamaño Único'].map(size=>clothingSizeRank(size)),[1,2,3,4,7]);
   assert.equal(clothingSizeRank('XXL'),5);
   assert.equal(clothingSizeRank('???'),null);
   assert.equal(detectColumnKind(rows.map(r=>r.size)),'clothing-size');
