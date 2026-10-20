@@ -819,7 +819,7 @@ try {
       assert.equal(await evaluate('document.querySelector("[data-sheet-column=responsible]")?.dataset.sheetColumn'), 'responsible',
         'Renaming visible header must preserve immutable column key');
       await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
-      assert.equal(await evaluate('document.querySelector("[data-spreadsheet] input[aria-label=\\"Filas por página\\"]')'),null,
+      assert.equal(await evaluate("document.querySelector('[data-spreadsheet] input[type=number]')"),null,
         'Sheet view must not expose administrative paging controls');
       assert.ok(await evaluate('document.querySelectorAll(".zenit-sheet__draft-cell").length>0'),
         'Blank cells must be keyboard-focusable rather than disabled placeholders');
