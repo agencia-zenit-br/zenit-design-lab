@@ -166,11 +166,12 @@ try {
       await evaluate('document.querySelector(".zenit-sheet__blank-column-title")?.blur();true');
       await waitFor('document.querySelector(".zenit-sheet__blank-column-label")?.textContent==="Observaciones"',
         'Blank column title must remain visible alongside its letter');
-      const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control select")?.value');
-      assert.equal(viewportControl,'430','Sheet should expose the default viewport height');
-      await evaluate(`(() => {const el=document.querySelector('.zenit-sheet__viewport-control select');
-        const setter=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;
-        setter.call(el,'650');el.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
+      const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.textContent?.trim()');
+      assert.ok(viewportControl?.includes('Normal'),'Sheet should expose the default viewport height in Zenit picker');
+      await evaluate(`document.querySelector('.zenit-sheet__viewport-control .zenit-sheet__picker-trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-list"))',
+        'Height options must open in branded selector');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__viewport-control .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Amplia'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="650px"',
         'User must be able to adjust the worksheet viewport height');
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.click();true`);
@@ -204,7 +205,7 @@ try {
       assert.equal(await evaluate('document.activeElement?.classList.contains("zenit-sheet__draft-cell")'),true,
         'Backspace in a blank cell should not trigger browser navigation');
       process.stdout.write('PASS R8 Delete/Backspace, italic, highlight and viewport resizing\\n');
-      const smartSize=await evaluate('document.querySelector(".zenit-sheet__sheet-tools .zenit-sheet__viewport-control select")?.value');
+      const smartSize=await evaluate('document.querySelector(".zenit-sheet__sheet-tools .zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.textContent');
       assert.ok(smartSize,'Worksheet height must remain discoverable next to sheet controls');
       await evaluate('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.click();true');
       await waitFor('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.getAttribute("aria-pressed")==="true"',
@@ -320,6 +321,46 @@ try {
       await waitFor('document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__table tbody tr").length===17',
         'Workbook should restore source sheet at end of tab test');
       process.stdout.write('PASS R9 workbook tab isolation, sheet rename and toolbar alignment\\n');
+
+      // R9.1: branded worksheet height selector, non-printing guides and explicitly printed borders.
+      const activeSheet='.zenit-workbook__page:not([hidden]) .zenit-sheet';
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__viewport-control select").length'),0,
+        'Height must use a Zenit branded picker instead of native select');
+      const heightLabel=await evaluate('document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.getAttribute("aria-label")');
+      assert.equal(heightLabel,'Altura visible de la hoja','Height picker must be discoverable and labeled');
+      await evaluate(`document.querySelector('.zenit-sheet__viewport-control .zenit-sheet__picker-trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-list"))',
+        'Branded height options list must open');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__viewport-control .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Compacta'))?.click();true`);
+      await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="280px"',
+        'Height picker must change the actual worksheet viewport height');
+      const borderState=await evaluate(`(() => {
+        const sheet=document.querySelector('${activeSheet}');
+        const cell=sheet.querySelector('.zenit-sheet__table tbody td');
+        return {guides:sheet.dataset.gridGuides,borders:sheet.dataset.printBorders,
+          line:getComputedStyle(cell).borderRightWidth};
+      })()`);
+      assert.equal(borderState.guides,'visible','Work grid guides must start enabled');
+      assert.equal(borderState.borders,'none','Grid lines must not print by default');
+      await send('Emulation.setEmulatedMedia',{media:'print'});
+      const printWithout=await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__table tbody td")).borderRightWidth');
+      assert.equal(printWithout,'0px','Working grid lines must not print without explicit borders');
+      await send('Emulation.setEmulatedMedia',{media:'screen'});
+      await evaluate(`document.querySelector('button[aria-label="Mostrar cuadrícula de guía"]')?.click();true`);
+      await waitFor('document.querySelector(".zenit-sheet")?.dataset.gridGuides==="hidden"',
+        'Grid guide toggle must hide worksheet guides');
+      const noGuide=await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__table tbody td")).borderRightWidth');
+      assert.equal(noGuide,'0px','Guide toggle should remove on-screen grid strokes');
+      await evaluate(`document.querySelector('.zenit-sheet__grid-preset .zenit-sheet__picker-trigger')?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__grid-preset .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Grueso'))?.click();true`);
+      await waitFor('document.querySelector(".zenit-sheet")?.dataset.printBorders==="bold"',
+        'Thick border preset must be applied');
+      await send('Emulation.setEmulatedMedia',{media:'print'});
+      const printBold=await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__table tbody td")).borderRightWidth');
+      assert.equal(printBold,'2px','Explicit bold borders must survive printing');
+      await send('Emulation.setEmulatedMedia',{media:'screen'});
+      process.stdout.write('PASS R9.1 branded height, non-printing grid and printed bold border preset\\n');
+
 
 
     }

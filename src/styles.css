@@ -1964,3 +1964,70 @@ button,a,[role="option"],summary {
  .zenit-sheet .zenit-sheet__format-toolbar{width:100%;gap:7px!important;}
  .zenit-sheet .zenit-sheet__ribbon-group{gap:5px;padding-right:8px;}
 }
+
+
+/* R9.1: workbook height uses the same branded listbox as filter dialogs. */
+.zenit-sheet .zenit-sheet__viewport-control{display:flex!important;flex-direction:column;gap:5px;align-items:stretch;min-width:155px;}
+.zenit-sheet .zenit-sheet__viewport-control>.zenit-sheet__picker{width:155px;min-width:155px;}
+.zenit-sheet .zenit-sheet__viewport-control .zenit-sheet__picker-trigger{height:36px;min-height:36px;}
+.zenit-sheet__grid-control{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;}
+.zenit-sheet__grid-toggle{height:36px;align-self:flex-end;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+.zenit-sheet__grid-toggle[aria-pressed="true"]{color:var(--brand)!important;border-color:var(--brand)!important;background:color-mix(in srgb,var(--brand) 8%,var(--surface))!important;}
+.zenit-sheet__grid-preset{display:flex;flex-direction:column;gap:5px;min-width:118px;}
+.zenit-sheet__grid-preset>span{font-size:12px;color:var(--muted);}
+.zenit-sheet__grid-preset .zenit-sheet__picker{width:125px;min-width:125px;}
+.zenit-sheet__grid-preset .zenit-sheet__picker-trigger{height:36px;min-height:36px;}
+/* Non-printing working guides: deliberately lighter than actual table borders.
+   Scope all strokes to data cells, not row/column headers. */
+.zenit-sheet .zenit-sheet__table tbody td{
+  border-right:0!important;border-bottom:0!important;
+  box-shadow:none;
+}
+.zenit-sheet.has-grid-guides .zenit-sheet__table tbody td,
+.zenit-sheet.has-print-borders-none.has-grid-guides .zenit-sheet__table tbody td{
+  border-right:1px solid color-mix(in srgb,var(--border) 55%,var(--surface))!important;
+  border-bottom:1px solid color-mix(in srgb,var(--border) 55%,var(--surface))!important;
+}
+.zenit-sheet.has-print-borders-thin .zenit-sheet__table tbody td{
+  border-right:1px solid var(--border-strong)!important;border-bottom:1px solid var(--border-strong)!important;
+}
+.zenit-sheet.has-print-borders-bold .zenit-sheet__table tbody td{
+  border-right:2px solid var(--text)!important;border-bottom:2px solid var(--text)!important;
+}
+/* Synthetic blank rows and cells use sibling spans rather than table rows. */
+.zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+  border-right:0!important;border-bottom:0!important;
+}
+.zenit-sheet.has-grid-guides .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+  border-right:1px solid color-mix(in srgb,var(--border) 55%,var(--surface))!important;
+  border-bottom:1px solid color-mix(in srgb,var(--border) 55%,var(--surface))!important;
+}
+.zenit-sheet.has-print-borders-thin .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+  border-right:1px solid var(--border-strong)!important;border-bottom:1px solid var(--border-strong)!important;
+}
+.zenit-sheet.has-print-borders-bold .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+  border-right:2px solid var(--text)!important;border-bottom:2px solid var(--text)!important;
+}
+@media print{
+  /* Guide lines never print; only explicitly selected cell borders survive. */
+  .zenit-sheet.has-print-borders-none .zenit-sheet__table tbody td,
+  .zenit-sheet.has-print-borders-none.has-grid-guides .zenit-sheet__table tbody td,
+  .zenit-sheet.has-print-borders-none .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell,
+  .zenit-sheet.has-print-borders-none.has-grid-guides .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+    border-right:0!important;border-bottom:0!important;
+  }
+  .zenit-sheet.has-print-borders-thin .zenit-sheet__table tbody td,
+  .zenit-sheet.has-print-borders-thin .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+    border-right:1px solid #555!important;border-bottom:1px solid #555!important;
+  }
+  .zenit-sheet.has-print-borders-bold .zenit-sheet__table tbody td,
+  .zenit-sheet.has-print-borders-bold .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+    border-right:2px solid #111!important;border-bottom:2px solid #111!important;
+  }
+  .zenit-sheet__toolbar,.zenit-workbook__tabs{display:none!important;}
+  .zenit-sheet .zenit-sheet__scroll{height:auto!important;max-height:none!important;overflow:visible!important;}
+}
+@media(max-width:700px){
+  .zenit-sheet__grid-control{width:100%;}
+  .zenit-sheet__grid-preset{flex:0 1 145px;}
+}
