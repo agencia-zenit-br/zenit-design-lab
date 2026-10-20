@@ -17,7 +17,7 @@ const fold=(v:unknown)=>String(v??'').normalize('NFD')
  */
 export function proposeDemoInstruction(input:string,columns:readonly DemoInstructionColumn[]):DemoInstructionProposal{
   const prompt=fold(input);
-  const smartOrder=/\b(ordenar|ordena|ordenado|organiza|organizar|clasifica|clasificar)\b/.test(prompt);
+  const smartOrder=/\b(ordenar|ordena|ordenalo|ordenalos|ordenado|organiza|organizalo|organizalos|organizar|clasifica|clasificar)\b/.test(prompt);
   const clauses:FilterClause[]=[];
   const limitations:string[]=[];
   if(prompt.length<8)return {clauses,smartOrder:false,
