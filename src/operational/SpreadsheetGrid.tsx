@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
-import { filterSheet, orderSheet, type FilterClause, type FilterOperator } from './smartSheetCore';
+import { filterSheet, orderSheet, defaultClothingSizes, type ClothingSizeDefinition, type FilterClause, type FilterOperator } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
 export type SheetSelection = {
@@ -116,6 +116,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [filterOperator,setFilterOperator]=useState<FilterOperator>('contains');
   const [filterValue,setFilterValue]=useState('');
   const [filterTo,setFilterTo]=useState('');
+  const [sizeDefinitions,setSizeDefinitions]=useState<Record<string,ClothingSizeDefinition>>({});
+  const [sizeColumn,setSizeColumn]=useState<string|null>(null);
+  const [sizeOrder,setSizeOrder]=useState('XP, P, M, G, GG, XGG, XXGG, Tamaño Único');
+  const [sizeAliases,setSizeAliases]=useState('XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');
 
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
@@ -154,7 +158,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const filteredRows=filterSheet(rows,clauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row));
   const sheetRows=smartOrder?orderSheet(filteredRows,orderedCols.map(col=>({
     column:col.key,direction:'asc' as const,kind:'auto' as const,
-  })),(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)):[...filteredRows];
+  })),(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row),'pt-BR',sizeDefinitions):[...filteredRows];
   const orderedRows=pinnedRow?.mode==='only'
     ?[...sheetRows.filter(row=>row.id===pinnedRow.target),...sheetRows.filter(row=>row.id!==pinnedRow.target)]
     :sheetRows;
@@ -464,6 +468,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <Icon name="list" size={16}/> {smartOrder?'Restaurar orden':'Orden inteligente'}
         </button>
       </div>
+      <div className="zenit-sheet__tool-legend" aria-label="Funciones de la hoja">Filtrar · Ordenar · Ajustar hoja · Formato</div>
       <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Edición">
           <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}><Icon name="undo" size={16}/></button>
@@ -708,6 +713,25 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     </div>
     <div className="zenit-sheet__footer"><span>{total} registros disponibles · las celdas vacías son borradores locales</span></div>
     </>}
+    {sizeColumn!==null&&<div className="zenit-sheet__size-dialog" role="dialog" aria-modal="true" aria-label="Definir escala de tallas">
+      <h3>Definición de tallas — {orderedCols.find(c=>c.key===sizeColumn)?.label??sizeColumn}</h3>
+      <p>Ordena las tallas de menor a mayor y especifica equivalencias. Solo se aplicará a esta columna.</p>
+      <label>Secuencia de tallas <input aria-label="Secuencia de tallas" value={sizeOrder} onChange={e=>setSizeOrder(e.target.value)}/></label>
+      <label>Sinónimos (origen=destino) <textarea aria-label="Sinónimos de tallas" value={sizeAliases} onChange={e=>setSizeAliases(e.target.value)} rows={3}/></label>
+      <div className="zenit-sheet__size-dialog-actions">
+        <button type="button" onClick={()=>setSizeColumn(null)}>Cancelar</button>
+        <button type="button" onClick={()=>{
+          const ordered=sizeOrder.split(',').map(v=>v.trim()).filter(Boolean);
+          if(!ordered.length||new Set(ordered.map(v=>v.toLocaleLowerCase())).size!==ordered.length)return;
+          const aliases:Record<string,string>={...defaultClothingSizes.aliases};
+          for(const entry of sizeAliases.split(',')){
+            const pair=entry.split('=').map(v=>v.trim());if(pair.length===2&&pair[0]&&ordered.some(v=>v.toLocaleLowerCase()===pair[1].toLocaleLowerCase()))aliases[pair[0].toLocaleLowerCase()]=pair[1];
+          }
+          setSizeDefinitions(previous=>({...previous,[sizeColumn]:{ordered,aliases}}));
+          setSmartOrder(true);setSizeColumn(null);
+        }}>Aplicar definición</button>
+      </div>
+    </div>}
     {menu&&<div ref={menuRef} className="zenit-sheet__menu" role="menu" aria-label={'Opciones de '+(menu.kind==='row'?'fila':'columna')}
       style={{left:menu.left,top:menu.top}}>
       <div className="zenit-sheet__menu-caption">{menu.label}</div>
@@ -719,6 +743,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setFilterPanel(true);setMenu(null);}}>
           Filtrar esta columna…
         </button>
+        <button type="button" role="menuitem" onClick={()=>{const current=sizeDefinitions[menu.key];setSizeColumn(menu.key);setSizeOrder((current?.ordered??['XP','P','M','G','GG','XGG','XXGG','Tamaño Único']).join(', '));setSizeAliases(current?Object.entries(current.aliases).map(([a,b])=>a+'='+b).join(', '):'XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');setMenu(null);}}>Definir escala de tallas…</button>
         <button type="button" role="menuitem" onClick={()=>act('left')}>Mover a la izquierda</button>
         <button type="button" role="menuitem" onClick={()=>act('right')}>Mover a la derecha</button>
       </>}
