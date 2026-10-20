@@ -47,7 +47,7 @@ type Props<Row extends RecordWithId> = {
 
 /** A presentation adapter over an authorized page. It does not fetch, persist or authorize anything. */
 export function SpreadsheetGrid<Row extends RecordWithId>({
-  rows,columns,getRowLabel,from,total,search,onSearch,
+  rows,columns,getRowLabel,from,total,page,search,onSearch,
   onUpdateCell,onRenameColumn,onReorderColumn,
   guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,
   cellFormats:controlledFormats,onCellFormatsChange,rowTitles:controlledRowTitles,onRowTitlesChange,
