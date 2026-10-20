@@ -28,6 +28,8 @@ export function SheetPicker({label,value,options,onChange,disabled=false}:Props)
       const value=computed.getPropertyValue(key).trim();
       if(value)next[key]=value;
     }
+    next['--picker-solid-bg']=computed.backgroundColor;
+    next['--picker-solid-fg']=computed.color;
     setPalette(next);
   };
   const alignPopup=()=>{
@@ -80,8 +82,8 @@ export function SheetPicker({label,value,options,onChange,disabled=false}:Props)
       <span aria-hidden="true" className="zenit-sheet__picker-arrow"><Icon name="chevron-right" size={14}/></span>
     </button>
     {open&&createPortal(<div ref={popup} className="zenit-sheet__picker-list zenit-sheet__picker-list--portal" role="listbox" aria-label={label} style={{...palette,top:placement.top,left:placement.left,width:placement.width,maxHeight:placement.maxHeight,
-      backgroundColor:palette['--surface']||'#ffffff',
-      color:palette['--text']||'#17212b',
+      backgroundColor:palette['--picker-solid-bg']||'#ffffff',
+      color:palette['--picker-solid-fg']||'#17212b',
       borderColor:palette['--border']||'#d9dedb'}}>
       {options.map((option,index)=><button type="button" role="option"
         aria-selected={option.value===value} key={option.value}
