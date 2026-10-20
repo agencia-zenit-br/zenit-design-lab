@@ -1867,3 +1867,17 @@ button,a,[role="option"],summary {
 .zenit-sheet__filter-controls button:disabled{opacity:.45;cursor:not-allowed;}
 .zenit-sheet__filter-chips{display:flex;flex-wrap:wrap;gap:6px;}
 .zenit-sheet__filters small{font-size:11px;color:var(--muted);}
+
+
+/* R8.1: original max-height:252px prevented viewport resizing; make the chosen height authoritative. */
+.zenit-sheet .zenit-sheet__scroll{max-height:none!important;min-height:240px;overflow:auto;}
+.zenit-sheet__toolbar{display:flex!important;flex-wrap:wrap!important;align-items:center!important;overflow:visible!important;}
+.zenit-sheet__sheet-tools{flex:1 1 100%;order:-2;width:100%;display:flex!important;visibility:visible!important;min-height:45px;}
+.zenit-sheet__sheet-tools button{font-weight:650;min-width:max-content;}
+.zenit-sheet__tool-legend{width:100%;font-size:11px;font-weight:650;color:var(--muted);order:-1;}
+.zenit-sheet__table td[style*="font-style: italic"],.zenit-sheet__draft-cell[style*="font-style: italic"]{font-style:italic!important;}
+.zenit-sheet__size-dialog{position:fixed;z-index:10000;inset:auto 50% 50% auto;transform:translate(50%,50%);width:min(520px,calc(100vw - 28px));box-sizing:border-box;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 90px #0003;padding:20px;display:grid;gap:12px;background:var(--surface);color:var(--text);}
+.zenit-sheet__size-dialog h3{margin:0;font-size:17px;}.zenit-sheet__size-dialog p{margin:0;font-size:12px;color:var(--muted);}
+.zenit-sheet__size-dialog label{display:grid;gap:4px;font-size:12px;}.zenit-sheet__size-dialog input,.zenit-sheet__size-dialog textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:7px;padding:9px;background:var(--surface);color:var(--text);font:inherit;}
+.zenit-sheet__size-dialog-actions{display:flex;justify-content:flex-end;gap:8px;}.zenit-sheet__size-dialog-actions button{appearance:none;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;padding:8px 12px;cursor:pointer;}
+.zenit-sheet__size-dialog-actions button:last-child{background:var(--brand);color:white;border-color:var(--brand);}
