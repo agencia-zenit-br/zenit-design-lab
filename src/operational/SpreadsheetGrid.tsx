@@ -58,7 +58,7 @@ type Props<Row extends RecordWithId> = {
 };
 
 /** A presentation adapter over an authorized page. It does not fetch, persist or authorize anything. */
-export function SpreadsheetGrid<Row extends RecordWithId>({
+function SheetCanvas<Row extends RecordWithId>({
   rows,columns,getRowLabel,from,total,page,search,onSearch,
   onUpdateCell,onRenameColumn,onReorderColumn,
   guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,
@@ -567,10 +567,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
             <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&cellFormats[formatKey(orderedRows[selection.endRow??selection.anchorRow??0]?.id??draftId(from+(selection.endRow??selection.anchorRow??0)),visualColumns[selection.endCol??selection.anchorCol??0]?.key??'')]?.[key])} onClick={()=>{const focusRow=selection?.endRow??selection?.anchorRow??0,focusCol=selection?.endCol??selection?.anchorCol??0;const current=cellFormats[formatKey(orderedRows[focusRow]?.id??draftId(from+focusRow),visualColumns[focusCol]?.key??'')];applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}><Icon name={icon} size={17}/></button>)}
         </div>
       </div>
-      <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
-      <button className="zenit-sheet__ai-launch" type="button" aria-label="Abrir consulta con IA" onClick={()=>{setAiOpen(true);setAiProposal(null);setAiPrevious(null);}}>
-        <Icon name="sparkles" size={16}/> IA
-      </button>
+      <div className="zenit-sheet__search-actions">
+        <label>Buscar en la hoja
+          <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/>
+        </label>
+        <button className="zenit-sheet__ai-launch" type="button" aria-label="Abrir consulta con IA"
+          onClick={()=>{setAiOpen(true);setAiProposal(null);setAiPrevious(null);}}>
+          <Icon name="sparkles" size={16}/> IA
+        </button>
+      </div>
 
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
@@ -884,5 +889,102 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       </>}
       <button type="button" role="menuitem" onClick={()=>{setMenu(null);menuTriggerRef.current?.focus();}}>Cerrar menú</button>
     </div>}
+  </section>;
+}
+
+
+/**
+ * Workbook preview container. Independent draft sheets never read or mutate
+ * the source's enterprise records. Each mounted canvas has isolated local
+ * drafts, formats, filters, guides and bounded undo/redo history.
+ * Backend persistence and workbook sharing require a separate authorized adapter.
+ */
+type WorkbookTab=Readonly<{id:string;title:string;source:boolean}>;
+function WorkbookPage<Row extends RecordWithId>({tab,active,props}:{
+  tab:WorkbookTab;active:boolean;props:Props<Row>;
+}){
+  const [localSearch,setLocalSearch]=useState('');
+  return <div className="zenit-workbook__page" hidden={!active}
+    aria-hidden={!active} data-workbook-page={tab.id}>
+    <SheetCanvas {...props}
+      rows={tab.source?props.rows:[]}
+      columns={tab.source?props.columns:[]}
+      total={tab.source?props.total:0}
+      search={tab.source?props.search:localSearch}
+      onSearch={tab.source?props.onSearch:setLocalSearch}
+      onUpdateCell={tab.source?props.onUpdateCell:()=>{}}
+      onRenameColumn={tab.source?props.onRenameColumn:()=>{}}
+      onReorderColumn={tab.source?props.onReorderColumn:()=>{}}
+      guideColumn={tab.source?props.guideColumn:null}
+      guideRow={tab.source?props.guideRow:null}
+      onGuideColumn={tab.source?props.onGuideColumn:()=>{}}
+      onGuideRow={tab.source?props.onGuideRow:()=>{}}
+      cellFormats={tab.source?props.cellFormats:undefined}
+      onCellFormatsChange={tab.source?props.onCellFormatsChange:undefined}
+      rowTitles={tab.source?props.rowTitles:undefined}
+      onRowTitlesChange={tab.source?props.onRowTitlesChange:undefined}
+    />
+  </div>;
+}
+export function SpreadsheetGrid<Row extends RecordWithId>(props:Props<Row>){
+  const [tabs,setTabs]=useState<WorkbookTab[]>([{id:'source',title:'Registros',source:true}]);
+  const [activeId,setActiveId]=useState('source');
+  const [renaming,setRenaming]=useState<string|null>(null);
+  const [renameValue,setRenameValue]=useState('');
+  const nextTab=useRef(1);
+  const activeTab=tabs.find(tab=>tab.id===activeId)??tabs[0];
+  const addTab=()=>{
+    const next=nextTab.current++;
+    const id='draft-'+next;
+    setTabs(previous=>[...previous,{id,title:'Hoja '+(next+1),source:false}]);
+    setActiveId(id);setRenaming(null);
+  };
+  const beginRename=(tab:WorkbookTab)=>{
+    setRenaming(tab.id);setRenameValue(tab.title);
+  };
+  const finishRename=(save:boolean)=>{
+    if(save&&renameValue.trim())setTabs(previous=>previous.map(tab=>
+      tab.id===renaming?{...tab,title:renameValue.trim().slice(0,60)}:tab));
+    setRenaming(null);
+  };
+  const deleteTab=(id:string)=>{
+    if(id==='source')return;
+    const at=tabs.findIndex(tab=>tab.id===id);
+    const next=tabs.filter(tab=>tab.id!==id);
+    if(activeId===id)setActiveId(next[Math.min(at,next.length-1)]?.id??'source');
+    setTabs(next);setRenaming(null);
+  };
+  return <section className="zenit-workbook" data-sheet-workbook="true"
+    aria-label="Libro de hojas">
+    {tabs.map(tab=><WorkbookPage key={tab.id} tab={tab}
+      active={tab.id===activeTab.id} props={props}/>)}
+    <div className="zenit-workbook__tabs" aria-label="Pestañas del libro">
+      <div role="tablist" aria-label="Hojas del libro" className="zenit-workbook__tablist">
+        {tabs.map(tab=><div key={tab.id} className="zenit-workbook__tab-slot">
+          {renaming===tab.id?
+            <input autoFocus className="zenit-workbook__rename"
+              aria-label={'Renombrar hoja '+tab.title}
+              maxLength={60} value={renameValue}
+              onChange={event=>setRenameValue(event.target.value)}
+              onBlur={()=>finishRename(true)}
+              onKeyDown={event=>{
+                if(event.key==='Enter'){event.preventDefault();finishRename(true);}
+                if(event.key==='Escape'){event.preventDefault();finishRename(false);}
+              }}/>:
+            <button type="button" role="tab" aria-selected={tab.id===activeId}
+              className="zenit-workbook__tab" title={'Doble clic para renombrar '+tab.title}
+              onClick={()=>setActiveId(tab.id)} onDoubleClick={()=>beginRename(tab)}>
+              <Icon name="list" size={13}/>{tab.title}
+            </button>}
+          {!tab.source&&renaming!==tab.id&&<button type="button"
+            className="zenit-workbook__tab-delete" title={'Eliminar '+tab.title}
+            aria-label={'Eliminar hoja '+tab.title}
+            onClick={()=>{if(window.confirm('¿Eliminar '+tab.title+' y sus borradores locales?'))deleteTab(tab.id);}}>
+            <Icon name="x" size={12}/></button>}
+        </div>)}
+      </div>
+      <button type="button" className="zenit-workbook__add" aria-label="Agregar hoja"
+        title="Agregar nueva hoja vacía" onClick={addTab}><Icon name="plus" size={16}/></button>
+    </div>
   </section>;
 }
