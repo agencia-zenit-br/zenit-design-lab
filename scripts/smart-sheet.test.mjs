@@ -44,3 +44,19 @@ test('XP and L can be garment sizes only in the declared field taxonomy',()=>{
   const mixed=[{id:1,size:'L',name:'L'},{id:2,size:'P',name:'P'}];
   assert.deepEqual(orderSheet(mixed,[{column:'size',direction:'asc',kind:'auto'}],(r,c)=>r[c],'pt-BR',{size:definition}).map(r=>r.id),[2,1]);
 });
+
+test('local instruction proposal is deterministic and never requires an LLM', async()=>{
+  const {proposeDemoInstruction}=await import('../src/operational/sheetInstructionDemo.ts');
+  const columns=[
+    {key:'category',label:'Categoría',values:['Diseño','General','Contenido']},
+    {key:'status',label:'Estado',values:['Pendiente','Activo','Completado']},
+    {key:'name',label:'Nombre',values:['Registro 01','Registro 02']},
+  ];
+  const preview=proposeDemoInstruction('Muestra registros de categoría Diseño, estado Pendiente y ordénalos',columns);
+  assert.equal(preview.smartOrder,true);
+  assert.deepEqual(preview.clauses.map(c=>c.column).sort(),['category','status']);
+  assert.equal(preview.clauses.every(c=>c.operator==='equals'),true);
+  const unclear=proposeDemoInstruction('Encuentra estampas de superhéroes por similitud semántica',columns);
+  assert.equal(unclear.clauses.length,0);
+  assert.ok(unclear.limitations.length>0);
+});

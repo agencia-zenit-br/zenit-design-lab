@@ -179,6 +179,8 @@ try {
         'Italic command must visibly format the selected real cell');
       await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__cell-content")).fontStyle==="italic"',
         'Visible text span must be italic, not merely the cell container');
+      await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__cell-content")).transform!=="none"',
+        'Italic text must have a visibly slanted glyph appearance');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-highlight')][0]?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.dataset.highlight==="true"',
         'Highlight command must visibly format the selected cell');
@@ -187,6 +189,15 @@ try {
       await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Delete',code:'Delete',windowsVirtualKeyCode:46});
       await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.textContent?.trim()===""',
         'Delete must clear the selected authorized data cell');
+      await evaluate('document.querySelector("button[aria-label=\\\"Deshacer última edición\\\"]")?.click();true');
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.textContent?.trim()==="Registro 01"',
+        'Toolbar Undo must restore a deleted business value');
+      await evaluate('document.querySelector("button[aria-label=\\\"Rehacer última acción\\\"]")?.click();true');
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.textContent?.trim()===""',
+        'Toolbar Redo must reapply a deleted business value');
+      await evaluate('document.querySelector("button[aria-label=\\\"Deshacer última edición\\\"]")?.click();true');
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.textContent?.trim()==="Registro 01"',
+        'Undo after redo must restore the original value');
       await evaluate(`document.querySelector('.zenit-sheet__draft-cell')?.focus();true`);
       await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8});
       await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8});
@@ -201,6 +212,12 @@ try {
       await evaluate('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.click();true');
       await evaluate('document.querySelector("button[aria-label=\\\"Filtros estructurados\\\"]")?.click();true');
       await waitFor('Boolean(document.querySelector(".zenit-sheet__filters"))','Combined filters panel must open');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__filter-dialog select").length'),0,
+        'Filter popup must avoid native browser dropdowns');
+      await evaluate('document.querySelector(".zenit-sheet__picker-trigger")?.click();true');
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__picker-list[role=listbox]"))',
+        'Column dropdown should use branded Zenit listbox controls');
+      await evaluate('document.querySelector(".zenit-sheet__picker-trigger")?.click();true');
       await evaluate(`(() => {const input=document.querySelector('input[aria-label="Valor del filtro"]');
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
         setter.call(input,'Registro 02');input.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
@@ -216,6 +233,29 @@ try {
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Dejar de filtrar'))?.click();true`);
       await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
         'Stop filtering must restore all authorized records');
+      assert.equal(await evaluate('document.querySelector(".zenit-sheet__hint")'),null,
+        'Redundant explanatory text should not consume toolbar space');
+      assert.equal(await evaluate('document.querySelector(".zenit-sheet__format-status")'),null,
+        'Format status should be visible through pressed icons, not a floating tag');
+      await evaluate('document.querySelector("button[aria-label=\\\"Abrir consulta con IA\\\"]")?.click();true');
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__ai-dialog[role=dialog]"))',
+        'AI instruction popup must open');
+      await evaluate(`(() => {const input=document.querySelector('textarea[aria-label="Instrucción para IA"]');
+        const setter=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;
+        setter.call(input,'Muestra los registros Pendiente de categoría General y ordénalos');
+        input.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__ai-actions button')].find(b=>b.textContent.includes('Preparar propuesta'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__ai-chip").length===2',
+        'Demo instruction should propose two recognizable structured conditions');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__ai-actions button')].find(b=>b.textContent.includes('Aplicar propuesta'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===5',
+        'Approved local AI proposal must filter records without creating data');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__ai-actions button')].find(b=>b.textContent.includes('Revertir propuesta'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
+        'AI proposal must be reversible');
+      await evaluate('document.querySelector("button[aria-label=\\\"Cerrar consulta con IA\\\"]")?.click();true');
+      await waitFor('!document.querySelector(".zenit-sheet__ai-dialog")','AI popup should close');
+      process.stdout.write('PASS R8.3 italic content, undo-redo, branded pickers and reversible instruction dialog\\n');
       const actualHeight=await evaluate('document.querySelector(".zenit-sheet__scroll").getBoundingClientRect().height');
       assert.ok(actualHeight>=640,'Sheet viewport must honor 650px setting, not legacy max-height cap');
       const toolsVisible=await evaluate(`(() => {

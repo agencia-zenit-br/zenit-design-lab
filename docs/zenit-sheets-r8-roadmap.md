@@ -23,3 +23,20 @@
 - Filtering and sorting are reversible views, not destructive transformations.
 - Normalization and LLM-driven write operations require explicit user approval.
 - Missing or unrecognized size tokens must not be silently coerced to known garment sizes.
+
+## Next major UI Core capability: per-cell digital attachments (approved for future design)
+A cell may contain references to one photo, an ordered image gallery, one or more documents, and other authorized file types. This is a **typed asset reference**, not binary data embedded in the worksheet value.
+- Cell model: value, optional typed attachments array (asset ID, MIME type, display name, size, optional dimensions/page count, ordered position, preview references, annotations), plus permissions and version/provenance.
+- Interactions: upload / choose existing asset, drag-and-drop when appropriate, inline thumbnail, gallery lightbox, document preview, rename/reorder/remove with clear confirmations, download subject to ACL; remain usable in desktop and mobile.
+- Product use cases: apparel SKU photos and styles, HR records and supporting documents, engineering plans/specifications, editorial image packages.
+- Platform duties: tenant-isolated object storage and indexes, role-based access, signed delivery URLs, malware scanning, quotas, allowed file types/sizes, original fidelity, immutable audit, retention, delete governance, rollback, and safe upload lifecycle.
+- Data adapters may enable or forbid attachments per sheet, column, row, or cell. Displaying a sheet does **not** grant attachment access independently.
+- Future LLM visual/document understanding may propose metadata from **authorized** assets. It must not infer unseen files or bypass user approval for a write.
+- **Status:** accepted as future requirement; not implemented in R8.3. Do not let this delay Zenit Media Core committed beta.
+
+## R8.3 current scope
+- Branded dropdowns in the filter dialog, with no native grey popup.
+- Strongly visible italic rendering on cell content; automated CSS/DOM regression.
+- Toolbar undo/redo for local edits, formats, filters and sorting, with a bounded action stack.
+- Remove redundant legend, helper text and floating format-status badge from sheet toolbar.
+- AI action launches an instruction/review dialog. **The Design Lab is not connected to a real LLM.** A limited, deterministic local parser proposes recognized exact values and ordering; unclear instructions lead to clarification rather than unverified modifications. Application is opt-in and reversible. Platform LLM orchestration, tenant-scoped permissions, auditing, prompt policy, token accounting and semantic classification remain future integration.
