@@ -178,6 +178,7 @@ export function OperationalWorkbench(){
   const select=(ids:RecordIdentity[])=>setSelected(reconcileSelectedIds(ids,rows));
   // The Lab uses a synthetic, in-memory server simulator. No remote API is invoked.
   const simulated=queryCollection(rows,visibleColumns,query);
+  const sheetResult=queryCollection(rows,visibleColumns,{...query,page:1,pageSize:10000});
   const pageResult=remote?{rows:simulated.visibleRows,total:simulated.total,
     page:simulated.page,pageSize:simulated.pageSize}:undefined;
   return <div className="operational-workbench" data-operational-workbench="true">
@@ -289,9 +290,9 @@ export function OperationalWorkbench(){
         onConfirm={remove} onCancel={()=>setConfirm(false)}/>}
     </div>
     {view==='sheet'
-      ?<SpreadsheetGrid rows={simulated.visibleRows} columns={visibleColumns}
-        getRowLabel={row=>row.name} from={simulated.from} total={simulated.total}
-        page={simulated.page} pageCount={simulated.pageCount} pageSize={simulated.pageSize}
+      ?<SpreadsheetGrid rows={sheetResult.visibleRows} columns={visibleColumns}
+        getRowLabel={row=>row.name} from={sheetResult.from} total={sheetResult.total}
+        page={sheetResult.page} pageCount={sheetResult.pageCount} pageSize={sheetResult.pageSize}
         search={query.search} onSearch={value=>setQuery(previous=>({...previous,search:value,page:1}))}
         onPage={value=>setQuery(previous=>({...previous,page:value}))}
         onPageSize={value=>setQuery(previous=>({...previous,pageSize:value,page:1}))}
