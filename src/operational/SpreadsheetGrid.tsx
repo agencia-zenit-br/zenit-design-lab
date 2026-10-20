@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, t
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
 import { SheetPicker } from './SheetPicker';
+import {proposeDemoInstruction,type DemoInstructionProposal} from './sheetInstructionDemo';
 import { filterSheet, orderSheet, type ClothingSizeDefinition, type FilterClause, type FilterOperator } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
@@ -151,6 +152,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [filterOperator,setFilterOperator]=useState<FilterOperator>('contains');
   const [filterValue,setFilterValue]=useState('');
   const [filterTo,setFilterTo]=useState('');
+  const [aiOpen,setAiOpen]=useState(false);
+  const [aiInstruction,setAiInstruction]=useState('');
+  const [aiProposal,setAiProposal]=useState<DemoInstructionProposal|null>(null);
+  const [aiPrevious,setAiPrevious]=useState<{clauses:FilterClause[];smartOrder:boolean}|null>(null);
   const [sizeDefinitions,setSizeDefinitions]=useState<Record<string,ClothingSizeDefinition>>({});
   const [sizeColumn,setSizeColumn]=useState<string|null>(null);
   const [sizeOrder,setSizeOrder]=useState('');
@@ -563,11 +568,61 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>
       </div>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
+      <button className="zenit-sheet__ai-launch" type="button" aria-label="Abrir consulta con IA" onClick={()=>{setAiOpen(true);setAiProposal(null);setAiPrevious(null);}}>
+        <Icon name="sparkles" size={16}/> IA
+      </button>
 
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
     </div>
+    {aiOpen&&<div className="zenit-sheet__modal-backdrop" role="presentation">
+      <div role="dialog" aria-modal="true" aria-label="Consulta con IA" className="zenit-sheet__ai-dialog"
+        onKeyDown={event=>{if(event.key==='Escape'){event.stopPropagation();setAiOpen(false);}}}>
+        <div className="zenit-sheet__ai-heading">
+          <div><h3><Icon name="sparkles" size={18}/> Consulta con IA</h3>
+            <p>Describe el resultado que buscas en esta hoja.</p></div>
+          <button type="button" aria-label="Cerrar consulta con IA" onClick={()=>setAiOpen(false)}><Icon name="x" size={17}/></button>
+        </div>
+        <label className="zenit-sheet__ai-prompt">Instrucción
+          <textarea aria-label="Instrucción para IA" rows={4} value={aiInstruction} onChange={event=>{setAiInstruction(event.target.value);setAiProposal(null);setAiPrevious(null);}}
+            placeholder="Ejemplo: Muestra los registros pendientes de la categoría Diseño y ordénalos."/>
+        </label>
+        <div className="zenit-sheet__ai-disclosure" role="note">
+          <Icon name="alert" size={16}/>
+          <span>Modo demostración: las propuestas se interpretan localmente mediante reglas limitadas. Todavía no hay un LLM conectado; no se envían datos a proveedores externos.</span>
+        </div>
+        {aiProposal&&<div className="zenit-sheet__ai-proposal">
+          <strong>Propuesta para revisar</strong>
+          <p>{aiProposal.explanation}</p>
+          {aiProposal.clauses.length>0&&<div className="zenit-sheet__filter-chips">
+            {aiProposal.clauses.map((clause,i)=><span key={i} className="zenit-sheet__ai-chip">
+              {(orderedCols.find(col=>col.key===clause.column)?.label??clause.column)+': '+clause.value}
+            </span>)}
+          </div>}
+          {aiProposal.smartOrder&&<p>Ordenar registros completos siguiendo la secuencia de columnas y las definiciones personalizadas.</p>}
+          {(aiProposal.clauses.length>0||aiProposal.smartOrder)&&<p className="zenit-sheet__ai-preview-count">
+            Vista previa: {filterSheet(rows,aiProposal.clauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)).length} registros coincidentes de {rows.length} autorizados.
+          </p>}
+          {aiProposal.limitations.length>0&&<div role="status" className="zenit-sheet__ai-clarifications">
+            <strong>Se necesitan aclaraciones</strong>
+            {aiProposal.limitations.map((note,i)=><p key={i}>{note}</p>)}
+          </div>}
+        </div>}
+        <div className="zenit-sheet__ai-actions">
+          <button type="button" onClick={()=>setAiOpen(false)}>Cerrar</button>
+          {aiPrevious&&<button type="button" onClick={()=>{applyView(aiPrevious.clauses,aiPrevious.smartOrder);setAiPrevious(null);}}>Revertir propuesta</button>}
+          <button type="button" disabled={aiInstruction.trim().length<8}
+            onClick={()=>{setAiProposal(proposeDemoInstruction(aiInstruction,orderedCols.map(col=>({
+              key:col.key,label:col.label,values:rows.map(row=>col.getValue(row)),
+            }))));setAiPrevious(null);}}>Preparar propuesta</button>
+          <button type="button" disabled={!aiProposal||(aiProposal.clauses.length===0&&!aiProposal.smartOrder)}
+            onClick={()=>{if(!aiProposal)return;setAiPrevious({clauses:[...clauses],smartOrder});applyView([...aiProposal.clauses],aiProposal.smartOrder||smartOrder);}}>
+            Aplicar propuesta
+          </button>
+        </div>
+      </div>
+    </div>}
     {filterPanel&&<div className="zenit-sheet__modal-backdrop" role="presentation"><div className="zenit-sheet__filters zenit-sheet__filter-dialog" role="dialog" aria-modal="true" aria-label="Filtros combinados">
       <strong>Filtrar columnas autorizadas</strong>
       <div className="zenit-sheet__filter-controls">
@@ -723,7 +778,13 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                     if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
                     if(event.key==='Escape'){event.preventDefault();cancelEdit();}
                     event.stopPropagation();
-                  }}/>: <span className="zenit-sheet__cell-content" style={{fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?'italic':'normal',fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:400}}>{String(col.getValue(row)??'')}</span>}
+                  }}/>: <span className="zenit-sheet__cell-content"
+                    data-italic={cellFormats[formatKey(row.id,col.key)]?.italic?'true':undefined}
+                    style={{fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?'italic':'normal',
+                      fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:400,
+                      transform:cellFormats[formatKey(row.id,col.key)]?.italic?'skewX(-11deg)':undefined}}>
+                    {String(col.getValue(row)??'')}
+                  </span>}
               </td>;
             })}
           </tr>)}
