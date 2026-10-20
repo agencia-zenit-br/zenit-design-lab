@@ -132,7 +132,7 @@ try {
       })()`);
       assert.ok(guide,'Real and placeholder row guides must both render');
       assert.ok(guide.delta<=2,`Real and placeholder row numbers must align: ${JSON.stringify(guide)}`);
-      assert.ok(guide.hasExpansion&&guide.scrollable,'Expanded spreadsheet canvas controls must render');
+      assert.ok(!guide.hasExpansion&&guide.scrollable,'Continuous sheet must expand without a manual expansion button');
       assert.ok(guide.numbers.length>0,'Blank canvas rows must render without persisted records');
     }
     if(width===375){
