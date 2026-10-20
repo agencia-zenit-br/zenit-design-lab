@@ -2064,3 +2064,24 @@ button,a,[role="option"],summary {
   flex:none;
   margin:0;
 }
+
+
+/* R9.3: theme-safe opaque dropdown portal. Portaled listbox is under body,
+   outside theme-token scope; these fallbacks ensure no underlying content bleeds. */
+body > .zenit-sheet__picker-list--portal{
+  background-color:var(--picker-solid-bg,#fff)!important;
+  color:var(--picker-solid-fg,#17212b)!important;
+  border:1px solid var(--border,#d9dedb)!important;
+  box-shadow:0 16px 42px rgba(0,0,0,.18)!important;
+  isolation:isolate;
+  opacity:1!important;
+}
+body > .zenit-sheet__picker-list--portal button{
+  background-color:transparent!important;
+  color:inherit!important;
+}
+body > .zenit-sheet__picker-list--portal button:hover,
+body > .zenit-sheet__picker-list--portal button.is-highlighted,
+body > .zenit-sheet__picker-list--portal button.is-current{
+  background-color:var(--surface-muted,#f1f3f2)!important;
+}
