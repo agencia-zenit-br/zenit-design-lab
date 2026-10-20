@@ -136,8 +136,8 @@ try {
       assert.ok(guide.numbers.length>0,'Blank canvas rows must render without persisted records');
     }
     if(width===375){
-      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
-        'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),17,
+        'Continuous sheet must expose all 17 synthetic mobile cards without sideways spreadsheet scroll');
       await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value')?.click();true`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd input"))',
         'Mobile sheet must allow editing a field by tapping it');
