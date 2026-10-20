@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
-import { orderSheet } from './smartSheetCore';
+import { filterSheet, orderSheet, type FilterClause, type FilterOperator } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
 export type SheetSelection = {
@@ -110,6 +110,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [viewport,setViewport]=useState({width:820,height:300});
   const [sheetHeight,setSheetHeight]=useState(430);
   const [smartOrder,setSmartOrder]=useState(false);
+  const [filterPanel,setFilterPanel]=useState(false);
+  const [clauses,setClauses]=useState<FilterClause[]>([]);
+  const [filterColumn,setFilterColumn]=useState('');
+  const [filterOperator,setFilterOperator]=useState<FilterOperator>('contains');
+  const [filterValue,setFilterValue]=useState('');
+  const [filterTo,setFilterTo]=useState('');
 
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
@@ -145,9 +151,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const orderedCols=pinnedCol?.mode==='only'
     ?[...columns.filter(col=>col.key===pinnedCol.target),...columns.filter(col=>col.key!==pinnedCol.target)]
     :[...columns];
-  const sheetRows=smartOrder?orderSheet(rows,orderedCols.map(col=>({
+  const filteredRows=filterSheet(rows,clauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row));
+  const sheetRows=smartOrder?orderSheet(filteredRows,orderedCols.map(col=>({
     column:col.key,direction:'asc' as const,kind:'auto' as const,
-  })),(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)):[...rows];
+  })),(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)):[...filteredRows];
   const orderedRows=pinnedRow?.mode==='only'
     ?[...sheetRows.filter(row=>row.id===pinnedRow.target),...sheetRows.filter(row=>row.id!==pinnedRow.target)]
     :sheetRows;
@@ -448,6 +455,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
             <option value={280}>Compacta</option><option value={430}>Normal</option><option value={650}>Amplia</option><option value={850}>Máxima</option>
           </select>
         </label>
+        <button type="button" aria-label="Filtros estructurados" aria-expanded={filterPanel}
+          aria-pressed={clauses.length>0} onClick={()=>setFilterPanel(value=>!value)}>
+          <Icon name="filter" size={16}/> Filtros{clauses.length?(' ('+clauses.length+')'):''}
+        </button>
         <button type="button" aria-label="Orden inteligente" aria-pressed={smartOrder} disabled={readOnly||rows.length===0}
           title="Ordenar registros completos por las columnas, reconociendo tallas y números" onClick={()=>setSmartOrder(value=>!value)}>
           <Icon name="list" size={16}/> {smartOrder?'Restaurar orden':'Orden inteligente'}
@@ -480,6 +491,40 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
     </div>
+    {filterPanel&&<div className="zenit-sheet__filters" aria-label="Filtros combinados">
+      <strong>Filtrar columnas autorizadas</strong>
+      <div className="zenit-sheet__filter-controls">
+        <label>Columna
+          <select aria-label="Columna del filtro" value={filterColumn||orderedCols[0]?.key||''} onChange={event=>setFilterColumn(event.target.value)}>
+            {orderedCols.map(col=><option key={col.key} value={col.key}>{col.label}</option>)}
+          </select>
+        </label>
+        <label>Condición
+          <select aria-label="Condición del filtro" value={filterOperator} onChange={event=>setFilterOperator(event.target.value as FilterOperator)}>
+            <option value="contains">Contiene</option><option value="equals">Coincide exactamente</option>
+            <option value="between">Entre importes</option>
+          </select>
+        </label>
+        <label>{filterOperator==='between'?'Desde':'Valor'}
+          <input aria-label="Valor del filtro" value={filterValue} onChange={event=>setFilterValue(event.target.value)} placeholder={filterOperator==='between'?'R$ 50':'Buscar texto'}/>
+        </label>
+        {filterOperator==='between'&&<label>Hasta
+          <input aria-label="Máximo del filtro" value={filterTo} onChange={event=>setFilterTo(event.target.value)} placeholder="R$ 100"/>
+        </label>}
+        <button type="button" disabled={!filterValue.trim()||(filterOperator==='between'&&!filterTo.trim())||!orderedCols.length}
+          onClick={()=>{setClauses(previous=>[...previous,{column:filterColumn||orderedCols[0].key,operator:filterOperator,value:filterValue,to:filterOperator==='between'?filterTo:undefined}]);setFilterValue('');setFilterTo('');setSelection(null);}}>
+          <Icon name="plus" size={14}/> Agregar filtro
+        </button>
+        {clauses.length>0&&<button type="button" onClick={()=>{setClauses([]);setSelection(null);}}>Quitar todos</button>}
+      </div>
+      {clauses.length>0&&<div className="zenit-sheet__filter-chips">
+        {clauses.map((clause,index)=><button key={index} type="button" aria-label={'Quitar filtro '+(index+1)}
+          onClick={()=>{setClauses(previous=>previous.filter((_,i)=>i!==index));setSelection(null);}}>
+          {(orderedCols.find(col=>col.key===clause.column)?.label??clause.column)+' · '+clause.operator+' · '+clause.value+(clause.to?'–'+clause.to:'')} <Icon name="x" size={12}/>
+        </button>)}
+      </div>}
+      <small>{filteredRows.length} registros coincidentes de {rows.length} cargados. Solo filtra registros autorizados, no modifica la fuente.</small>
+    </div>}
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
@@ -671,6 +716,9 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <button type="button" role="menuitem" onClick={()=>act('clear')}>Quitar fijación</button>
       {menu.kind==='column'&&<>
         <button type="button" role="menuitem" onClick={()=>act('rename')}>Cambiar título</button>
+        <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setFilterPanel(true);setMenu(null);}}>
+          Filtrar esta columna…
+        </button>
         <button type="button" role="menuitem" onClick={()=>act('left')}>Mover a la izquierda</button>
         <button type="button" role="menuitem" onClick={()=>act('right')}>Mover a la derecha</button>
       </>}
