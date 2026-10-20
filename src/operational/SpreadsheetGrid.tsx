@@ -144,6 +144,9 @@ function SheetCanvas<Row extends RecordWithId>({
   const [mobileColumn,setMobileColumn]=useState(columns[0]?.key??'');
   const [viewport,setViewport]=useState({width:820,height:300});
   const [sheetHeight,setSheetHeight]=useState(430);
+  // Guide lines are a non-printing drafting aid. Explicit borders belong to output.
+  const [gridGuides,setGridGuides]=useState(true);
+  const [printBorders,setPrintBorders]=useState<'none'|'thin'|'bold'>('none');
   const [smartOrder,setSmartOrder]=useState(false);
   const [filterPanel,setFilterPanel]=useState(false);
   const [clauses,setClauses]=useState<FilterClause[]>([]);
@@ -533,15 +536,34 @@ function SheetCanvas<Row extends RecordWithId>({
     };
   };
   const busy=isLoading||Boolean(error);
-  return <section className={"zenit-sheet"+(showRowTitles?" has-row-titles":"")} data-spreadsheet="true" aria-label={sheetTitle}>
+  return <section
+    className={"zenit-sheet"+(showRowTitles?" has-row-titles":"")+(gridGuides?" has-grid-guides":"")+" has-print-borders-"+printBorders}
+    data-spreadsheet="true" data-grid-guides={gridGuides?'visible':'hidden'}
+    data-print-borders={printBorders} aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
       <div className="zenit-sheet__sheet-tools">
-        <label className="zenit-sheet__viewport-control">Altura visible de la hoja
-          <select aria-label="Altura visible de la hoja" value={sheetHeight} onChange={event=>setSheetHeight(Number(event.target.value))}>
-            <option value={280}>Compacta</option><option value={430}>Normal</option><option value={650}>Amplia</option><option value={850}>Máxima</option>
-          </select>
-        </label>
+        <div className="zenit-sheet__viewport-control">
+          <span id="zenit-height-label">Altura visible de la hoja</span>
+          <SheetPicker label="Altura visible de la hoja" value={String(sheetHeight)}
+            onChange={value=>setSheetHeight(Number(value))}
+            options={[{value:'280',label:'Compacta'},{value:'430',label:'Normal'},
+              {value:'650',label:'Amplia'},{value:'850',label:'Máxima'}]}/>
+        </div>
+        <div className="zenit-sheet__grid-control" role="group" aria-label="Opciones de cuadrícula">
+          <button type="button" aria-label="Mostrar cuadrícula de guía" aria-pressed={gridGuides}
+            className="zenit-sheet__grid-toggle" title="Guías tenues de trabajo; no aparecen al imprimir"
+            onClick={()=>setGridGuides(enabled=>!enabled)}>
+            <Icon name="list" size={16}/> Cuadrícula
+          </button>
+          <div className="zenit-sheet__grid-preset">
+            <span>Bordes al imprimir</span>
+            <SheetPicker label="Bordes al imprimir" value={printBorders}
+              onChange={value=>setPrintBorders(value as 'none'|'thin'|'bold')}
+              options={[{value:'none',label:'Sin bordes'},{value:'thin',label:'Fino'},
+                {value:'bold',label:'Grueso'}]}/>
+          </div>
+        </div>
         <button type="button" aria-label="Filtros estructurados" aria-expanded={filterPanel}
           aria-pressed={clauses.length>0} onClick={()=>{setPendingClauses([...clauses]);setFilterPanel(true);}}>
           <Icon name="filter" size={16}/> Filtros{clauses.length?(' ('+clauses.length+')'):''}
