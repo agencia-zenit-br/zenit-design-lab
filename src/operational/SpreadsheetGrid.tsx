@@ -370,7 +370,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       focusCoordinate(Math.floor(Math.max(0,index)/visualColumns.length),Math.max(0,index)%visualColumns.length);return;
     }
     const key=draftKey(from+r,c);
-    if(event.key==='F2'||event.key==='Enter'){
+    if((event.key==='F2'||event.key==='Enter')&&!readOnly){
       event.preventDefault();setDraftInput(draftCells[key]??'');setDraftEditing(key);return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
@@ -389,8 +389,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         onChange={event=>setDraftInput(event.target.value)}
         onClick={event=>event.stopPropagation()}
         onBlur={()=>{setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);}}
-        onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setDraftEditing(null);}
-          else if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();event.stopPropagation();setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);focusCoordinate(r+(event.key==='Enter'?1:0),c+(event.key==='Tab'?(event.shiftKey?-1:1):0));}}}/>
+        onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();setDraftEditing(null);}
+          else if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);focusCoordinate(r+(event.key==='Enter'?1:0),c+(event.key==='Tab'?(event.shiftKey?-1:1):0));}}}/>
         :draftCells[draftKey(from+r,c)]??''}
     </span>;
   const rowOffset=48;
