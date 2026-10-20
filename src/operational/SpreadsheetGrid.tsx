@@ -55,6 +55,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
 }:Props<Row>){
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
+  const [editingRowTitle,setEditingRowTitle]=useState<string|null>(null);
   const [localRowTitles,setLocalRowTitles]=useState<Record<string,string>>({});
   const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
   const rowTitles=controlledRowTitles??localRowTitles;
@@ -136,7 +137,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
   const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
-  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-48-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
+  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-96-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
   } as OperationalColumn<Row>))];
@@ -155,7 +156,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     return value;
   };
   const colOffsets=visualColumns.reduce<Record<string,number>>((all,col,index)=>{
-    all[col.key]=index===0?48:48+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
+    all[col.key]=index===0?96:96+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
     return all;
   },{});
   const selected=(rowId:RecordIdentity,key:string,r:number,c:number)=>{
@@ -398,8 +399,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       if(element.scrollWidth-element.scrollLeft-element.clientWidth<220&&extraColumns<64)
         setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
     }}>
-      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:48+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
-        <colgroup><col style={{width:48}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
+      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:96+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+        <colgroup><col style={{width:96}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
           {visualColumns.map((col,c)=>{
@@ -455,7 +456,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
-              {guideRow?.target===row.id&&<input className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título" value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} disabled={readOnly}/>}
+              {editingRowTitle===String(row.id)?<input autoFocus className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título opcional" maxLength={80} value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape'){event.preventDefault();setEditingRowTitle(null);}}} disabled={readOnly}/>:rowTitles[String(row.id)]?<button type="button" className="zenit-sheet__row-label" title="Doble clic para editar título de fila" onDoubleClick={()=>setEditingRowTitle(String(row.id))}>{rowTitles[String(row.id)]}</button>:null}
+              {!readOnly&&editingRowTitle!==String(row.id)&&<button type="button" className="zenit-sheet__row-label-edit" aria-label={"Editar título de fila "+String(from+r)} title="Añadir título opcional a esta fila" onClick={()=>setEditingRowTitle(String(row.id))}><Icon name="pencil" size={12}/></button>
             </th>
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
