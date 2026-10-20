@@ -7,7 +7,8 @@ export type IconName =
   | 'search' | 'bell' | 'user' | 'plus' | 'check' | 'arrow-right'
   | 'moon' | 'sun' | 'monitor' | 'trash' | 'filter' | 'more'
   | 'folder' | 'chart' | 'users' | 'sparkles' | 'alert' | 'x'
-  | 'help' | 'list' | 'edit' | 'external' | 'menu' | 'shield' | 'globe' | 'log-out' | 'calendar' | 'clock';
+  | 'help' | 'list' | 'edit' | 'external' | 'menu' | 'shield' | 'globe' | 'log-out' | 'calendar' | 'clock'
+  | 'undo' | 'download' | 'align-left' | 'align-center' | 'align-right' | 'align-justify' | 'format-bold' | 'format-italic' | 'format-underline' | 'highlight';
 
 const artwork: Record<IconName, ReactNode> = {
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
@@ -47,6 +48,16 @@ const artwork: Record<IconName, ReactNode> = {
   globe: <><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-3 3-3 15 0 18M12 3c3 3 3 15 0 18"/></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6M17 2v6M3 10h18M8 14h3M8 18h3"/></>,
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
+  undo: <><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-2"/></>,
+  download: <><path d="M12 3v13m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></>,
+  'align-left': <path d="M4 6h16M4 10h11M4 14h16M4 18h10"/>,
+  'align-center': <path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>,
+  'align-right': <path d="M4 6h16M9 10h11M4 14h16M10 18h10"/>,
+  'align-justify': <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>,
+  'format-bold': <><path d="M7 4h6a4 4 0 0 1 0 8H7zM7 12h7a4 4 0 0 1 0 8H7z"/></>,
+  'format-italic': <path d="M14 4H9m6 16H7M13 4 9 20"/>,
+  'format-underline': <><path d="M6 4v7a6 6 0 0 0 12 0V4M4 21h16"/></>,
+  highlight: <><path d="m5 16 10-10 4 4-10 10H5zM13 8l4 4M3 22h18"/></>,
   'log-out': <><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/><path d="M13 7l5 5-5 5M18 12H9"/></>,
 };
 

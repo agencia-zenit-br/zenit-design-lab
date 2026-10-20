@@ -132,12 +132,34 @@ try {
       })()`);
       assert.ok(guide,'Real and placeholder row guides must both render');
       assert.ok(guide.delta<=2,`Real and placeholder row numbers must align: ${JSON.stringify(guide)}`);
-      assert.ok(guide.hasExpansion&&guide.scrollable,'Expanded spreadsheet canvas controls must render');
+      assert.ok(!guide.hasExpansion&&guide.scrollable,'Continuous sheet must expand without a manual expansion button');
       assert.ok(guide.numbers.length>0,'Blank canvas rows must render without persisted records');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:last-child td:first-of-type')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40});
+      await waitFor('document.activeElement?.classList.contains("zenit-sheet__draft-cell")',
+        'ArrowDown from the last populated row must focus an empty draft cell');
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'F2',code:'F2',windowsVirtualKeyCode:113});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'F2',code:'F2',windowsVirtualKeyCode:113});
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__draft-input"))',
+        'F2 must open an editor inside a previously empty cell');
+      await send('Input.insertText',{text:'Borrador R7'});
+      await evaluate(`document.querySelector('.zenit-sheet__draft-input')?.blur();true`);
+      await waitFor('[...document.querySelectorAll(".zenit-sheet__draft-cell")].some(el=>el.textContent==="Borrador R7")',
+        'Typing in an empty draft must retain its content locally');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label-edit')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title"))',
+        'Every numbered row guide must offer a title editor');
+      await send('Input.insertText',{text:'Prioridad'});
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title')?.blur();true`);
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label")?.textContent==="Prioridad"',
+        'Optional row guide title must appear beside its stable number');
+      process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
+
     }
     if(width===375){
-      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),5,
-        'Default sheet must have five mobile cards, without sideways spreadsheet scroll');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),17,
+        'Continuous sheet must expose all 17 synthetic mobile cards without sideways spreadsheet scroll');
       await evaluate(`document.querySelector('.zenit-sheet__card dl div:nth-child(2) dd .zenit-sheet__mobile-value')?.click();true`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__card dl div:nth-child(2) dd input"))',
         'Mobile sheet must allow editing a field by tapping it');
@@ -752,15 +774,15 @@ try {
         checkboxes:document.querySelectorAll('.zenit-sheet__table input[type=checkbox]').length,
         scroll:getComputedStyle(document.querySelector('.zenit-sheet__scroll')).overflowX
       }))()`);
-      assert.equal(initialSheet.rows,5,'Sheet must start with five visible rows');
-      assert.equal(initialSheet.columns,5,'Sheet must start with five data columns');
+      assert.equal(initialSheet.rows,17,'Continuous sheet must show all authorized synthetic records');
+      assert.ok(initialSheet.columns>=5,'Sheet must display all real columns and viewport fillers');
       assert.equal(initialSheet.checkboxes,0,'Sheet must select directly, not by radio or checkbox');
       assert.ok(['auto','scroll'].includes(initialSheet.scroll),'Sheet scrolling must be internal');
       assert.equal(await evaluate('document.querySelector(".zenit-sheet__corner")?.textContent'), '',
         'Spreadsheet intersection must not contain the decorative #');
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__head-select .zenit-sheet__axis-token").length'),5,
         'Column letters must be styled as explicit axis tokens');
-      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__row-select .zenit-sheet__axis-token").length'),5,
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__row-select .zenit-sheet__axis-token").length'),17,
         'Row numbers must be styled as explicit axis tokens');
       assert.equal(await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__head-title")).textAlign'), 'center',
         'Spreadsheet column titles must be centered');
@@ -819,26 +841,11 @@ try {
       assert.equal(await evaluate('document.querySelector("[data-sheet-column=responsible]")?.dataset.sheetColumn'), 'responsible',
         'Renaming visible header must preserve immutable column key');
       await evaluate(`[...document.querySelectorAll('.operational-workbench__action-buttons button')].find(el=>el.textContent.includes('Restablecer ejemplo'))?.click();true`);
-      await evaluate(`(() => {
-        const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
-        input.focus();
-        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        setter.call(input,'50');input.dispatchEvent(new Event('input',{bubbles:true}));
-        input.blur();return true;
-      })()`);
-      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
-        'Custom 50 rows/page should show all 17 synthetic rows, not silently clamp at 25');
-      await evaluate(`(() => {
-        const input=document.querySelector('[data-spreadsheet] input[aria-label="Filas por página"]');
-        input.focus();
-        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
-        setter.call(input,'5');input.dispatchEvent(new Event('input',{bubbles:true}));
-        input.blur();return true;
-      })()`);
-      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===5',
-        'Restoring custom page size must preserve five-row view');
-      process.stdout.write('PASS spreadsheet viewport fillers, axis chips, drag-range border, and custom pagination\\n');
-      process.stdout.write('PASS spreadsheet 5x5, no checkboxes, contextual row/column pinning and guide renaming\\n');
+      assert.equal(await evaluate("document.querySelector('[data-spreadsheet] input[type=number]')"),null,
+        'Sheet view must not expose administrative paging controls');
+      assert.ok(await evaluate('document.querySelectorAll(".zenit-sheet__draft-cell").length>0'),
+        'Blank cells must be keyboard-focusable rather than disabled placeholders');
+      process.stdout.write('PASS R7 continuous sheet, editable draft canvas, numbered row guides and records separation\\n');
 
       const avatarGeometry=await evaluate(`(() => {
         const product=document.querySelector('.header-controls .zenit-select:nth-child(1) .zenit-select__trigger').getBoundingClientRect();

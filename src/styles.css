@@ -1762,3 +1762,47 @@ button,a,[role="option"],summary {
 .zenit-sheet__placeholder-index {box-sizing:border-box;padding:0 2px;justify-content:center;}
 .zenit-sheet__placeholder-row-select {display:inline-grid;place-items:center;flex:none;min-width:26px;padding:1px 0;}
 .zenit-sheet__placeholder-row-menu {display:inline-block;flex:none;width:16px;min-height:28px;}
+
+/* R7 — native Zenit spreadsheet controls, no user-agent grey buttons. */
+.zenit-sheet__toolbar {display:flex;flex-wrap:wrap;align-items:end;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:12px 12px 0 0;background:var(--surface);}
+.zenit-sheet__toolbar button,.zenit-sheet__footer button,.zenit-sheet__mobile-guide button {
+  appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;
+  min-height:34px;padding:7px 11px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);color:var(--text);font:inherit;font-weight:550;font-size:12px;line-height:1.2;
+  cursor:pointer;transition:background-color .15s,border-color .15s;
+}
+.zenit-sheet__toolbar button:hover:not(:disabled),.zenit-sheet__footer button:hover:not(:disabled){background:var(--surface-muted);border-color:var(--border-strong);}
+.zenit-sheet__toolbar button:focus-visible,.zenit-sheet__footer button:focus-visible{outline:2px solid var(--brand);outline-offset:2px;}
+.zenit-sheet__toolbar button:disabled,.zenit-sheet__footer button:disabled{opacity:.45;cursor:not-allowed;}
+.zenit-sheet__toolbar input,.zenit-sheet__toolbar select{box-sizing:border-box;min-height:34px;border:1px solid var(--border);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;}
+.zenit-sheet__format-toolbar{flex:1 1 auto;display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+.zenit-sheet__format-toolbar button{min-width:34px;padding:7px;border-radius:7px;}
+.zenit-sheet__format-toolbar button[aria-pressed="true"]{color:var(--brand);border-color:var(--brand);background:color-mix(in srgb,var(--brand) 9%,var(--surface));}
+.zenit-sheet__rowhead,.zenit-sheet__placeholder-index{min-width:96px;width:96px!important;box-sizing:border-box;}
+.zenit-sheet__rowhead{position:relative;max-width:96px;overflow:hidden;}
+.zenit-sheet__row-label{border:0;background:transparent;color:var(--text);font:inherit;font-size:10px;font-weight:600;max-width:42px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;vertical-align:middle;padding:0 2px;cursor:text;}
+.zenit-sheet__row-label-edit{appearance:none;border:0;background:transparent;color:var(--muted);padding:2px;vertical-align:middle;cursor:pointer;}
+.zenit-sheet__row-label-edit:hover{color:var(--brand);}
+.zenit-sheet__row-title{min-width:0;max-width:58px;width:58px;font-size:11px;padding:3px;border:1px solid var(--brand);border-radius:5px;background:var(--surface);color:var(--text);}
+.zenit-sheet__placeholder-index{justify-content:flex-start;padding-left:3px;}
+@media(max-width:700px){.zenit-sheet__toolbar{padding:10px;gap:8px}.zenit-sheet__format-toolbar{flex-basis:100%;}}
+
+/* R7: editable draft canvas and continuous keyboard focus without creating records. */
+.zenit-sheet__placeholder-cell{display:block;box-sizing:border-box;flex:none;min-width:0;overflow:hidden;}
+.zenit-sheet__draft-cell{display:flex;align-items:center;min-width:0;min-height:46px;width:100%;height:100%;box-sizing:border-box;padding:5px 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--surface);color:var(--text);font:inherit;font-size:12px;cursor:cell;outline:0;}
+.zenit-sheet__draft-cell:hover{background:color-mix(in srgb,var(--brand) 3%,var(--surface));}
+.zenit-sheet__draft-cell.is-selected,.zenit-sheet__draft-cell:focus-visible{box-shadow:inset 0 0 0 2px var(--brand);background:color-mix(in srgb,var(--brand) 7%,var(--surface));}
+.zenit-sheet__draft-input{appearance:none;width:100%;height:30px;min-width:0;box-sizing:border-box;padding:2px 5px;background:var(--surface);color:var(--text);border:1px solid var(--brand);border-radius:4px;font:inherit;font-size:12px;outline:none;user-select:text;}
+.zenit-sheet__placeholder-row .zenit-sheet__row-label-edit{padding:2px;}
+.zenit-sheet__placeholder-row .zenit-sheet__row-title{width:55px;}
+
+/* R7: match row-number origin on filled and draft guides. */
+.zenit-sheet__rowhead{text-align:left!important;padding-left:3px!important;}
+.zenit-sheet__placeholder-index{justify-content:flex-start!important;padding-left:3px!important;}
+
+/* R7 guide column: number + readable optional title + independent trailing context menu. */
+.zenit-sheet__rowhead,.zenit-sheet__placeholder-index{width:152px!important;min-width:152px!important;}
+.zenit-sheet__rowhead{max-width:152px;padding-right:19px!important;overflow:hidden;text-overflow:ellipsis;}
+.zenit-sheet__rowhead .zenit-sheet__more{position:absolute;right:2px;top:50%;transform:translateY(-50%);min-width:15px;}
+.zenit-sheet__row-label{max-width:80px;text-align:start;}
+.zenit-sheet__row-title{max-width:82px;width:82px;}
