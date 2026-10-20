@@ -40,3 +40,12 @@ A cell may contain references to one photo, an ordered image gallery, one or mor
 - Toolbar undo/redo for local edits, formats, filters and sorting, with a bounded action stack.
 - Remove redundant legend, helper text and floating format-status badge from sheet toolbar.
 - AI action launches an instruction/review dialog. **The Design Lab is not connected to a real LLM.** A limited, deterministic local parser proposes recognized exact values and ordering; unclear instructions lead to clarification rather than unverified modifications. Application is opt-in and reversible. Platform LLM orchestration, tenant-scoped permissions, auditing, prompt policy, token accounting and semantic classification remain future integration.
+
+
+## R9 first-version workbook shell (isolated preview)
+- Workbook starts with an enterprise-backed **Registros** sheet. The plus control creates additional independent blank worksheet canvases.
+- Tabs sit beneath the grid, support switching and double-click renaming. A non-source sheet can be deleted after explicit confirmation. The enterprise source tab cannot be deleted in Design Lab.
+- Each sheet canvas stays mounted across switches, keeping local draft values, cell formatting, guides, sorting, filters and undo history independent. Extra sheets never receive enterprise records or write callbacks; there is no implied cross-sheet database association.
+- The UI demo does **not** yet persist new sheets across browser reloads. Saving/sharing workbooks, cross-sheet formulas, backend identities and ACL policies require authorized Platform adapters.
+- Toolbar button groups now have consistent spacing and the IA shortcut shares a baseline and height with the adjacent search field.
+- Responsive workbook tab strip scrolls independently on small screens and never forces a page-wide horizontal scroll.
