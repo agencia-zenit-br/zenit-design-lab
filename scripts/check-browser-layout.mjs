@@ -177,6 +177,8 @@ try {
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-italic')][0]?.click();true`);
       await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")).fontStyle==="italic"',
         'Italic command must visibly format the selected real cell');
+      await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__cell-content")).fontStyle==="italic"',
+        'Visible text span must be italic, not merely the cell container');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-highlight')][0]?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.dataset.highlight==="true"',
         'Highlight command must visibly format the selected cell');
