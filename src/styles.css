@@ -2011,7 +2011,9 @@ button,a,[role="option"],summary {
 @media print{
   /* Guide lines never print; only explicitly selected cell borders survive. */
   .zenit-sheet.has-print-borders-none .zenit-sheet__table tbody td,
-  .zenit-sheet.has-print-borders-none .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
+  .zenit-sheet.has-print-borders-none.has-grid-guides .zenit-sheet__table tbody td,
+  .zenit-sheet.has-print-borders-none .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell,
+  .zenit-sheet.has-print-borders-none.has-grid-guides .zenit-sheet__placeholder-row>.zenit-sheet__placeholder-cell{
     border-right:0!important;border-bottom:0!important;
   }
   .zenit-sheet.has-print-borders-thin .zenit-sheet__table tbody td,
