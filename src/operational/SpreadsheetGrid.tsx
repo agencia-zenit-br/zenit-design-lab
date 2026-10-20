@@ -145,7 +145,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
   const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
-  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-96-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
+  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-152-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
   } as OperationalColumn<Row>))];
@@ -160,7 +160,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     return value;
   };
   const colOffsets=visualColumns.reduce<Record<string,number>>((all,col,index)=>{
-    all[col.key]=index===0?96:96+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
+    all[col.key]=index===0?152:152+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
     return all;
   },{});
   const selected=(rowId:RecordIdentity,key:string,r:number,c:number)=>{
@@ -435,8 +435,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       if(element.scrollWidth-element.scrollLeft-element.clientWidth<220&&extraColumns<64)
         setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
     }}>
-      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:96+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
-        <colgroup><col style={{width:96}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
+      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:152+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+        <colgroup><col style={{width:152}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
           {visualColumns.map((col,c)=>{
