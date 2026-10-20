@@ -1844,3 +1844,26 @@ button,a,[role="option"],summary {
 .zenit-sheet__format-toolbar .zenit-sheet__tool-bold svg{stroke-width:3.4;}
 .zenit-sheet__format-toolbar .zenit-sheet__tool-italic svg{stroke-width:2.4;}
 .zenit-sheet__format-toolbar .zenit-sheet__tool-highlight[aria-pressed="true"]{background:#fff1a8;border-color:#d5b14c;color:#292614;}
+
+/* R8: place worksheet sizing where it remains discoverable; make active cell formatting explicit. */
+.zenit-sheet__sheet-tools{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;flex:0 0 auto;}
+.zenit-sheet__sheet-tools .zenit-sheet__viewport-control{display:flex!important;visibility:visible!important;opacity:1!important;flex-direction:column;gap:4px;min-width:145px;align-items:stretch;}
+.zenit-sheet__sheet-tools .zenit-sheet__viewport-control select{display:block!important;width:155px;max-width:none;min-width:0;}
+.zenit-sheet__sheet-tools button{align-self:flex-end;display:inline-flex;gap:7px;}
+.zenit-sheet__sheet-tools button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);background:color-mix(in srgb,var(--brand) 9%,var(--surface));}
+.zenit-sheet__format-status{display:inline-flex;align-items:center;min-height:30px;padding:5px 9px;color:var(--muted);font-size:12px;border-radius:7px;background:var(--surface-muted);}
+.zenit-sheet__format-toolbar .zenit-sheet__tool-italic[aria-pressed="true"]{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 10%,var(--surface));}
+.zenit-sheet__table td[style*="font-style: italic"]{font-style:italic!important;}
+@media(max-width:700px){.zenit-sheet__sheet-tools{width:100%;}.zenit-sheet__sheet-tools .zenit-sheet__viewport-control{min-width:125px;}}
+
+/* R8 deterministic filter panel: compact Zenit controls, never native grey buttons. */
+.zenit-sheet__filters{display:grid;gap:10px;padding:12px 14px;border:1px solid var(--border);border-top:0;background:var(--surface);}
+.zenit-sheet__filters strong{font-size:13px;color:var(--text);}
+.zenit-sheet__filter-controls{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;}
+.zenit-sheet__filter-controls label{display:flex;flex:1 1 125px;flex-direction:column;gap:4px;min-width:110px;font-size:11px;color:var(--muted);}
+.zenit-sheet__filter-controls input,.zenit-sheet__filter-controls select{box-sizing:border-box;width:100%;min-height:35px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font:inherit;font-size:12px;}
+.zenit-sheet__filter-controls button,.zenit-sheet__filter-chips button{appearance:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:7px 10px;min-height:35px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;cursor:pointer;}
+.zenit-sheet__filter-controls button:hover:not(:disabled),.zenit-sheet__filter-chips button:hover{background:var(--surface-muted);border-color:var(--border-strong);}
+.zenit-sheet__filter-controls button:disabled{opacity:.45;cursor:not-allowed;}
+.zenit-sheet__filter-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.zenit-sheet__filters small{font-size:11px;color:var(--muted);}
