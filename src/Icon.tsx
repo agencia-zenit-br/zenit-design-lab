@@ -8,7 +8,7 @@ export type IconName =
   | 'moon' | 'sun' | 'monitor' | 'trash' | 'filter' | 'more'
   | 'folder' | 'chart' | 'users' | 'sparkles' | 'alert' | 'x'
   | 'help' | 'list' | 'edit' | 'external' | 'menu' | 'shield' | 'globe' | 'log-out' | 'calendar' | 'clock'
-  | 'undo' | 'download' | 'align-left' | 'align-center' | 'align-right' | 'align-justify' | 'format-bold' | 'format-italic' | 'format-underline' | 'highlight';
+  | 'undo' | 'redo' | 'download' | 'align-left' | 'align-center' | 'align-right' | 'align-justify' | 'format-bold' | 'format-italic' | 'format-underline' | 'highlight';
 
 const artwork: Record<IconName, ReactNode> = {
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
@@ -49,6 +49,7 @@ const artwork: Record<IconName, ReactNode> = {
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 2v6M17 2v6M3 10h18M8 14h3M8 18h3"/></>,
   clock: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
   undo: <><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-2"/></>,
+  redo: <><path d="m15 14 5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h2"/></>,
   download: <><path d="M12 3v13m-5-5 5 5 5-5"/><path d="M4 17v4h16v-4"/></>,
   'align-left': <path d="M4 6h16M4 10h11M4 14h16M4 18h10"/>,
   'align-center': <path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>,
