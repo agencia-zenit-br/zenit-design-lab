@@ -166,11 +166,12 @@ try {
       await evaluate('document.querySelector(".zenit-sheet__blank-column-title")?.blur();true');
       await waitFor('document.querySelector(".zenit-sheet__blank-column-label")?.textContent==="Observaciones"',
         'Blank column title must remain visible alongside its letter');
-      const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control select")?.value');
-      assert.equal(viewportControl,'430','Sheet should expose the default viewport height');
-      await evaluate(`(() => {const el=document.querySelector('.zenit-sheet__viewport-control select');
-        const setter=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;
-        setter.call(el,'650');el.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
+      const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.textContent?.trim()');
+      assert.ok(viewportControl?.includes('Normal'),'Sheet should expose the default viewport height in Zenit picker');
+      await evaluate(`document.querySelector('.zenit-sheet__viewport-control .zenit-sheet__picker-trigger')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-list"))',
+        'Height options must open in branded selector');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__viewport-control .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Amplia'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="650px"',
         'User must be able to adjust the worksheet viewport height');
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.click();true`);
@@ -204,7 +205,7 @@ try {
       assert.equal(await evaluate('document.activeElement?.classList.contains("zenit-sheet__draft-cell")'),true,
         'Backspace in a blank cell should not trigger browser navigation');
       process.stdout.write('PASS R8 Delete/Backspace, italic, highlight and viewport resizing\\n');
-      const smartSize=await evaluate('document.querySelector(".zenit-sheet__sheet-tools .zenit-sheet__viewport-control select")?.value');
+      const smartSize=await evaluate('document.querySelector(".zenit-sheet__sheet-tools .zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.textContent');
       assert.ok(smartSize,'Worksheet height must remain discoverable next to sheet controls');
       await evaluate('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.click();true');
       await waitFor('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.getAttribute("aria-pressed")==="true"',
