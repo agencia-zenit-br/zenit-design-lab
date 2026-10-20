@@ -147,6 +147,8 @@ try {
       await evaluate(`document.querySelector('.zenit-sheet__draft-input')?.blur();true`);
       await waitFor('[...document.querySelectorAll(".zenit-sheet__draft-cell")].some(el=>el.textContent==="Borrador R7")',
         'Typing in an empty draft must retain its content locally');
+      const compactWidth=await evaluate('document.querySelector(".zenit-sheet__rowhead").getBoundingClientRect().width');
+      assert.ok(compactWidth<=80,'Number guides should remain compact until a title is entered');
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label-edit')?.click();true`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title"))',
         'Every numbered row guide must offer a title editor');
@@ -154,6 +156,17 @@ try {
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title')?.blur();true`);
       await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label")?.textContent==="Prioridad"',
         'Optional row guide title must appear beside its stable number');
+      const titledWidth=await evaluate('document.querySelector(".zenit-sheet__rowhead").getBoundingClientRect().width');
+      assert.ok(titledWidth>=200,'Any row title should expand the entire number guide');
+      const blankHeader=await evaluate('document.querySelector(".zenit-sheet__blank-column-edit")?.getAttribute("aria-label")');
+      assert.ok(blankHeader?.startsWith('Editar título de columna '),'Blank letter guides must expose rename pencil');
+      await evaluate('document.querySelector(".zenit-sheet__blank-column-edit")?.click();true');
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__blank-column-title"))','Blank column title input did not open');
+      await send('Input.insertText',{text:'Observaciones'});
+      await evaluate('document.querySelector(".zenit-sheet__blank-column-title")?.blur();true');
+      await waitFor('document.querySelector(".zenit-sheet__blank-column-label")?.textContent==="Observaciones"',
+        'Blank column title must remain visible alongside its letter');
+      process.stdout.write('PASS R7 compact numbered guides and editable blank column labels\\n');
       process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
 
     }
