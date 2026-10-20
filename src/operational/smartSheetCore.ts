@@ -32,7 +32,7 @@ const sizeAliases:Readonly<Record<string,string>>={
 export function clothingSizeRank(value:unknown,definition:ClothingSizeDefinition=defaultClothingSizes):number|null{
   const token=normalized(value);
   const aliases={...sizeAliases,...definition.aliases};
-  const canonical=aliases[token]??token;
+  const canonical=definition.ordered.some(entry=>normalized(entry)===token)?token:aliases[token]??token;
   const index=definition.ordered.map(normalized).indexOf(normalized(canonical));
   return index<0?null:index;
 }
