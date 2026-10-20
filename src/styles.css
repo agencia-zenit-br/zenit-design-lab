@@ -2031,3 +2031,37 @@ button,a,[role="option"],summary {
   .zenit-sheet__grid-control{width:100%;}
   .zenit-sheet__grid-preset{flex:0 1 145px;}
 }
+
+
+/* UI Core R9.2: dropdown layers escape nested workbench scroll/stacking containers. */
+.zenit-sheet__picker-list--portal{
+  position:fixed!important;
+  z-index:30000!important;
+  inset:auto!important;
+  margin:0!important;
+  box-sizing:border-box;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+/* Global alignment contract: controls align to the actual input/control,
+   not the combined field + its descriptive caption above it. */
+.operational-workbench__column-item{
+  align-items:flex-end!important;
+  align-content:end;
+}
+.operational-workbench__column-item .operational-workbench__column-title{
+  align-self:flex-end;
+}
+.operational-workbench__column-item .catalog__check{
+  display:inline-flex;
+  align-items:center;
+  align-self:flex-end;
+  min-height:32px;
+  margin:0;
+  padding:0 0 2px;
+  line-height:1.35;
+}
+.operational-workbench__column-item .catalog__check input[type="checkbox"]{
+  flex:none;
+  margin:0;
+}
