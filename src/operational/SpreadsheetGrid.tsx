@@ -56,6 +56,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
   const [editingRowTitle,setEditingRowTitle]=useState<string|null>(null);
+  const [editingBlankColumn,setEditingBlankColumn]=useState<string|null>(null);
+  const [blankColumnTitles,setBlankColumnTitles]=useState<Record<string,string>>({});
   // A visual draft is never a business record; adapters must opt in to persistence.
   const [draftCells,setDraftCells]=useState<Record<string,string>>({});
   const [draftEditing,setDraftEditing]=useState<string|null>(null);
@@ -68,6 +70,11 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
   const rowTitles=controlledRowTitles??localRowTitles;
   const cellFormats=controlledFormats??localFormats;
+  // The guide expands only when a title is being edited or at least one title exists.
+  const showRowTitles=editingRowTitle!==null||
+    Object.values(rowTitles).some(value=>value.trim().length>0)||
+    Object.values(draftRowTitles).some(value=>value.trim().length>0);
+  const guideWidth=showRowTitles?220:76;
   const updateRowTitle=(id:RecordIdentity,title:string)=>{
     if(readOnly)return;
     const next={...rowTitles,[String(id)]:title};
@@ -145,7 +152,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const colWidth=(key:string)=>widths[key]??164;
   // Display-only cells complete the available grid; they are never records or writes.
   const [columnCanvasReserve,setColumnCanvasReserve]=useState(0);
-  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-152-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
+  const extraColumns=Math.max(0,Math.min(64,Math.max(columnCanvasReserve,Math.ceil((viewport.width-guideWidth-orderedCols.reduce((n,col)=>n+colWidth(col.key),0))/164))));
   const visualColumns=[...orderedCols,...Array.from({length:extraColumns},(_,index)=>({
     key:'__blank_col_'+index,label:'',getValue:()=>'',sortable:false
   } as OperationalColumn<Row>))];
@@ -160,7 +167,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     return value;
   };
   const colOffsets=visualColumns.reduce<Record<string,number>>((all,col,index)=>{
-    all[col.key]=index===0?152:152+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
+    all[col.key]=index===0?guideWidth:guideWidth+visualColumns.slice(0,index).reduce((sum,item)=>sum+colWidth(item.key),0);
     return all;
   },{});
   const selected=(rowId:RecordIdentity,key:string,r:number,c:number)=>{
@@ -402,7 +409,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     };
   };
   const busy=isLoading||Boolean(error);
-  return <section className="zenit-sheet" data-spreadsheet="true" aria-label={sheetTitle}>
+  return <section className={"zenit-sheet"+(showRowTitles?" has-row-titles":"")} data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
       <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
@@ -435,14 +442,26 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       if(element.scrollWidth-element.scrollLeft-element.clientWidth<220&&extraColumns<64)
         setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
     }}>
-      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:152+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
-        <colgroup><col style={{width:152}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
+      <table role="grid" onCopy={copySelection} aria-label={sheetTitle||"Hoja editable"} className="zenit-sheet__table" style={{width:guideWidth+visualColumns.reduce((n,col)=>n+colWidth(col.key),0)}}>
+        <colgroup><col style={{width:guideWidth}}/>{visualColumns.map(col=><col key={col.key} style={{width:colWidth(col.key)}}/>)}</colgroup>
         <thead><tr>
           <th className="zenit-sheet__corner" aria-label="Esquina de la hoja" style={{position:'sticky',left:0,top:0,zIndex:10}}></th>
           {visualColumns.map((col,c)=>{
             const letter=columnLetter(c);
             if(isBlankColumn(col.key))return <th key={col.key} className="zenit-sheet__head zenit-sheet__placeholder" scope="col" data-sheet-placeholder-column={col.key} style={freezeStyle(-1,c,col.key,true)}>
-              <span className="zenit-sheet__axis-token" aria-hidden="true">{letter}</span>
+              <div className="zenit-sheet__blank-column-guide">
+                <span className="zenit-sheet__axis-token" aria-hidden="true">{letter}</span>
+                {editingBlankColumn===col.key?<input autoFocus className="zenit-sheet__blank-column-title" aria-label={'Título de columna '+letter}
+                  placeholder="Título de columna" maxLength={80} value={blankColumnTitles[col.key]??''}
+                  onChange={event=>setBlankColumnTitles(previous=>({...previous,[col.key]:event.target.value}))}
+                  onBlur={()=>setEditingBlankColumn(null)}
+                  onKeyDown={event=>{event.stopPropagation();if(event.key==='Enter'||event.key==='Escape'){event.preventDefault();setEditingBlankColumn(null);}}}/>:
+                  blankColumnTitles[col.key]?<button type="button" className="zenit-sheet__blank-column-label" title={'Editar título de columna '+letter}
+                    onClick={()=>setEditingBlankColumn(col.key)}>{blankColumnTitles[col.key]}</button>:null}
+                {!readOnly&&editingBlankColumn!==col.key&&<button type="button" className="zenit-sheet__blank-column-edit"
+                  aria-label={'Editar título de columna '+letter} title={'Editar título de columna '+letter}
+                  onClick={()=>setEditingBlankColumn(col.key)}><Icon name="edit" size={13}/></button>}
+              </div>
             </th>;
             return <th key={col.key} scope="col" className={'zenit-sheet__head'+(selection?.kind==='column'&&selection.colKey===col.key?' is-selected':'')+(c<pinnedColCount?' is-guide':'')}
               style={freezeStyle(-1,c,col.key,true)}
@@ -492,7 +511,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               <button type="button" className="zenit-sheet__more" aria-label={'Opciones de fila '+String(from+r)}
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
-              {editingRowTitle===String(row.id)?<input autoFocus className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título opcional" maxLength={80} value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape'){event.preventDefault();setEditingRowTitle(null);}}} disabled={readOnly}/>:rowTitles[String(row.id)]?<button type="button" className="zenit-sheet__row-label" title="Doble clic para editar título de fila" onDoubleClick={()=>setEditingRowTitle(String(row.id))}>{rowTitles[String(row.id)]}</button>:null}
+              {editingRowTitle===String(row.id)?<input autoFocus className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Escribe un título" maxLength={80} value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape'){event.preventDefault();setEditingRowTitle(null);}}} disabled={readOnly}/>:rowTitles[String(row.id)]?<button type="button" className="zenit-sheet__row-label" title="Doble clic para editar título de fila" onDoubleClick={()=>setEditingRowTitle(String(row.id))}>{rowTitles[String(row.id)]}</button>:null}
               {!readOnly&&editingRowTitle!==String(row.id)&&<button type="button" className="zenit-sheet__row-label-edit" aria-label={"Editar título de fila "+String(from+r)} title="Añadir título opcional a esta fila" onClick={()=>setEditingRowTitle(String(row.id))}><Icon name="edit" size={12}/></button>}
             </th>
             {visualColumns.map((col,c)=>{
@@ -542,7 +561,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         return <div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row">
           <span className="zenit-sheet__placeholder-index">
             <span className="zenit-sheet__placeholder-row-select"><span className="zenit-sheet__axis-token">{display}</span></span>
-            {editingRowTitle===rowKey?<input autoFocus className="zenit-sheet__row-title" aria-label={'Título de fila '+display} value={draftRowTitles[rowKey]??''} maxLength={80} placeholder="Título opcional"
+            {editingRowTitle===rowKey?<input autoFocus className="zenit-sheet__row-title" aria-label={'Título de fila '+display} value={draftRowTitles[rowKey]??''} maxLength={80} placeholder="Escribe un título"
               onChange={event=>setDraftRowTitles(previous=>({...previous,[rowKey]:event.target.value}))}
               onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape')setEditingRowTitle(null);}}/>:
               draftRowTitles[rowKey]?<button type="button" className="zenit-sheet__row-label" onDoubleClick={()=>setEditingRowTitle(rowKey)}>{draftRowTitles[rowKey]}</button>:null}
