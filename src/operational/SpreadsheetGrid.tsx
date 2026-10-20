@@ -407,16 +407,16 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
       <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Edición">
-          <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}>↶</button>
-          <button type="button" title="Exportar datos visibles como CSV" aria-label="Exportar CSV" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}><Icon name="external" size={15}/></button>
+          <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}><Icon name="undo" size={16}/></button>
+          <button type="button" title="Exportar datos visibles como CSV" aria-label="Exportar CSV" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}><Icon name="download" size={16}/></button>
         </div>
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Alineación">
-          {([["left","Izquierda","≡"],["center","Centro","☷"],["right","Derecha","≣"],["justify","Justificado","☰"]] as const).map(([align,label,symbol])=>
-            <button key={align} type="button" title={label} aria-label={'Alinear '+label.toLowerCase()} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey!==undefined&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.align===align} onClick={()=>applyFormat({align})}>{symbol}</button>)}
+          {([["left","Izquierda","align-left"],["center","Centro","align-center"],["right","Derecha","align-right"],["justify","Justificado","align-justify"]] as const).map(([align,label,icon])=>
+            <button key={align} type="button" title={label} aria-label={'Alinear '+label.toLowerCase()} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey!==undefined&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.align===align} onClick={()=>applyFormat({align})}><Icon name={icon} size={17}/></button>)}
         </div>
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Énfasis">
-          {([["bold","Negrita","B"],["italic","Cursiva","I"],["underline","Subrayado","U"],["highlight","Resaltado","▰"]] as const).map(([key,label,symbol])=>
-            <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.[key])} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{symbol}</button>)}
+          {([["bold","Negrita","format-bold"],["italic","Cursiva","format-italic"],["underline","Subrayado","format-underline"],["highlight","Resaltado","highlight"]] as const).map(([key,label,icon])=>
+            <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.[key])} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}><Icon name={icon} size={17}/></button>)}
         </div>
       </div>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
