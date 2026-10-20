@@ -47,7 +47,7 @@ type Props<Row extends RecordWithId> = {
 
 /** A presentation adapter over an authorized page. It does not fetch, persist or authorize anything. */
 export function SpreadsheetGrid<Row extends RecordWithId>({
-  rows,columns,getRowLabel,from,total,page,pageCount,pageSize,search,onSearch,onPage,onPageSize,
+  rows,columns,getRowLabel,from,total,search,onSearch,
   onUpdateCell,onRenameColumn,onReorderColumn,
   guideColumn=null,guideRow=null,onGuideColumn,onGuideRow,
   cellFormats:controlledFormats,onCellFormatsChange,rowTitles:controlledRowTitles,onRowTitlesChange,
@@ -594,7 +594,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>)}</dl>
       </article>)}
     </div>
-    <div className="zenit-sheet__footer"><span>${total} registros disponibles · las celdas vacías son borradores locales</span></div>
+    <div className="zenit-sheet__footer"><span>{total} registros disponibles · las celdas vacías son borradores locales</span></div>
     </>}
     {menu&&<div ref={menuRef} className="zenit-sheet__menu" role="menu" aria-label={'Opciones de '+(menu.kind==='row'?'fila':'columna')}
       style={{left:menu.left,top:menu.top}}>
