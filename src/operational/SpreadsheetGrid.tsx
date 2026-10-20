@@ -56,6 +56,14 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [selection,setSelection]=useState<SheetSelection|null>(null);
   const [sheetTitle,setSheetTitle]=useState('Hoja de registros');
   const [editingRowTitle,setEditingRowTitle]=useState<string|null>(null);
+  // A visual draft is never a business record; adapters must opt in to persistence.
+  const [draftCells,setDraftCells]=useState<Record<string,string>>({});
+  const [draftEditing,setDraftEditing]=useState<string|null>(null);
+  const [draftInput,setDraftInput]=useState('');
+  const [draftRowTitles,setDraftRowTitles]=useState<Record<string,string>>({});
+  const draftKey=(r:number,c:number)=>r+':'+c;
+  const draftRowKey=(r:number)=>'__draft_row_'+r;
+  const draftId=(r:number)=>draftRowKey(r);
   const [localRowTitles,setLocalRowTitles]=useState<Record<string,string>>({});
   const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
   const rowTitles=controlledRowTitles??localRowTitles;
@@ -319,18 +327,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'&&!event.shiftKey){
       event.preventDefault();undoLastEdit();return;
     }
-    if(event.key==='Tab'){
-      event.preventDefault();
-      const index=r*orderedCols.length+c+(event.shiftKey?-1:1);
-      if(index<0||index>=orderedRows.length*orderedCols.length)return;
-      const nextRow=Math.floor(index/orderedCols.length),nextCol=index%orderedCols.length;
-      const next=orderedRows[nextRow],column=orderedCols[nextCol];
-      if(!next||!column)return;
-      selectCell(next.id,column.key,nextRow,nextCol);
-      const cell=[...tableRef.current?.querySelectorAll<HTMLElement>('[data-sheet-cell]')??[]]
-        .find(el=>el.dataset.sheetCell===String(next.id)+'::'+column.key);
-      cell?.focus();return;
-    }
+    if(event.key==='Tab'){event.preventDefault();const index=r*visualColumns.length+c+(event.shiftKey?-1:1);focusCoordinate(Math.floor(Math.max(0,index)/visualColumns.length),Math.max(0,index)%visualColumns.length);return;}
     if(event.key==='Enter'||event.key==='F2'){
       event.preventDefault();beginEdit(row,col);return;
     }
@@ -342,21 +339,64 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       event.preventDefault();
       const baseRow=event.shiftKey&&selection?.kind==='cell'&&selection.endRow!==undefined?selection.endRow:r;
       const baseCol=event.shiftKey&&selection?.kind==='cell'&&selection.endCol!==undefined?selection.endCol:c;
-      const nextRow=Math.max(0,Math.min(orderedRows.length-1,baseRow+move[0]));
-      const nextCol=Math.max(0,Math.min(orderedCols.length-1,baseCol+move[1]));
-      const next=orderedRows[nextRow],column=orderedCols[nextCol];
-      if(!next||!column)return;
-      if(event.shiftKey&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
-        setSelection({...selection,endRow:nextRow,endCol:nextCol});
-      }else selectCell(next.id,column.key,nextRow,nextCol);
-      const cell=[...tableRef.current?.querySelectorAll<HTMLElement>('[data-sheet-cell]')??[]]
-        .find(el=>el.dataset.sheetCell===String(next.id)+'::'+column.key);
-      cell?.focus();return;
+      focusCoordinate(baseRow+move[0],baseCol+move[1],event.shiftKey);return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
       event.preventDefault();skipBlurCommit.current=false;setEditing({rowId:row.id,key:col.key,origin:'desktop'});setDraft(event.key);
     }
   };
+  const focusCoordinate=(r:number,c:number,extend=false)=>{
+    const maxR=orderedRows.length+extraRows-1;
+    const maxC=visualColumns.length-1;
+    const nextR=Math.max(0,Math.min(maxR,r)),nextC=Math.max(0,Math.min(maxC,c));
+    const row=orderedRows[nextR],col=visualColumns[nextC];
+    if(!col)return;
+    const rowId=row?.id??draftId(from+nextR);
+    if(extend&&selection?.kind==='cell'&&selection.anchorRow!==undefined&&selection.anchorCol!==undefined){
+      setSelection({...selection,endRow:nextR,endCol:nextC});
+    }else selectCell(rowId,col.key,nextR,nextC);
+    if(nextR>=orderedRows.length+extraRows-2&&extraRows<160){
+      setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
+    }
+    if(nextC>=visualColumns.length-2&&extraColumns<64){
+      setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
+    }
+    requestAnimationFrame(()=>tableRef.current?.querySelector<HTMLElement>(
+      '[data-sheet-coordinate="'+nextR+':'+nextC+'"]')?.focus());
+  };
+  const blankCellKey=(event:KeyboardEvent<HTMLElement>,r:number,c:number)=>{
+    if(event.key==='Escape'){setSelection(null);return;}
+    const moves:Record<string,[number,number]>={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]};
+    const move=moves[event.key];
+    if(move){event.preventDefault();focusCoordinate(r+move[0],c+move[1],event.shiftKey);return;}
+    if(event.key==='Tab'){event.preventDefault();
+      const index=r*visualColumns.length+c+(event.shiftKey?-1:1);
+      focusCoordinate(Math.floor(Math.max(0,index)/visualColumns.length),Math.max(0,index)%visualColumns.length);return;
+    }
+    const key=draftKey(from+r,c);
+    if(event.key==='F2'||event.key==='Enter'){
+      event.preventDefault();setDraftInput(draftCells[key]??'');setDraftEditing(key);return;
+    }
+    if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
+      event.preventDefault();setDraftInput(event.key);setDraftEditing(key);
+    }
+  };
+  const draftCell=(r:number,c:number,key:string)=><span key={key}
+      className={'zenit-sheet__draft-cell'+(selected(orderedRows[r]?.id??draftId(from+r),visualColumns[c]?.key??'',r,c)?' is-selected':'')}
+      role="gridcell" tabIndex={0} data-sheet-coordinate={r+':'+c}
+      aria-label={'Celda '+columnLetter(c)+(from+r)+' editable'}
+      onClick={event=>{if(draftEditing===null)selectCell(orderedRows[r]?.id??draftId(from+r),visualColumns[c].key,r,c,event.shiftKey);}}
+      onDoubleClick={()=>{if(!readOnly){const name=draftKey(from+r,c);setDraftInput(draftCells[name]??'');setDraftEditing(name);}}}
+      onKeyDown={event=>blankCellKey(event,r,c)}>
+      {draftEditing===draftKey(from+r,c)?<input autoFocus className="zenit-sheet__draft-input" value={draftInput}
+        aria-label={'Editar '+columnLetter(c)+(from+r)}
+        onChange={event=>setDraftInput(event.target.value)}
+        onClick={event=>event.stopPropagation()}
+        onBlur={()=>{setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);}}
+        onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setDraftEditing(null);}
+          else if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();event.stopPropagation();setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);focusCoordinate(r+(event.key==='Enter'?1:0),c+(event.key==='Tab'?(event.shiftKey?-1:1):0));}}}/>
+        :draftCells[draftKey(from+r,c)]??''}
+    </span>;
   const rowOffset=48;
   const freezeStyle=(rowIndex:number,colIndex:number,colKey:string,head=false):CSSProperties=>{
     const pinnedX=colIndex<pinnedColCount,pinnedY=head||rowIndex<pinnedRowCount;
@@ -460,7 +500,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               {!readOnly&&editingRowTitle!==String(row.id)&&<button type="button" className="zenit-sheet__row-label-edit" aria-label={"Editar título de fila "+String(from+r)} title="Añadir título opcional a esta fila" onClick={()=>setEditingRowTitle(String(row.id))}><Icon name="pencil" size={12}/></button>
             </th>
             {visualColumns.map((col,c)=>{
-              if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true" aria-label="Celda vacía visual"></td>;
+              if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true">{draftCell(r,c,col.key)}</td>;
               const active=selected(row.id,col.key,r,c);
               const minRow=Math.min(selection?.anchorRow??r,selection?.endRow??r);
               const maxRow=Math.max(selection?.anchorRow??r,selection?.endRow??r);
@@ -470,7 +510,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 r===minRow?'top':'',r===maxRow?'bottom':'',c===minCol?'left':'',c===maxCol?'right':''
               ].filter(Boolean).join(' '):undefined;
               const isEditing=editing?.origin==='desktop'&&editing.rowId===row.id&&editing.key===col.key;
-              return <td key={col.key} data-sheet-cell={String(row.id)+'::'+col.key}
+              return <td key={col.key} data-sheet-coordinate={r+':'+c} data-sheet-cell={String(row.id)+'::'+col.key}
                 data-selected={active?'true':undefined} data-range-edge={rangeEdge}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
                 style={{...freezeStyle(r,c,col.key),textAlign:cellFormats[formatKey(row.id,col.key)]?.align??"left",fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:undefined,fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?"italic":undefined,textDecoration:cellFormats[formatKey(row.id,col.key)]?.underline?"underline":undefined,backgroundColor:cellFormats[formatKey(row.id,col.key)]?.highlight?"#fff1a8":undefined}}
@@ -502,10 +542,19 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           </tr>)}
         </tbody>
       </table>
-      {Array.from({length:extraRows},(_,index)=><div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row" aria-hidden="true">
-        <span className="zenit-sheet__placeholder-index"><span className="zenit-sheet__placeholder-row-select"><span className="zenit-sheet__axis-token">{from+orderedRows.length+index}</span></span><span className="zenit-sheet__placeholder-row-menu" aria-hidden="true"/></span>
-        {visualColumns.map(col=><span key={col.key} style={{width:colWidth(col.key)}}/>)}
-      </div>)}
+      {Array.from({length:extraRows},(_,index)=>{const rowIndex=orderedRows.length+index,display=from+rowIndex,rowKey=draftRowKey(display);
+        return <div key={index} data-sheet-placeholder-row="true" className="zenit-sheet__placeholder-row">
+          <span className="zenit-sheet__placeholder-index">
+            <span className="zenit-sheet__placeholder-row-select"><span className="zenit-sheet__axis-token">{display}</span></span>
+            {editingRowTitle===rowKey?<input autoFocus className="zenit-sheet__row-title" aria-label={'Título de fila '+display} value={draftRowTitles[rowKey]??''} maxLength={80} placeholder="Título opcional"
+              onChange={event=>setDraftRowTitles(previous=>({...previous,[rowKey]:event.target.value}))}
+              onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape')setEditingRowTitle(null);}}/>:
+              draftRowTitles[rowKey]?<button type="button" className="zenit-sheet__row-label" onDoubleClick={()=>setEditingRowTitle(rowKey)}>{draftRowTitles[rowKey]}</button>:null}
+            <button type="button" className="zenit-sheet__row-label-edit" aria-label={'Editar título de fila '+display} onClick={()=>setEditingRowTitle(rowKey)}><Icon name="pencil" size={12}/></button>
+          </span>
+          {visualColumns.map((col,c)=><span key={col.key} className="zenit-sheet__placeholder-cell" style={{width:colWidth(col.key)}}>{draftCell(rowIndex,c,col.key)}</span>)}
+        </div>;
+      })}
       {!orderedRows.length&&total>0&&<p className="zenit-sheet__empty">No hay registros coincidentes.</p>}
     </div>
     <div className="zenit-sheet__mobile" role="list" aria-label="Registros de la hoja en tarjetas">
