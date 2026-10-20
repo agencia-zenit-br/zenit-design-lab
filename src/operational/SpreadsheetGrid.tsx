@@ -100,10 +100,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [draft,setDraft]=useState('');
   const [mobileColumn,setMobileColumn]=useState(columns[0]?.key??'');
   const [viewport,setViewport]=useState({width:820,height:300});
-  const [customSize,setCustomSize]=useState(String(pageSize));
+
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
-  useEffect(()=>setCustomSize(String(pageSize)),[pageSize]);
+
   const tableRef=useRef<HTMLDivElement>(null);
   const menuRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -153,10 +153,6 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   // Placeholders remain display-only: no synthetic records are sent to the adapter.
   const [rowCanvasReserve,setRowCanvasReserve]=useState(0);
   const extraRows=Math.max(0,Math.min(160,Math.max(rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48))));
-  const expandCanvas=()=>{
-    setRowCanvasReserve(previous=>Math.min(160,Math.max(previous,extraRows)+20));
-    setColumnCanvasReserve(previous=>Math.min(64,Math.max(previous,extraColumns)+8));
-  };
   const isBlankColumn=(key:string)=>key.startsWith('__blank_col_');
   const columnLetter=(index:number)=>{
     let value='',n=index+1;
@@ -409,21 +405,21 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   return <section className="zenit-sheet" data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
-      <div className="zenit-sheet__format-toolbar" role="group" aria-label="Formato de celdas">
-        {([["left","Izquierda"],["center","Centro"],["right","Derecha"],["justify","Justificado"]] as const).map(([align,label])=><button key={align} type="button" disabled={selection?.kind!=="cell"} onClick={()=>applyFormat({align})}>{label}</button>)}
-        {([["bold","Negrita"],["italic","Cursiva"],["underline","Subrayado"],["highlight","Resaltado"]] as const).map(([key,label])=><button key={key} type="button" disabled={selection?.kind!=="cell"} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{label}</button>)}
+      <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
+        <div className="zenit-sheet__ribbon-group" role="group" aria-label="Edición">
+          <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}>↶</button>
+          <button type="button" title="Exportar datos visibles como CSV" aria-label="Exportar CSV" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}><Icon name="external" size={15}/></button>
+        </div>
+        <div className="zenit-sheet__ribbon-group" role="group" aria-label="Alineación">
+          {([["left","Izquierda","≡"],["center","Centro","☷"],["right","Derecha","≣"],["justify","Justificado","☰"]] as const).map(([align,label,symbol])=>
+            <button key={align} type="button" title={label} aria-label={'Alinear '+label.toLowerCase()} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey!==undefined&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.align===align} onClick={()=>applyFormat({align})}>{symbol}</button>)}
+        </div>
+        <div className="zenit-sheet__ribbon-group" role="group" aria-label="Énfasis">
+          {([["bold","Negrita","B"],["italic","Cursiva","I"],["underline","Subrayado","U"],["highlight","Resaltado","▰"]] as const).map(([key,label,symbol])=>
+            <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.[key])} onClick={()=>{const current=selection?.rowId!==undefined&&selection.colKey?cellFormats[formatKey(selection.rowId,selection.colKey)]:undefined;applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}>{symbol}</button>)}
+        </div>
       </div>
-      <button type="button" onClick={expandCanvas} disabled={extraRows>=160&&extraColumns>=64}>Ampliar cuadrícula</button>
-      <button type="button" disabled={readOnly} onClick={undoLastEdit}>Deshacer última edición</button>
-      <button type="button" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}>Exportar página CSV</button>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
-      <label>Filas por página
-        <input type="number" min="1" max="10000" step="1" inputMode="numeric"
-          aria-label="Filas por página" value={customSize}
-          onChange={event=>setCustomSize(event.target.value)}
-          onBlur={event=>{const n=Number(event.currentTarget.value);if(Number.isSafeInteger(n)&&n>=1&&n<=10000)onPageSize(n);else setCustomSize(String(pageSize));}}
-          onKeyDown={event=>{if(event.key==='Enter')event.currentTarget.blur();}}/>
-      </label>
       <span className="zenit-sheet__hint">Selecciona letras o números; botón secundario o menú contextual para fijar guías</span>
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
@@ -497,7 +493,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                 onClick={event=>{const box=event.currentTarget.getBoundingClientRect();
                   openMenu('row',String(row.id),getRowLabel(row),box.left,box.bottom+4);}}><Icon name="more" size={15}/></button>
               {editingRowTitle===String(row.id)?<input autoFocus className="zenit-sheet__row-title" aria-label={"Título de fila "+String(from+r)} placeholder="Título opcional" maxLength={80} value={rowTitles[String(row.id)]??""} onChange={event=>updateRowTitle(row.id,event.target.value)} onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape'){event.preventDefault();setEditingRowTitle(null);}}} disabled={readOnly}/>:rowTitles[String(row.id)]?<button type="button" className="zenit-sheet__row-label" title="Doble clic para editar título de fila" onDoubleClick={()=>setEditingRowTitle(String(row.id))}>{rowTitles[String(row.id)]}</button>:null}
-              {!readOnly&&editingRowTitle!==String(row.id)&&<button type="button" className="zenit-sheet__row-label-edit" aria-label={"Editar título de fila "+String(from+r)} title="Añadir título opcional a esta fila" onClick={()=>setEditingRowTitle(String(row.id))}><Icon name="pencil" size={12}/></button>
+              {!readOnly&&editingRowTitle!==String(row.id)&&<button type="button" className="zenit-sheet__row-label-edit" aria-label={"Editar título de fila "+String(from+r)} title="Añadir título opcional a esta fila" onClick={()=>setEditingRowTitle(String(row.id))}><Icon name="edit" size={12}/></button>
             </th>
             {visualColumns.map((col,c)=>{
               if(isBlankColumn(col.key))return <td key={col.key} className="zenit-sheet__placeholder" data-sheet-placeholder-cell="true">{draftCell(r,c,col.key)}</td>;
@@ -550,7 +546,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               onChange={event=>setDraftRowTitles(previous=>({...previous,[rowKey]:event.target.value}))}
               onBlur={()=>setEditingRowTitle(null)} onKeyDown={event=>{if(event.key==='Enter'||event.key==='Escape')setEditingRowTitle(null);}}/>:
               draftRowTitles[rowKey]?<button type="button" className="zenit-sheet__row-label" onDoubleClick={()=>setEditingRowTitle(rowKey)}>{draftRowTitles[rowKey]}</button>:null}
-            <button type="button" className="zenit-sheet__row-label-edit" aria-label={'Editar título de fila '+display} onClick={()=>setEditingRowTitle(rowKey)}><Icon name="pencil" size={12}/></button>
+            <button type="button" className="zenit-sheet__row-label-edit" aria-label={'Editar título de fila '+display} onClick={()=>setEditingRowTitle(rowKey)}><Icon name="edit" size={12}/></button>
           </span>
           {visualColumns.map((col,c)=><span key={col.key} className="zenit-sheet__placeholder-cell" style={{width:colWidth(col.key)}}>{draftCell(rowIndex,c,col.key)}</span>)}
         </div>;
@@ -598,13 +594,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>)}</dl>
       </article>)}
     </div>
-    <div className="zenit-sheet__footer">
-      <span>{total===0?'0 registros':String(from)+'–'+String(from+orderedRows.length-1)+' de '+String(total)}</span>
-      <div><button type="button" disabled={page<=1} onClick={()=>{setSelection(null);onPage(page-1);}}>Anterior</button>
-        <span>Página {page} de {pageCount}</span>
-        <button type="button" disabled={page>=pageCount} onClick={()=>{setSelection(null);onPage(page+1);}}>Siguiente</button>
-      </div>
-    </div>
+    <div className="zenit-sheet__footer"><span>${total} registros disponibles · las celdas vacías son borradores locales</span></div>
     </>}
     {menu&&<div ref={menuRef} className="zenit-sheet__menu" role="menu" aria-label={'Opciones de '+(menu.kind==='row'?'fila':'columna')}
       style={{left:menu.left,top:menu.top}}>
