@@ -73,6 +73,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [draftCells,setDraftCells]=useState<Record<string,string>>({});
   const [draftEditing,setDraftEditing]=useState<string|null>(null);
   const [draftInput,setDraftInput]=useState('');
+  const draftSkipBlur=useRef(false);
+  const commitDraft=(key:string,value:string)=>{
+    const before=draftCells[key]??'';
+    if(before!==value){
+      recordHistory({kind:'values',changes:[{kind:'draft',draftKey:key,before,after:value}]});
+      setDraftCells(previous=>({...previous,[key]:value}));
+    }
+    setDraftEditing(null);
+  };
   const [draftRowTitles,setDraftRowTitles]=useState<Record<string,string>>({});
   const draftKey=(r:number,c:number)=>r+':'+c;
   const draftRowKey=(r:number)=>'__draft_row_'+r;
@@ -483,10 +492,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     }
     const key=draftKey(from+r,c);
     if((event.key==='F2'||event.key==='Enter')&&!readOnly){
-      event.preventDefault();setDraftInput(draftCells[key]??'');setDraftEditing(key);return;
+      event.preventDefault();draftSkipBlur.current=false;setDraftInput(draftCells[key]??'');setDraftEditing(key);return;
     }
     if(event.key.length===1&&!event.altKey&&!event.ctrlKey&&!event.metaKey&&!readOnly){
-      event.preventDefault();setDraftInput(event.key);setDraftEditing(key);
+      event.preventDefault();draftSkipBlur.current=false;setDraftInput(event.key);setDraftEditing(key);
     }
   };
   const draftCell=(r:number,c:number,key:string)=><span key={key}
@@ -499,15 +508,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       role="gridcell" tabIndex={0} data-sheet-coordinate={r+':'+c}
       aria-label={'Celda '+columnLetter(c)+(from+r)+' editable'}
       onClick={event=>{if(draftEditing===null)selectCell(orderedRows[r]?.id??draftId(from+r),visualColumns[c].key,r,c,event.shiftKey);}}
-      onDoubleClick={()=>{if(!readOnly){const name=draftKey(from+r,c);setDraftInput(draftCells[name]??'');setDraftEditing(name);}}}
+      onDoubleClick={()=>{if(!readOnly){const name=draftKey(from+r,c);draftSkipBlur.current=false;setDraftInput(draftCells[name]??'');setDraftEditing(name);}}}
       onKeyDown={event=>blankCellKey(event,r,c)}>
       {draftEditing===draftKey(from+r,c)?<input autoFocus className="zenit-sheet__draft-input" value={draftInput}
         aria-label={'Editar '+columnLetter(c)+(from+r)}
         onChange={event=>setDraftInput(event.target.value)}
         onClick={event=>event.stopPropagation()}
-        onBlur={()=>{setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);}}
-        onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();setDraftEditing(null);}
-          else if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();setDraftCells(previous=>({...previous,[draftKey(from+r,c)]:draftInput}));setDraftEditing(null);focusCoordinate(r+(event.key==='Enter'?1:0),c+(event.key==='Tab'?(event.shiftKey?-1:1):0));}}}/>
+        onBlur={()=>{if(draftSkipBlur.current){draftSkipBlur.current=false;return;}commitDraft(draftKey(from+r,c),draftInput);}}
+        onKeyDown={event=>{event.stopPropagation();if(event.key==='Escape'){event.preventDefault();draftSkipBlur.current=true;setDraftEditing(null);}
+          else if(event.key==='Enter'||event.key==='Tab'){event.preventDefault();draftSkipBlur.current=true;commitDraft(draftKey(from+r,c),draftInput);focusCoordinate(r+(event.key==='Enter'?1:0),c+(event.key==='Tab'?(event.shiftKey?-1:1):0));}}}/>
         :draftCells[draftKey(from+r,c)]??''}
     </span>;
   const rowOffset=48;
@@ -533,14 +542,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <Icon name="filter" size={16}/> Filtros{clauses.length?(' ('+clauses.length+')'):''}
         </button>
         <button type="button" aria-label="Orden inteligente" aria-pressed={smartOrder} disabled={readOnly||rows.length===0}
-          title="Ordenar registros completos por las columnas, reconociendo tallas y números" onClick={()=>setSmartOrder(value=>!value)}>
+          title="Ordenar registros completos sin modificar la fuente" onClick={()=>applyView(clauses,!smartOrder)}>
           <Icon name="list" size={16}/> {smartOrder?'Restaurar orden':'Orden inteligente'}
         </button>
       </div>
-      <div className="zenit-sheet__tool-legend" aria-label="Funciones de la hoja">Filtrar · Ordenar · Ajustar hoja · Formato</div>
+
       <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Edición">
-          <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}><Icon name="undo" size={16}/></button>
+          <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly||history.current.length===0} onClick={undoLastEdit}><Icon name="undo" size={16}/></button>
+          <button type="button" title="Rehacer última acción" aria-label="Rehacer última acción" disabled={readOnly||future.current.length===0} onClick={redoLastEdit}><Icon name="redo" size={16}/></button>
           <button type="button" title="Exportar datos visibles como CSV" aria-label="Exportar CSV" disabled={isLoading||Boolean(error)||orderedRows.length===0} onClick={exportCsv}><Icon name="download" size={16}/></button>
         </div>
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Alineación">
@@ -553,14 +563,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>
       </div>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
-      <span className="zenit-sheet__hint">Orden inteligente: prioridad de izquierda a derecha; reconoce tamaños de ropa y números. No modifica los registros.</span>
-      {selection?.kind==='cell'&&<output className="zenit-sheet__format-status" aria-live="polite">
-        {(()=>{
-          const row=orderedRows[selection.endRow??selection.anchorRow??0],col=visualColumns[selection.endCol??selection.anchorCol??0];
-          const active=col?cellFormats[formatKey(row?.id??draftId(from+(selection.endRow??selection.anchorRow??0)),col.key)]:undefined;
-          return active?(['bold','italic','underline','highlight'] as const).filter(key=>active[key]).map(key=>({bold:'Negrita',italic:'Cursiva',underline:'Subrayado',highlight:'Resaltado'}[key])).join(' · ')||'Sin énfasis':'Sin formato aplicado';
-        })()}
-      </output>}
+
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
@@ -569,15 +572,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <strong>Filtrar columnas autorizadas</strong>
       <div className="zenit-sheet__filter-controls">
         <label>Columna
-          <select aria-label="Columna del filtro" value={filterColumn||orderedCols[0]?.key||''} onChange={event=>setFilterColumn(event.target.value)}>
-            {orderedCols.map(col=><option key={col.key} value={col.key}>{col.label}</option>)}
-          </select>
+          <SheetPicker label="Columna del filtro" value={filterColumn||orderedCols[0]?.key||''}
+            options={orderedCols.map(col=>({value:col.key,label:col.label}))} onChange={setFilterColumn}/>
         </label>
         <label>Condición
-          <select aria-label="Condición del filtro" value={filterOperator} onChange={event=>setFilterOperator(event.target.value as FilterOperator)}>
-            <option value="contains">Contiene</option><option value="equals">Coincide exactamente</option>
-            <option value="between">Entre importes</option>
-          </select>
+          <SheetPicker label="Condición del filtro" value={filterOperator} onChange={value=>setFilterOperator(value as FilterOperator)}
+            options={[{value:'contains',label:'Contiene'},{value:'equals',label:'Coincide exactamente'},{value:'between',label:'Entre importes'}]}/>
         </label>
         <label>{filterOperator==='between'?'Desde':'Valor'}
           <input aria-label="Valor del filtro" value={filterValue} onChange={event=>setFilterValue(event.target.value)} placeholder={filterOperator==='between'?'R$ 50':'Buscar texto'}/>
@@ -600,8 +600,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <small>{filterSheet(rows,pendingClauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)).length} resultados propuestos de {rows.length} registros autorizados. Los datos no cambian hasta aplicar.</small>
       <div className="zenit-sheet__filter-dialog-actions">
         <button type="button" onClick={()=>setFilterPanel(false)}>Cancelar</button>
-        <button type="button" onClick={()=>{setClauses([]);setPendingClauses([]);setSelection(null);setFilterPanel(false);}}>Dejar de filtrar</button>
-        <button type="button" onClick={()=>{setClauses([...pendingClauses]);setSelection(null);setFilterPanel(false);}}>Aplicar filtros</button>
+        <button type="button" onClick={()=>{applyView([],smartOrder);setPendingClauses([]);setFilterPanel(false);}}>Dejar de filtrar</button>
+        <button type="button" onClick={()=>{applyView(pendingClauses,smartOrder);setFilterPanel(false);}}>Aplicar filtros</button>
       </div>
     </div></div>}
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
