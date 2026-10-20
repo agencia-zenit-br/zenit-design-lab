@@ -276,6 +276,52 @@ try {
       process.stdout.write('PASS R7 compact numbered guides and editable blank column labels\\n');
       process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
 
+      // R9: toolbar spacing, same baseline for search+AI and independent workbook tab canvases.
+      const ribbon=await evaluate(`(() => {
+        const buttons=[...document.querySelectorAll('.zenit-workbook__page:not([hidden]) .zenit-sheet__format-toolbar button')];
+        const first=buttons[0].getBoundingClientRect(),second=buttons[1].getBoundingClientRect();
+        const search=document.querySelector('.zenit-workbook__page:not([hidden]) .zenit-sheet__search-actions input').getBoundingClientRect();
+        const ai=document.querySelector('.zenit-workbook__page:not([hidden]) .zenit-sheet__ai-launch').getBoundingClientRect();
+        return {gap:second.left-first.right,baseline:Math.abs(search.bottom-ai.bottom),height:Math.abs(search.height-ai.height)};
+      })()`);
+      assert.ok(ribbon.gap>=4,`Toolbar buttons must have visible separation: ${JSON.stringify(ribbon)}`);
+      assert.ok(ribbon.baseline<=2&&ribbon.height<=2,`IA must align with search input: ${JSON.stringify(ribbon)}`);
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-workbook__tab").length'),1,
+        'Workbook should start with one enterprise source tab');
+      await evaluate('document.querySelector("button[aria-label=\\\"Agregar hoja\\\"]")?.click();true');
+      await waitFor('document.querySelectorAll(".zenit-workbook__tab").length===2',
+        'Add worksheet must create a second tab');
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__table tbody tr").length'),0,
+        'New worksheet must start blank with no enterprise records');
+      assert.ok(await evaluate('document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__draft-cell").length>0'),
+        'New worksheet must provide an editable blank canvas');
+      await evaluate(`document.querySelector('.zenit-workbook__page:not([hidden]) .zenit-sheet__draft-cell')?.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));true`);
+      await waitFor('Boolean(document.querySelector(".zenit-workbook__page:not([hidden]) .zenit-sheet__draft-input"))',
+        'New sheet must allow editing empty cells');
+      await send('Input.insertText',{text:'Hoja independiente'});
+      await evaluate('document.querySelector(".zenit-workbook__page:not([hidden]) .zenit-sheet__draft-input")?.blur();true');
+      await waitFor('[...document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__draft-cell")].some(n=>n.textContent==="Hoja independiente")',
+        'New worksheet draft cell must retain its text');
+      await evaluate(`[...document.querySelectorAll('.zenit-workbook__tab')].find(b=>b.textContent.includes('Registros'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__table tbody tr").length===17',
+        'Returning to source tab must preserve authorized enterprise rows');
+      await evaluate(`[...document.querySelectorAll('.zenit-workbook__tab')].find(b=>b.textContent.includes('Hoja 2'))?.click();true`);
+      await waitFor('[...document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__draft-cell")].some(n=>n.textContent==="Hoja independiente")',
+        'Worksheet tabs must retain isolated edits when switched');
+      await evaluate(`document.querySelector('.zenit-workbook__tab[aria-selected="true"]')?.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));true`);
+      await waitFor('Boolean(document.querySelector(".zenit-workbook__rename"))','A sheet must be renameable');
+      await evaluate(`(() => {const el=document.querySelector('.zenit-workbook__rename');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(el,'Presupuesto');el.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
+      await evaluate('document.querySelector(".zenit-workbook__rename")?.blur();true');
+      await waitFor('[...document.querySelectorAll(".zenit-workbook__tab")].some(b=>b.textContent==="Presupuesto")',
+        'Renamed worksheet should update its tab label');
+      await evaluate(`[...document.querySelectorAll('.zenit-workbook__tab')].find(b=>b.textContent.includes('Registros'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-workbook__page:not([hidden]) .zenit-sheet__table tbody tr").length===17',
+        'Workbook should restore source sheet at end of tab test');
+      process.stdout.write('PASS R9 workbook tab isolation, sheet rename and toolbar alignment\\n');
+
+
     }
     if(width===375){
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),17,
