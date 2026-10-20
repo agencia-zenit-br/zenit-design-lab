@@ -169,9 +169,18 @@ try {
       const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.textContent?.trim()');
       assert.ok(viewportControl?.includes('Normal'),'Sheet should expose the default viewport height in Zenit picker');
       await evaluate(`document.querySelector('.zenit-sheet__viewport-control .zenit-sheet__picker-trigger')?.click();true`);
-      await waitFor('Boolean(document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-list"))',
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__picker-list--portal"))',
         'Height options must open in branded selector');
-      await evaluate(`[...document.querySelectorAll('.zenit-sheet__viewport-control .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Amplia'))?.click();true`);
+      const overlay=await evaluate(`(() => {
+        const popup=document.querySelector('.zenit-sheet__picker-list--portal');
+        const bounds=popup.getBoundingClientRect();
+        const at=document.elementFromPoint(bounds.left+20,Math.min(bounds.bottom-9,bounds.top+65));
+        return {visible:bounds.height>=80,layer:at===popup||popup.contains(at),
+          positioned:getComputedStyle(popup).position,zIndex:getComputedStyle(popup).zIndex};
+      })()`);
+      assert.ok(overlay.visible&&overlay.layer&&overlay.positioned==='fixed',
+        'Height menu must overlap the underlying workbench without clipping: '+JSON.stringify(overlay));
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__picker-list--portal button')].find(b=>b.textContent.includes('Amplia'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="650px"',
         'User must be able to adjust the worksheet viewport height');
       await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.click();true`);
@@ -329,9 +338,9 @@ try {
       const heightLabel=await evaluate('document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-trigger")?.getAttribute("aria-label")');
       assert.equal(heightLabel,'Altura visible de la hoja','Height picker must be discoverable and labeled');
       await evaluate(`document.querySelector('.zenit-sheet__viewport-control .zenit-sheet__picker-trigger')?.click();true`);
-      await waitFor('Boolean(document.querySelector(".zenit-sheet__viewport-control .zenit-sheet__picker-list"))',
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__picker-list--portal"))',
         'Branded height options list must open');
-      await evaluate(`[...document.querySelectorAll('.zenit-sheet__viewport-control .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Compacta'))?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__picker-list--portal button')].find(b=>b.textContent.includes('Compacta'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="280px"',
         'Height picker must change the actual worksheet viewport height');
       const borderState=await evaluate(`(() => {
@@ -352,7 +361,7 @@ try {
       const noGuide=await evaluate('getComputedStyle(document.querySelector(".zenit-sheet__table tbody td")).borderRightWidth');
       assert.equal(noGuide,'0px','Guide toggle should remove on-screen grid strokes');
       await evaluate(`document.querySelector('.zenit-sheet__grid-preset .zenit-sheet__picker-trigger')?.click();true`);
-      await evaluate(`[...document.querySelectorAll('.zenit-sheet__grid-preset .zenit-sheet__picker-list button')].find(b=>b.textContent.includes('Grueso'))?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__picker-list--portal button')].find(b=>b.textContent.includes('Grueso'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet")?.dataset.printBorders==="bold"',
         'Thick border preset must be applied');
       await send('Emulation.setEmulatedMedia',{media:'print'});
@@ -360,6 +369,17 @@ try {
       assert.equal(printBold,'2px','Explicit bold borders must survive printing');
       await send('Emulation.setEmulatedMedia',{media:'screen'});
       process.stdout.write('PASS R9.1 branded height, non-printing grid and printed bold border preset\\n');
+      const checkBaseline=await evaluate(`(() => {
+        const cards=[...document.querySelectorAll('.operational-workbench__column-item')];
+        return cards.slice(0,5).map(card=>{
+          const input=card.querySelector('.operational-workbench__column-title input')?.getBoundingClientRect();
+          const checkbox=card.querySelector('.catalog__check input[type=checkbox]')?.getBoundingClientRect();
+          return input&&checkbox?{inputCenter:(input.top+input.bottom)/2,checkCenter:(checkbox.top+checkbox.bottom)/2}:null;
+        }).filter(Boolean);
+      })()`);
+      assert.ok(checkBaseline.length>=2&&checkBaseline.every(pair=>Math.abs(pair.inputCenter-pair.checkCenter)<=8),
+        'Column checkboxes must align with inputs, not label+caption groups: '+JSON.stringify(checkBaseline));
+      process.stdout.write('PASS R9.2 top-layer dropdown and input-aligned column toggles\\n');
 
 
 

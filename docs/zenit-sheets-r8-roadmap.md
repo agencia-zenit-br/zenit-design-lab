@@ -49,3 +49,10 @@ A cell may contain references to one photo, an ordered image gallery, one or mor
 - The UI demo does **not** yet persist new sheets across browser reloads. Saving/sharing workbooks, cross-sheet formulas, backend identities and ACL policies require authorized Platform adapters.
 - Toolbar button groups now have consistent spacing and the IA shortcut shares a baseline and height with the adjacent search field.
 - Responsive workbook tab strip scrolls independently on small screens and never forces a page-wide horizontal scroll.
+
+
+## UI Core visual alignment rule (R9.2, applicable ecosystem-wide)
+- When a label/caption sits **above** its primary control (input, selector, date picker, upload), horizontally neighboring checkboxes, radios, icons, inline buttons, badges and helpers must align with the **primary control's actual vertical center/baseline**, not the enclosing field's combined height including caption.
+- Treat captions and validation/help text as separate vertical zones. Match the control row's height; consistently center the interactive affordances there. In responsive wrapping, let the entire control pair wrap rather than aligning against one caption.
+- Menus, dropdowns and popovers must layer above surrounding cards, grids and scrollers. Position overlay menus through a top-layer portal anchored to their trigger, with viewport-edge flipping and collision checks; never rely only on z-index inside a clipped or isolated ancestor.
+- Validate both requirements on real browser geometry, including narrow viewports and theme variants, rather than judging only element visibility or React state.

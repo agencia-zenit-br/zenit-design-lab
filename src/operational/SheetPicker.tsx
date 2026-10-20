@@ -1,4 +1,5 @@
 import {useEffect,useRef,useState,type KeyboardEvent} from 'react';
+import {createPortal} from 'react-dom';
 import {Icon} from '../Icon';
 
 export type SheetOption=Readonly<{value:string;label:string}>;
@@ -12,13 +13,31 @@ export function SheetPicker({label,value,options,onChange,disabled=false}:Props)
   const [cursor,setCursor]=useState(0);
   const root=useRef<HTMLDivElement>(null);
   const trigger=useRef<HTMLButtonElement>(null);
+  const popup=useRef<HTMLDivElement>(null);
+  const [placement,setPlacement]=useState({top:0,left:0,width:180,maxHeight:220});
+  const alignPopup=()=>{
+    const rect=trigger.current?.getBoundingClientRect();if(!rect)return;
+    const maxHeight=Math.min(220,Math.max(96,window.innerHeight-24));
+    const below=window.innerHeight-rect.bottom;
+    const above=rect.top;
+    const upwards=below<Math.min(210,maxHeight)&&above>below;
+    const width=Math.max(160,rect.width);
+    setPlacement({
+      top:upwards?Math.max(8,rect.top-maxHeight-5):Math.min(window.innerHeight-8,rect.bottom+5),
+      left:Math.max(8,Math.min(rect.left,window.innerWidth-width-8)),
+      width:Math.min(width,window.innerWidth-16),maxHeight,
+    });
+  };
   useEffect(()=>{
     if(!open)return;
     const close=(event:PointerEvent)=>{
-      if(!root.current?.contains(event.target as Node))setOpen(false);
+      if(!root.current?.contains(event.target as Node)&&!popup.current?.contains(event.target as Node))setOpen(false);
     };
+    const reposition=()=>alignPopup();
     document.addEventListener('pointerdown',close);
-    return()=>document.removeEventListener('pointerdown',close);
+    window.addEventListener('resize',reposition);
+    window.addEventListener('scroll',reposition,true);
+    return()=>{document.removeEventListener('pointerdown',close);window.removeEventListener('resize',reposition);window.removeEventListener('scroll',reposition,true);};
   },[open]);
   const choose=(index:number)=>{
     const next=options[index];if(!next)return;
@@ -27,7 +46,7 @@ export function SheetPicker({label,value,options,onChange,disabled=false}:Props)
   const keys=(event:KeyboardEvent<HTMLButtonElement>)=>{
     if(event.key==='Escape'){setOpen(false);trigger.current?.focus();return;}
     if(event.key==='ArrowDown'||event.key==='ArrowUp'){
-      event.preventDefault();if(!open){setCursor(Math.max(0,options.findIndex(x=>x.value===value)));setOpen(true);}
+      event.preventDefault();if(!open){setCursor(Math.max(0,options.findIndex(x=>x.value===value)));alignPopup();setOpen(true);}
       else setCursor(index=>(index+(event.key==='ArrowDown'?1:-1)+options.length)%Math.max(1,options.length));
     }else if((event.key==='Enter'||event.key===' ')&&open){
       event.preventDefault();choose(cursor);
@@ -38,18 +57,19 @@ export function SheetPicker({label,value,options,onChange,disabled=false}:Props)
       aria-label={label} aria-haspopup="listbox" aria-expanded={open}
       disabled={disabled} onKeyDown={keys} onClick={()=>{
         setCursor(Math.max(0,options.findIndex(option=>option.value===value)));
+        if(!open)alignPopup();
         setOpen(previous=>!previous);
       }}>
       <span>{options.find(option=>option.value===value)?.label??'Seleccionar'}</span>
       <span aria-hidden="true" className="zenit-sheet__picker-arrow"><Icon name="chevron-right" size={14}/></span>
     </button>
-    {open&&<div className="zenit-sheet__picker-list" role="listbox" aria-label={label}>
+    {open&&createPortal(<div ref={popup} className="zenit-sheet__picker-list zenit-sheet__picker-list--portal" role="listbox" aria-label={label} style={{top:placement.top,left:placement.left,width:placement.width,maxHeight:placement.maxHeight}}>
       {options.map((option,index)=><button type="button" role="option"
         aria-selected={option.value===value} key={option.value}
         className={(option.value===value?'is-current ':'')+(cursor===index?'is-highlighted':'')}
         onMouseEnter={()=>setCursor(index)} onClick={()=>choose(index)}>
         {option.label}{option.value===value&&<Icon name="check" size={14}/>}
       </button>)}
-    </div>}
+    </div>,document.body)}
   </div>;
 }
