@@ -191,6 +191,26 @@ try {
       assert.equal(await evaluate('document.activeElement?.classList.contains("zenit-sheet__draft-cell")'),true,
         'Backspace in a blank cell should not trigger browser navigation');
       process.stdout.write('PASS R8 Delete/Backspace, italic, highlight and viewport resizing\\n');
+      const smartSize=await evaluate('document.querySelector(".zenit-sheet__sheet-tools .zenit-sheet__viewport-control select")?.value');
+      assert.ok(smartSize,'Worksheet height must remain discoverable next to sheet controls');
+      await evaluate('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.click();true');
+      await waitFor('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.getAttribute("aria-pressed")==="true"',
+        'Smart order must activate a reversible sorted view');
+      await evaluate('document.querySelector("button[aria-label=\\\"Orden inteligente\\\"]")?.click();true');
+      await evaluate('document.querySelector("button[aria-label=\\\"Filtros estructurados\\\"]")?.click();true');
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__filters"))','Combined filters panel must open');
+      await evaluate(`(() => {const input=document.querySelector('input[aria-label="Valor del filtro"]');
+        const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
+        setter.call(input,'Registro 02');input.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Agregar filtro'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===1',
+        'Combined filters must restrict the displayed authorized rows');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Quitar todos'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
+        'Removing filters must restore all authorized source records');
+      await evaluate('document.querySelector("button[aria-label=\\\"Filtros estructurados\\\"]")?.click();true');
+      process.stdout.write('PASS R8 structured filter panel, reversible smart order, prominent viewport control\\n');
+
       process.stdout.write('PASS R7 compact numbered guides and editable blank column labels\\n');
       process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
 
