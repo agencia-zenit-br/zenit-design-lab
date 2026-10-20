@@ -448,7 +448,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         </div>
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Énfasis">
           {([["bold","Negrita","format-bold"],["italic","Cursiva","format-italic"],["underline","Subrayado","format-underline"],["highlight","Resaltado","highlight"]] as const).map(([key,label,icon])=>
-            <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&selection.rowId!==undefined&&selection.colKey&&cellFormats[formatKey(selection.rowId,selection.colKey)]?.[key])} onClick={()=>{const focusRow=selection?.endRow??selection?.anchorRow??0,focusCol=selection?.endCol??selection?.anchorCol??0;const current=cellFormats[formatKey(orderedRows[focusRow]?.id??draftId(from+focusRow),visualColumns[focusCol]?.key??'')];applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}><Icon name={icon} size={17}/></button>)}
+            <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&cellFormats[formatKey(orderedRows[selection.endRow??selection.anchorRow??0]?.id??draftId(from+(selection.endRow??selection.anchorRow??0)),visualColumns[selection.endCol??selection.anchorCol??0]?.key??'')]?.[key])} onClick={()=>{const focusRow=selection?.endRow??selection?.anchorRow??0,focusCol=selection?.endCol??selection?.anchorCol??0;const current=cellFormats[formatKey(orderedRows[focusRow]?.id??draftId(from+focusRow),visualColumns[focusCol]?.key??'')];applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}><Icon name={icon} size={17}/></button>)}
         </div>
       </div>
       <label className="zenit-sheet__viewport-control">Altura de hoja
@@ -556,7 +556,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
               ].filter(Boolean).join(' '):undefined;
               const isEditing=editing?.origin==='desktop'&&editing.rowId===row.id&&editing.key===col.key;
               return <td key={col.key} data-sheet-coordinate={r+':'+c} data-sheet-cell={String(row.id)+'::'+col.key}
-                data-selected={active?'true':undefined} data-range-edge={rangeEdge}
+                data-selected={active?'true':undefined} data-highlight={cellFormats[formatKey(row.id,col.key)]?.highlight?'true':undefined} data-range-edge={rangeEdge}
                 className={(active?'is-selected ':'')+(r<pinnedRowCount||c<pinnedColCount?'is-guide':'')}
                 style={{...freezeStyle(r,c,col.key),textAlign:cellFormats[formatKey(row.id,col.key)]?.align??"left",fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:undefined,fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?"italic":undefined,textDecoration:cellFormats[formatKey(row.id,col.key)]?.underline?"underline":undefined,backgroundColor:cellFormats[formatKey(row.id,col.key)]?.highlight?"#fff1a8":undefined}}
                 tabIndex={0} role="gridcell" aria-selected={active}
