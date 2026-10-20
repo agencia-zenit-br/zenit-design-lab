@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
+import { orderSheet } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
 export type SheetSelection = {
@@ -108,6 +109,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [mobileColumn,setMobileColumn]=useState(columns[0]?.key??'');
   const [viewport,setViewport]=useState({width:820,height:300});
   const [sheetHeight,setSheetHeight]=useState(430);
+  const [smartOrder,setSmartOrder]=useState(false);
 
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
@@ -143,9 +145,12 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const orderedCols=pinnedCol?.mode==='only'
     ?[...columns.filter(col=>col.key===pinnedCol.target),...columns.filter(col=>col.key!==pinnedCol.target)]
     :[...columns];
+  const sheetRows=smartOrder?orderSheet(rows,orderedCols.map(col=>({
+    column:col.key,direction:'asc' as const,kind:'auto' as const,
+  })),(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)):[...rows];
   const orderedRows=pinnedRow?.mode==='only'
-    ?[...rows.filter(row=>row.id===pinnedRow.target),...rows.filter(row=>row.id!==pinnedRow.target)]
-    :[...rows];
+    ?[...sheetRows.filter(row=>row.id===pinnedRow.target),...sheetRows.filter(row=>row.id!==pinnedRow.target)]
+    :sheetRows;
   const pinnedColCount=pinnedCol?.mode==='only'?1:pinnedCol
     ?Math.max(0,orderedCols.findIndex(col=>col.key===pinnedCol.target)+1):0;
   const pinnedRowCount=pinnedRow?.mode==='only'?1:pinnedRow
@@ -437,6 +442,17 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   return <section className={"zenit-sheet"+(showRowTitles?" has-row-titles":"")} data-spreadsheet="true" aria-label={sheetTitle}>
     <div className="zenit-sheet__toolbar">
       <label>Título de la tabla <input aria-label="Título de la tabla" value={sheetTitle} maxLength={120} onChange={event=>setSheetTitle(event.target.value)}/></label>
+      <div className="zenit-sheet__sheet-tools">
+        <label className="zenit-sheet__viewport-control">Altura visible de la hoja
+          <select aria-label="Altura visible de la hoja" value={sheetHeight} onChange={event=>setSheetHeight(Number(event.target.value))}>
+            <option value={280}>Compacta</option><option value={430}>Normal</option><option value={650}>Amplia</option><option value={850}>Máxima</option>
+          </select>
+        </label>
+        <button type="button" aria-label="Orden inteligente" aria-pressed={smartOrder} disabled={readOnly||rows.length===0}
+          title="Ordenar registros completos por las columnas, reconociendo tallas y números" onClick={()=>setSmartOrder(value=>!value)}>
+          <Icon name="list" size={16}/> {smartOrder?'Restaurar orden':'Orden inteligente'}
+        </button>
+      </div>
       <div className="zenit-sheet__format-toolbar" role="toolbar" aria-label="Herramientas de hoja">
         <div className="zenit-sheet__ribbon-group" role="group" aria-label="Edición">
           <button type="button" title="Deshacer última edición" aria-label="Deshacer última edición" disabled={readOnly} onClick={undoLastEdit}><Icon name="undo" size={16}/></button>
@@ -451,13 +467,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
             <button key={key} type="button" title={label} aria-label={label} className={'zenit-sheet__tool-'+key} disabled={readOnly||selection?.kind!=="cell"} aria-pressed={Boolean(selection?.kind==='cell'&&cellFormats[formatKey(orderedRows[selection.endRow??selection.anchorRow??0]?.id??draftId(from+(selection.endRow??selection.anchorRow??0)),visualColumns[selection.endCol??selection.anchorCol??0]?.key??'')]?.[key])} onClick={()=>{const focusRow=selection?.endRow??selection?.anchorRow??0,focusCol=selection?.endCol??selection?.anchorCol??0;const current=cellFormats[formatKey(orderedRows[focusRow]?.id??draftId(from+focusRow),visualColumns[focusCol]?.key??'')];applyFormat({[key]:!current?.[key]} as Partial<{bold:boolean;italic:boolean;underline:boolean;highlight:boolean}>);}}><Icon name={icon} size={17}/></button>)}
         </div>
       </div>
-      <label className="zenit-sheet__viewport-control">Altura de hoja
-        <select aria-label="Altura visible de la hoja" value={sheetHeight} onChange={event=>setSheetHeight(Number(event.target.value))}>
-          <option value={280}>Compacta</option><option value={430}>Normal</option><option value={650}>Amplia</option><option value={850}>Máxima</option>
-        </select>
-      </label>
       <label>Buscar en la hoja <input aria-label="Buscar en la hoja" value={search} onChange={event=>onSearch(event.target.value)}/></label>
-      <span className="zenit-sheet__hint">Selecciona letras o números; botón secundario o menú contextual para fijar guías</span>
+      <span className="zenit-sheet__hint">Orden inteligente: prioridad de izquierda a derecha; reconoce tamaños de ropa y números. No modifica los registros.</span>
+      {selection?.kind==='cell'&&<output className="zenit-sheet__format-status" aria-live="polite">
+        {(()=>{
+          const row=orderedRows[selection.endRow??selection.anchorRow??0],col=visualColumns[selection.endCol??selection.anchorCol??0];
+          const active=col?cellFormats[formatKey(row?.id??draftId(from+(selection.endRow??selection.anchorRow??0)),col.key)]:undefined;
+          return active?(['bold','italic','underline','highlight'] as const).filter(key=>active[key]).map(key=>({bold:'Negrita',italic:'Cursiva',underline:'Subrayado',highlight:'Resaltado'}[key])).join(' · ')||'Sin énfasis':'Sin formato aplicado';
+        })()}
+      </output>}
       {(guideColumn||guideRow)&&<button className="zenit-sheet__clear" type="button" onClick={()=>{
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
