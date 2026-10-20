@@ -152,7 +152,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   // Grow the visual canvas in bounded batches as users approach its last visible guides.
   // Placeholders remain display-only: no synthetic records are sent to the adapter.
   const [rowCanvasReserve,setRowCanvasReserve]=useState(0);
-  const extraRows=Math.max(0,Math.min(160,Math.max(rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48))));
+  const extraRows=Math.min(160,Math.max(20,rowCanvasReserve,Math.ceil((viewport.height-44-orderedRows.length*48)/48)));
   const isBlankColumn=(key:string)=>key.startsWith('__blank_col_');
   const columnLetter=(index:number)=>{
     let value='',n=index+1;
