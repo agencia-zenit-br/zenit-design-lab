@@ -15,7 +15,7 @@ const sizeAliases:Readonly<Record<string,string>>={
   'm':'m','medio':'m','medium':'m','g':'g','grande':'g','l':'g',
   'gg':'gg','extra grande':'gg','xl':'gg','xgg':'xgg','xxl':'xgg',
   'xxgg':'xxgg','3xl':'xxgg',
-  'tamanho unico':'tamanho unico','talla unica':'tamanho unico','talle unico':'tamanho unico',
+  'tamanho unico':'tamanho unico','tamano unico':'tamanho unico','talla unica':'tamanho unico','talle unico':'tamanho unico',
   'one size':'tamanho unico','unica':'tamanho unico','unico':'tamanho unico',
 };
 export function clothingSizeRank(value:unknown):number|null{
