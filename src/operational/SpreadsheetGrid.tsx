@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
+import { SheetPicker } from './SheetPicker';
 import { filterSheet, orderSheet, type ClothingSizeDefinition, type FilterClause, type FilterOperator } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
+type ValueDelta={
+  kind:'row'|'draft';
+  rowId?:RecordIdentity;column?:string;draftKey?:string;
+  before:string;after:string;
+};
+type HistoryAction=
+  |{kind:'values';changes:ValueDelta[]}
+  |{kind:'formats';before:Record<string,SheetCellFormat>;after:Record<string,SheetCellFormat>}
+  |{kind:'view';before:{clauses:FilterClause[];smartOrder:boolean};after:{clauses:FilterClause[];smartOrder:boolean}};
 export type SheetSelection = {
   kind:'cell'|'column'|'row';
   rowId?:RecordIdentity;
@@ -69,6 +79,19 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const draftId=(r:number)=>draftRowKey(r);
   const [localRowTitles,setLocalRowTitles]=useState<Record<string,string>>({});
   const [localFormats,setLocalFormats]=useState<Record<string,SheetCellFormat>>({});
+  const history=useRef<HistoryAction[]>([]);
+  const future=useRef<HistoryAction[]>([]);
+  const [,setHistoryRevision]=useState(0);
+  const recordHistory=(entry:HistoryAction)=>{
+    history.current.push(entry);
+    if(history.current.length>100)history.current.shift();
+    future.current=[];
+    setHistoryRevision(n=>n+1);
+  };
+  const updateFormatState=(value:Record<string,SheetCellFormat>)=>{
+    if(controlledFormats===undefined)setLocalFormats(value);
+    onCellFormatsChange?.(value);
+  };
   const rowTitles=controlledRowTitles??localRowTitles;
   const cellFormats=controlledFormats??localFormats;
   // The guide expands only when a title is being edited or at least one title exists.
@@ -98,8 +121,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         const key=formatKey(row?.id??draftId(from+r),col.key);
         next[key]={...(previous[key]??{align:'left',bold:false,italic:false,underline:false,highlight:false}),...change};
       }
-      if(controlledFormats===undefined)setLocalFormats(next);
-      onCellFormatsChange?.(next);
+      if(Object.keys(next).some(key=>next[key]!==previous[key])){
+        recordHistory({kind:'formats',before:{...previous},after:next});
+        updateFormatState(next);
+      }
     }
   };
   const [menu,setMenu]=useState<Menu|null>(null);
@@ -281,8 +306,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     const column=columns.find(col=>col.key===editing.key);
     const before=source&&column?String(column.getValue(source)??''):null;
     if(before!==null&&before!==value){
-      undoStack.current.push({rowId:editing.rowId,key:editing.key,before,after:value});
-      if(undoStack.current.length>100)undoStack.current.shift();
+      recordHistory({kind:'values',changes:[{kind:'row',rowId:editing.rowId,column:editing.key,before,after:value}]});
     }
     if(before!==value)onUpdateCell(editing.rowId,editing.key,value);
     setEditing(null);
@@ -305,11 +329,46 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       setSelection({kind:'cell',rowId,colKey:key,anchorRow:r,anchorCol:c,endRow:r,endCol:c});
     }
   };
-  const undoStack=useRef<Array<{rowId:RecordIdentity;key:string;before:string;after:string}>>([]);
+  const replayHistory=(entry:HistoryAction,redo:boolean)=>{
+    if(entry.kind==='formats'){
+      updateFormatState(redo?entry.after:entry.before);
+    }else if(entry.kind==='view'){
+      const snapshot=redo?entry.after:entry.before;
+      setClauses([...snapshot.clauses]);setSmartOrder(snapshot.smartOrder);setSelection(null);
+    }else{
+      const draftUpdates:Record<string,string|null>={};
+      for(const change of entry.changes){
+        const value=redo?change.after:change.before;
+        if(change.kind==='row'&&change.rowId!==undefined&&change.column){
+          onUpdateCell(change.rowId,change.column,value);
+        }else if(change.draftKey){
+          draftUpdates[change.draftKey]=value||null;
+        }
+      }
+      if(Object.keys(draftUpdates).length)setDraftCells(previous=>{
+        const next={...previous};
+        for(const [key,value] of Object.entries(draftUpdates)){
+          if(value===null)delete next[key];else next[key]=value;
+        }
+        return next;
+      });
+    }
+  };
   const undoLastEdit=()=>{
-    const last=undoStack.current.pop();
-    if(!last||readOnly)return;
-    onUpdateCell(last.rowId,last.key,last.before);
+    if(readOnly)return;
+    const entry=history.current.pop();if(!entry)return;
+    future.current.push(entry);replayHistory(entry,false);setHistoryRevision(n=>n+1);
+  };
+  const redoLastEdit=()=>{
+    if(readOnly)return;
+    const entry=future.current.pop();if(!entry)return;
+    history.current.push(entry);replayHistory(entry,true);setHistoryRevision(n=>n+1);
+  };
+  const applyView=(nextClauses:FilterClause[],nextOrder:boolean)=>{
+    const before={clauses:[...clauses],smartOrder};
+    if(JSON.stringify(before.clauses)===JSON.stringify(nextClauses)&&before.smartOrder===nextOrder)return;
+    recordHistory({kind:'view',before,after:{clauses:[...nextClauses],smartOrder:nextOrder}});
+    setClauses([...nextClauses]);setSmartOrder(nextOrder);setSelection(null);
   };
   const exportCsv=()=>{
     // Export only the authorized, currently loaded page. Never include visual filler cells.
@@ -351,14 +410,21 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     const left=selection?.kind==='cell'&&selection.anchorCol!==undefined&&selection.endCol!==undefined?Math.min(selection.anchorCol,selection.endCol):c;
     const right=selection?.kind==='cell'&&selection.anchorCol!==undefined&&selection.endCol!==undefined?Math.max(selection.anchorCol,selection.endCol):c;
     const next={...draftCells};
+    const changes:ValueDelta[]=[];
     for(let ri=top;ri<=bottom;ri++)for(let ci=left;ci<=right;ci++){
       const row=orderedRows[ri],col=visualColumns[ci];if(!col)continue;
       if(row&&!isBlankColumn(col.key)){
         const before=String(col.getValue(row)??'');
-        if(before){undoStack.current.push({rowId:row.id,key:col.key,before,after:''});onUpdateCell(row.id,col.key,'');}
-      }else delete next[draftKey(from+ri,ci)];
+        if(before){
+          changes.push({kind:'row',rowId:row.id,column:col.key,before,after:''});
+          onUpdateCell(row.id,col.key,'');
+        }
+      }else{
+        const key=draftKey(from+ri,ci);
+        if(next[key]!==undefined){changes.push({kind:'draft',draftKey:key,before:next[key],after:''});delete next[key];}
+      }
     }
-    if(undoStack.current.length>100)undoStack.current.splice(0,undoStack.current.length-100);
+    if(changes.length)recordHistory({kind:'values',changes});
     setDraftCells(next);
   };
   const onCellKey=(event:KeyboardEvent<HTMLTableCellElement>,r:number,c:number,row:Row,col:OperationalColumn<Row>)=>{
@@ -370,6 +436,8 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     if(event.key==='Enter'||event.key==='F2'){
       event.preventDefault();beginEdit(row,col);return;
     }
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='y'&&!event.shiftKey){event.preventDefault();redoLastEdit();return;}
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'&&event.shiftKey){event.preventDefault();redoLastEdit();return;}
     if(event.key==='Escape'){setSelection(null);setMenu(null);return;}
     const moves:Record<string,[number,number]>={ArrowUp:[-1,0],ArrowDown:[1,0],
       ArrowLeft:[0,-1],ArrowRight:[0,1]};
