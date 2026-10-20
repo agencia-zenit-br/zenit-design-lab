@@ -1881,3 +1881,13 @@ button,a,[role="option"],summary {
 .zenit-sheet__size-dialog label{display:grid;gap:4px;font-size:12px;}.zenit-sheet__size-dialog input,.zenit-sheet__size-dialog textarea{width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:7px;padding:9px;background:var(--surface);color:var(--text);font:inherit;}
 .zenit-sheet__size-dialog-actions{display:flex;justify-content:flex-end;gap:8px;}.zenit-sheet__size-dialog-actions button{appearance:none;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;padding:8px 12px;cursor:pointer;}
 .zenit-sheet__size-dialog-actions button:last-child{background:var(--brand);color:white;border-color:var(--brand);}
+
+
+/* Modal filter composer: pending criteria never change results until explicit approval. */
+.zenit-sheet__modal-backdrop{position:fixed;inset:0;z-index:11000;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+.zenit-sheet__filter-dialog{background:var(--surface);color:var(--text);width:min(650px,100%);max-height:min(85vh,760px);overflow:auto;box-sizing:border-box;border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 70px #0003;padding:20px;gap:14px;}
+.zenit-sheet__filter-dialog-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
+.zenit-sheet__filter-dialog-actions button{appearance:none;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:12px;font-weight:600;padding:9px 12px;cursor:pointer;}
+.zenit-sheet__filter-dialog-actions button:last-child{background:var(--brand);color:white;border-color:var(--brand);}
+.zenit-sheet__cell-content{display:inline-block;max-width:100%;font-style:inherit;}
+.zenit-sheet__table td .zenit-sheet__cell-content[style*="italic"]{font-style:italic!important;}
