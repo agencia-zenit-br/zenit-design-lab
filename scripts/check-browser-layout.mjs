@@ -177,6 +177,8 @@ try {
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-italic')][0]?.click();true`);
       await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")).fontStyle==="italic"',
         'Italic command must visibly format the selected real cell');
+      await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__cell-content")).fontStyle==="italic"',
+        'Visible text span must be italic, not merely the cell container');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-highlight')][0]?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.dataset.highlight==="true"',
         'Highlight command must visibly format the selected cell');
@@ -203,12 +205,17 @@ try {
         const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;
         setter.call(input,'Registro 02');input.dispatchEvent(new Event('input',{bubbles:true}));return true;})()`);
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Agregar filtro'))?.click();true`);
+      assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__table tbody tr").length'),17,
+        'Proposed filters must not change the displayed rows before Apply');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Aplicar filtros'))?.click();true`);
       await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===1',
-        'Combined filters must restrict the displayed authorized rows');
-      await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Quitar todos'))?.click();true`);
-      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
-        'Removing filters must restore all authorized source records');
+        'Applying approved filters must restrict authorized rows');
       await evaluate('document.querySelector("button[aria-label=\\\"Filtros estructurados\\\"]")?.click();true');
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__filter-dialog"))',
+        'Applied filters should be editable in a dialog');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__filters button')].find(b=>b.textContent.includes('Dejar de filtrar'))?.click();true`);
+      await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
+        'Stop filtering must restore all authorized records');
       const actualHeight=await evaluate('document.querySelector(".zenit-sheet__scroll").getBoundingClientRect().height');
       assert.ok(actualHeight>=640,'Sheet viewport must honor 650px setting, not legacy max-height cap');
       const toolsVisible=await evaluate(`(() => {
@@ -218,9 +225,9 @@ try {
       assert.ok(toolsVisible,'Filters and smart order must be visibly discoverable');
       await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__more')?.click();true`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__menu"))','Column context menu absent');
-      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(b=>b.textContent.includes('Definir escala de tallas'))?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(b=>b.textContent.includes('Definir secuencia personalizada'))?.click();true`);
       await waitFor('Boolean(document.querySelector(".zenit-sheet__size-dialog"))','Contextual size scale editor absent');
-      assert.ok(await evaluate('document.querySelector(".zenit-sheet__size-dialog input")?.value.includes("XP")'),'Custom size taxonomy must include XP');
+      assert.ok(await evaluate('document.querySelector(".zenit-sheet__size-dialog input")?.value.length>0'),'Sequence editor should suggest existing values');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__size-dialog button')].find(b=>b.textContent.includes('Cancelar'))?.click();true`);
       await waitFor('!document.querySelector(".zenit-sheet__size-dialog")','Size dialog must close');
       process.stdout.write('PASS R8.1 visible controls, effective viewport height, garment size editor\\n');

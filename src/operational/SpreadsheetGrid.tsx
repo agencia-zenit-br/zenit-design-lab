@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ClipboardEvent, type MouseEvent, type PointerEvent, type TouchEvent, type CSSProperties } from 'react';
 import type { OperationalColumn } from './OperationalRecords';
 import { Icon } from '../Icon';
-import { filterSheet, orderSheet, defaultClothingSizes, type ClothingSizeDefinition, type FilterClause, type FilterOperator } from './smartSheetCore';
+import { filterSheet, orderSheet, type ClothingSizeDefinition, type FilterClause, type FilterOperator } from './smartSheetCore';
 import type { RecordIdentity, RecordWithId } from './collectionCore';
 
 export type SheetSelection = {
@@ -112,14 +112,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [smartOrder,setSmartOrder]=useState(false);
   const [filterPanel,setFilterPanel]=useState(false);
   const [clauses,setClauses]=useState<FilterClause[]>([]);
+  const [pendingClauses,setPendingClauses]=useState<FilterClause[]>([]);
   const [filterColumn,setFilterColumn]=useState('');
   const [filterOperator,setFilterOperator]=useState<FilterOperator>('contains');
   const [filterValue,setFilterValue]=useState('');
   const [filterTo,setFilterTo]=useState('');
   const [sizeDefinitions,setSizeDefinitions]=useState<Record<string,ClothingSizeDefinition>>({});
   const [sizeColumn,setSizeColumn]=useState<string|null>(null);
-  const [sizeOrder,setSizeOrder]=useState('XP, P, M, G, GG, XGG, XXGG, Tamaño Único');
-  const [sizeAliases,setSizeAliases]=useState('XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');
+  const [sizeOrder,setSizeOrder]=useState('');
+  const [sizeAliases,setSizeAliases]=useState('');
 
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
@@ -460,7 +461,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           </select>
         </label>
         <button type="button" aria-label="Filtros estructurados" aria-expanded={filterPanel}
-          aria-pressed={clauses.length>0} onClick={()=>setFilterPanel(value=>!value)}>
+          aria-pressed={clauses.length>0} onClick={()=>{setPendingClauses([...clauses]);setFilterPanel(true);}}>
           <Icon name="filter" size={16}/> Filtros{clauses.length?(' ('+clauses.length+')'):''}
         </button>
         <button type="button" aria-label="Orden inteligente" aria-pressed={smartOrder} disabled={readOnly||rows.length===0}
@@ -496,7 +497,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
     </div>
-    {filterPanel&&<div className="zenit-sheet__filters" aria-label="Filtros combinados">
+    {filterPanel&&<div className="zenit-sheet__modal-backdrop" role="presentation"><div className="zenit-sheet__filters zenit-sheet__filter-dialog" role="dialog" aria-modal="true" aria-label="Filtros combinados">
       <strong>Filtrar columnas autorizadas</strong>
       <div className="zenit-sheet__filter-controls">
         <label>Columna
@@ -517,19 +518,24 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <input aria-label="Máximo del filtro" value={filterTo} onChange={event=>setFilterTo(event.target.value)} placeholder="R$ 100"/>
         </label>}
         <button type="button" disabled={!filterValue.trim()||(filterOperator==='between'&&!filterTo.trim())||!orderedCols.length}
-          onClick={()=>{setClauses(previous=>[...previous,{column:filterColumn||orderedCols[0].key,operator:filterOperator,value:filterValue,to:filterOperator==='between'?filterTo:undefined}]);setFilterValue('');setFilterTo('');setSelection(null);}}>
+          onClick={()=>{setPendingClauses(previous=>[...previous,{column:filterColumn||orderedCols[0].key,operator:filterOperator,value:filterValue,to:filterOperator==='between'?filterTo:undefined}]);setFilterValue('');setFilterTo('');setSelection(null);}}>
           <Icon name="plus" size={14}/> Agregar filtro
         </button>
-        {clauses.length>0&&<button type="button" onClick={()=>{setClauses([]);setSelection(null);}}>Quitar todos</button>}
+        {pendingClauses.length>0&&<button type="button" onClick={()=>setPendingClauses([])}>Quitar condiciones propuestas</button>}
       </div>
-      {clauses.length>0&&<div className="zenit-sheet__filter-chips">
-        {clauses.map((clause,index)=><button key={index} type="button" aria-label={'Quitar filtro '+(index+1)}
-          onClick={()=>{setClauses(previous=>previous.filter((_,i)=>i!==index));setSelection(null);}}>
+      {pendingClauses.length>0&&<div className="zenit-sheet__filter-chips">
+        {pendingClauses.map((clause,index)=><button key={index} type="button" aria-label={'Quitar filtro '+(index+1)}
+          onClick={()=>{setPendingClauses(previous=>previous.filter((_,i)=>i!==index));}}>
           {(orderedCols.find(col=>col.key===clause.column)?.label??clause.column)+' · '+clause.operator+' · '+clause.value+(clause.to?'–'+clause.to:'')} <Icon name="x" size={12}/>
         </button>)}
       </div>}
-      <small>{filteredRows.length} registros coincidentes de {rows.length} cargados. Solo filtra registros autorizados, no modifica la fuente.</small>
-    </div>}
+      <small>{filterSheet(rows,pendingClauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)).length} resultados propuestos de {rows.length} registros autorizados. Los datos no cambian hasta aplicar.</small>
+      <div className="zenit-sheet__filter-dialog-actions">
+        <button type="button" onClick={()=>setFilterPanel(false)}>Cancelar</button>
+        <button type="button" onClick={()=>{setClauses([]);setPendingClauses([]);setSelection(null);setFilterPanel(false);}}>Dejar de filtrar</button>
+        <button type="button" onClick={()=>{setClauses([...pendingClauses]);setSelection(null);setFilterPanel(false);}}>Aplicar filtros</button>
+      </div>
+    </div></div>}
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
@@ -649,7 +655,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
                     if(event.key==='Enter'){event.preventDefault();commit(event.currentTarget.value);}
                     if(event.key==='Escape'){event.preventDefault();cancelEdit();}
                     event.stopPropagation();
-                  }}/>:String(col.getValue(row)??'')}
+                  }}/>: <span className="zenit-sheet__cell-content" style={{fontStyle:cellFormats[formatKey(row.id,col.key)]?.italic?'italic':'normal',fontWeight:cellFormats[formatKey(row.id,col.key)]?.bold?700:400}}>{String(col.getValue(row)??'')}</span>}
               </td>;
             })}
           </tr>)}
@@ -713,17 +719,17 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
     </div>
     <div className="zenit-sheet__footer"><span>{total} registros disponibles · las celdas vacías son borradores locales</span></div>
     </>}
-    {sizeColumn!==null&&<div className="zenit-sheet__size-dialog" role="dialog" aria-modal="true" aria-label="Definir escala de tallas">
-      <h3>Definición de tallas — {orderedCols.find(c=>c.key===sizeColumn)?.label??sizeColumn}</h3>
-      <p>Ordena las tallas de menor a mayor y especifica equivalencias. Solo se aplicará a esta columna.</p>
-      <label>Secuencia de tallas <input aria-label="Secuencia de tallas" value={sizeOrder} onChange={e=>setSizeOrder(e.target.value)}/></label>
-      <label>Sinónimos (origen=destino) <textarea aria-label="Sinónimos de tallas" value={sizeAliases} onChange={e=>setSizeAliases(e.target.value)} rows={3}/></label>
+    {sizeColumn!==null&&<div className="zenit-sheet__size-dialog" role="dialog" aria-modal="true" aria-label="Definir secuencia personalizada">
+      <h3>Definir secuencia personalizada — {orderedCols.find(c=>c.key===sizeColumn)?.label??sizeColumn}</h3>
+      <p>Indica cualquier orden de valores separado por comas (por ejemplo: Baja, Media, Alta), con equivalencias opcionales. Solo se aplica a esta columna.</p>
+      <label>Secuencia personalizada <input aria-label="Secuencia personalizada" value={sizeOrder} onChange={e=>setSizeOrder(e.target.value)}/></label>
+      <label>Sinónimos (origen=destino) <textarea aria-label="Sinónimos de la secuencia" value={sizeAliases} onChange={e=>setSizeAliases(e.target.value)} rows={3}/></label>
       <div className="zenit-sheet__size-dialog-actions">
         <button type="button" onClick={()=>setSizeColumn(null)}>Cancelar</button>
         <button type="button" onClick={()=>{
           const ordered=sizeOrder.split(',').map(v=>v.trim()).filter(Boolean);
           if(!ordered.length||new Set(ordered.map(v=>v.toLocaleLowerCase())).size!==ordered.length)return;
-          const aliases:Record<string,string>={...defaultClothingSizes.aliases};
+          const aliases:Record<string,string>={};
           for(const entry of sizeAliases.split(',')){
             const pair=entry.split('=').map(v=>v.trim());if(pair.length===2&&pair[0]&&ordered.some(v=>v.toLocaleLowerCase()===pair[1].toLocaleLowerCase()))aliases[pair[0].toLocaleLowerCase()]=pair[1];
           }
@@ -740,10 +746,10 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <button type="button" role="menuitem" onClick={()=>act('clear')}>Quitar fijación</button>
       {menu.kind==='column'&&<>
         <button type="button" role="menuitem" onClick={()=>act('rename')}>Cambiar título</button>
-        <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setFilterPanel(true);setMenu(null);}}>
+        <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setPendingClauses([...clauses]);setFilterPanel(true);setMenu(null);}}>
           Filtrar esta columna…
         </button>
-        <button type="button" role="menuitem" onClick={()=>{const current=sizeDefinitions[menu.key];setSizeColumn(menu.key);setSizeOrder((current?.ordered??['XP','P','M','G','GG','XGG','XXGG','Tamaño Único']).join(', '));setSizeAliases(current?Object.entries(current.aliases).map(([a,b])=>a+'='+b).join(', '):'XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');setMenu(null);}}>Definir escala de tallas…</button>
+        <button type="button" role="menuitem" onClick={()=>{const current=sizeDefinitions[menu.key];setSizeColumn(menu.key);setSizeOrder((current?.ordered??[...new Set(rows.map(row=>columns.find(col=>col.key===menu.key)?.getValue(row)).map(value=>String(value??'').trim()).filter(Boolean))].slice(0,20)).join(', '));setSizeAliases(current?Object.entries(current.aliases).map(([a,b])=>a+'='+b).join(', '):'');setMenu(null);}}>Definir secuencia personalizada…</button>
         <button type="button" role="menuitem" onClick={()=>act('left')}>Mover a la izquierda</button>
         <button type="button" role="menuitem" onClick={()=>act('right')}>Mover a la derecha</button>
       </>}
