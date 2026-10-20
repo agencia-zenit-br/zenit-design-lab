@@ -112,14 +112,15 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
   const [smartOrder,setSmartOrder]=useState(false);
   const [filterPanel,setFilterPanel]=useState(false);
   const [clauses,setClauses]=useState<FilterClause[]>([]);
+  const [pendingClauses,setPendingClauses]=useState<FilterClause[]>([]);
   const [filterColumn,setFilterColumn]=useState('');
   const [filterOperator,setFilterOperator]=useState<FilterOperator>('contains');
   const [filterValue,setFilterValue]=useState('');
   const [filterTo,setFilterTo]=useState('');
   const [sizeDefinitions,setSizeDefinitions]=useState<Record<string,ClothingSizeDefinition>>({});
   const [sizeColumn,setSizeColumn]=useState<string|null>(null);
-  const [sizeOrder,setSizeOrder]=useState('XP, P, M, G, GG, XGG, XXGG, Tamaño Único');
-  const [sizeAliases,setSizeAliases]=useState('XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');
+  const [sizeOrder,setSizeOrder]=useState('');
+  const [sizeAliases,setSizeAliases]=useState('');
 
   const [dragging,setDragging]=useState(false);
   const dragAnchor=useRef<{row:number;col:number}|null>(null);
@@ -460,7 +461,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           </select>
         </label>
         <button type="button" aria-label="Filtros estructurados" aria-expanded={filterPanel}
-          aria-pressed={clauses.length>0} onClick={()=>setFilterPanel(value=>!value)}>
+          aria-pressed={clauses.length>0} onClick={()=>{setPendingClauses([...clauses]);setFilterPanel(true);}}>
           <Icon name="filter" size={16}/> Filtros{clauses.length?(' ('+clauses.length+')'):''}
         </button>
         <button type="button" aria-label="Orden inteligente" aria-pressed={smartOrder} disabled={readOnly||rows.length===0}
@@ -496,7 +497,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
         onGuideColumn(null);onGuideRow(null);
       }}>Quitar guías</button>}
     </div>
-    {filterPanel&&<div className="zenit-sheet__filters" aria-label="Filtros combinados">
+    {filterPanel&&<div className="zenit-sheet__modal-backdrop" role="presentation"><div className="zenit-sheet__filters zenit-sheet__filter-dialog" role="dialog" aria-modal="true" aria-label="Filtros combinados">
       <strong>Filtrar columnas autorizadas</strong>
       <div className="zenit-sheet__filter-controls">
         <label>Columna
@@ -517,19 +518,24 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
           <input aria-label="Máximo del filtro" value={filterTo} onChange={event=>setFilterTo(event.target.value)} placeholder="R$ 100"/>
         </label>}
         <button type="button" disabled={!filterValue.trim()||(filterOperator==='between'&&!filterTo.trim())||!orderedCols.length}
-          onClick={()=>{setClauses(previous=>[...previous,{column:filterColumn||orderedCols[0].key,operator:filterOperator,value:filterValue,to:filterOperator==='between'?filterTo:undefined}]);setFilterValue('');setFilterTo('');setSelection(null);}}>
+          onClick={()=>{setPendingClauses(previous=>[...previous,{column:filterColumn||orderedCols[0].key,operator:filterOperator,value:filterValue,to:filterOperator==='between'?filterTo:undefined}]);setFilterValue('');setFilterTo('');setSelection(null);}}>
           <Icon name="plus" size={14}/> Agregar filtro
         </button>
-        {clauses.length>0&&<button type="button" onClick={()=>{setClauses([]);setSelection(null);}}>Quitar todos</button>}
+        {pendingClauses.length>0&&<button type="button" onClick={()=>setPendingClauses([])}>Quitar condiciones propuestas</button>}
       </div>
-      {clauses.length>0&&<div className="zenit-sheet__filter-chips">
-        {clauses.map((clause,index)=><button key={index} type="button" aria-label={'Quitar filtro '+(index+1)}
-          onClick={()=>{setClauses(previous=>previous.filter((_,i)=>i!==index));setSelection(null);}}>
+      {pendingClauses.length>0&&<div className="zenit-sheet__filter-chips">
+        {pendingClauses.map((clause,index)=><button key={index} type="button" aria-label={'Quitar filtro '+(index+1)}
+          onClick={()=>{setPendingClauses(previous=>previous.filter((_,i)=>i!==index));}}>
           {(orderedCols.find(col=>col.key===clause.column)?.label??clause.column)+' · '+clause.operator+' · '+clause.value+(clause.to?'–'+clause.to:'')} <Icon name="x" size={12}/>
         </button>)}
       </div>}
-      <small>{filteredRows.length} registros coincidentes de {rows.length} cargados. Solo filtra registros autorizados, no modifica la fuente.</small>
-    </div>}
+      <small>{filterSheet(rows,pendingClauses,(row,key)=>orderedCols.find(col=>col.key===key)?.getValue(row)).length} resultados propuestos de {rows.length} registros autorizados. Los datos no cambian hasta aplicar.</small>
+      <div className="zenit-sheet__filter-dialog-actions">
+        <button type="button" onClick={()=>setFilterPanel(false)}>Cancelar</button>
+        <button type="button" onClick={()=>{setClauses([]);setPendingClauses([]);setSelection(null);setFilterPanel(false);}}>Dejar de filtrar</button>
+        <button type="button" onClick={()=>{setClauses([...pendingClauses]);setSelection(null);setFilterPanel(false);}}>Aplicar filtros</button>
+      </div>
+    </div></div>}
     {busy?<div className="zenit-sheet__state" role={error?'alert':'status'}>
       {error?<>{error} {onRetry&&<button type="button" onClick={onRetry}>Reintentar</button>}</>:'Cargando registros…'}
     </div>:<>
@@ -740,7 +746,7 @@ export function SpreadsheetGrid<Row extends RecordWithId>({
       <button type="button" role="menuitem" onClick={()=>act('clear')}>Quitar fijación</button>
       {menu.kind==='column'&&<>
         <button type="button" role="menuitem" onClick={()=>act('rename')}>Cambiar título</button>
-        <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setFilterPanel(true);setMenu(null);}}>
+        <button type="button" role="menuitem" onClick={()=>{setFilterColumn(menu.key);setPendingClauses([...clauses]);setFilterPanel(true);setMenu(null);}}>
           Filtrar esta columna…
         </button>
         <button type="button" role="menuitem" onClick={()=>{const current=sizeDefinitions[menu.key];setSizeColumn(menu.key);setSizeOrder((current?.ordered??['XP','P','M','G','GG','XGG','XXGG','Tamaño Único']).join(', '));setSizeAliases(current?Object.entries(current.aliases).map(([a,b])=>a+'='+b).join(', '):'XS=XP, S=P, L=G, XL=GG, one size=Tamaño Único');setMenu(null);}}>Definir escala de tallas…</button>
