@@ -180,6 +180,22 @@ try {
       })()`);
       assert.ok(overlay.visible&&overlay.layer&&overlay.positioned==='fixed',
         'Height menu must overlap the underlying workbench without clipping: '+JSON.stringify(overlay));
+
+      const opacity=await evaluate(`(() => {
+        const popup=document.querySelector('.zenit-sheet__picker-list--portal');
+        const bg=getComputedStyle(popup).backgroundColor;
+        const canvas=document.createElement('canvas').getContext('2d');
+        canvas.fillStyle=bg;
+        const parsed=canvas.fillStyle;
+        const match=bg.match(/rgba?\\(([^)]+)\\)/);
+        const components=match?match[1].split(',').map(v=>Number(v.trim())):[];
+        const solid=components.length===3||(components.length===4&&components[3]>=0.999);
+        const option=popup.querySelector('[role=option]');
+        return {background:bg,parsed,solid,optionBackground:getComputedStyle(option).backgroundColor,
+          rootBackground:getComputedStyle(document.body).backgroundColor};
+      })()`);
+      assert.ok(opacity.solid,'Dropdown must have fully opaque background and cover overlapping labels: '+JSON.stringify(opacity));
+      assert.ok(opacity.background!=='rgba(0, 0, 0, 0)','Dropdown must not be transparent');
       await evaluate(`[...document.querySelectorAll('.zenit-sheet__picker-list--portal button')].find(b=>b.textContent.includes('Amplia'))?.click();true`);
       await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="650px"',
         'User must be able to adjust the worksheet viewport height');
