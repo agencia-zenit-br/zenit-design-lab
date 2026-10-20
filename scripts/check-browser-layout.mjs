@@ -209,6 +209,21 @@ try {
       await waitFor('document.querySelectorAll(".zenit-sheet__table tbody tr").length===17',
         'Removing filters must restore all authorized source records');
       await evaluate('document.querySelector("button[aria-label=\\\"Filtros estructurados\\\"]")?.click();true');
+      const actualHeight=await evaluate('document.querySelector(".zenit-sheet__scroll").getBoundingClientRect().height');
+      assert.ok(actualHeight>=640,'Sheet viewport must honor 650px setting, not legacy max-height cap');
+      const toolsVisible=await evaluate(`(() => {
+        const controls=['Filtros estructurados','Orden inteligente'].map(label=>document.querySelector('button[aria-label="'+label+'"]'));
+        return controls.every(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>30&&r.height>20&&s.visibility==='visible'&&s.display!=='none';});
+      })()`);
+      assert.ok(toolsVisible,'Filters and smart order must be visibly discoverable');
+      await evaluate(`document.querySelector('[data-sheet-column="responsible"] .zenit-sheet__more')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__menu"))','Column context menu absent');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__menu button')].find(b=>b.textContent.includes('Definir escala de tallas'))?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__size-dialog"))','Contextual size scale editor absent');
+      assert.ok(await evaluate('document.querySelector(".zenit-sheet__size-dialog input")?.value.includes("XP")'),'Custom size taxonomy must include XP');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__size-dialog button')].find(b=>b.textContent.includes('Cancelar'))?.click();true`);
+      await waitFor('!document.querySelector(".zenit-sheet__size-dialog")','Size dialog must close');
+      process.stdout.write('PASS R8.1 visible controls, effective viewport height, garment size editor\\n');
       process.stdout.write('PASS R8 structured filter panel, reversible smart order, prominent viewport control\\n');
 
       process.stdout.write('PASS R7 compact numbered guides and editable blank column labels\\n');
