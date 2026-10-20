@@ -134,6 +134,28 @@ try {
       assert.ok(guide.delta<=2,`Real and placeholder row numbers must align: ${JSON.stringify(guide)}`);
       assert.ok(!guide.hasExpansion&&guide.scrollable,'Continuous sheet must expand without a manual expansion button');
       assert.ok(guide.numbers.length>0,'Blank canvas rows must render without persisted records');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:last-child td:first-of-type')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowDown',code:'ArrowDown',windowsVirtualKeyCode:40});
+      await waitFor('document.activeElement?.classList.contains("zenit-sheet__draft-cell")',
+        'ArrowDown from the last populated row must focus an empty draft cell');
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'F2',code:'F2',windowsVirtualKeyCode:113});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'F2',code:'F2',windowsVirtualKeyCode:113});
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__draft-input"))',
+        'F2 must open an editor inside a previously empty cell');
+      await send('Input.insertText',{text:'Borrador R7'});
+      await evaluate(`document.querySelector('.zenit-sheet__draft-input')?.blur();true`);
+      await waitFor('[...document.querySelectorAll(".zenit-sheet__draft-cell")].some(el=>el.textContent==="Borrador R7")',
+        'Typing in an empty draft must retain its content locally');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label-edit')?.click();true`);
+      await waitFor('Boolean(document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title"))',
+        'Every numbered row guide must offer a title editor');
+      await send('Input.insertText',{text:'Prioridad'});
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child .zenit-sheet__row-title')?.blur();true`);
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child .zenit-sheet__row-label")?.textContent==="Prioridad"',
+        'Optional row guide title must appear beside its stable number');
+      process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
+
     }
     if(width===375){
       assert.equal(await evaluate('document.querySelectorAll(".zenit-sheet__card").length'),17,
