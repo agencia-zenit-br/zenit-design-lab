@@ -166,6 +166,31 @@ try {
       await evaluate('document.querySelector(".zenit-sheet__blank-column-title")?.blur();true');
       await waitFor('document.querySelector(".zenit-sheet__blank-column-label")?.textContent==="Observaciones"',
         'Blank column title must remain visible alongside its letter');
+      const viewportControl=await evaluate('document.querySelector(".zenit-sheet__viewport-control select")?.value');
+      assert.equal(viewportControl,'430','Sheet should expose the default viewport height');
+      await evaluate(`(() => {const el=document.querySelector('.zenit-sheet__viewport-control select');
+        const setter=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;
+        setter.call(el,'650');el.dispatchEvent(new Event('change',{bubbles:true}));return true;})()`);
+      await waitFor('document.querySelector(".zenit-sheet__scroll")?.style.height==="650px"',
+        'User must be able to adjust the worksheet viewport height');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.click();true`);
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-italic')][0]?.click();true`);
+      await waitFor('getComputedStyle(document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")).fontStyle==="italic"',
+        'Italic command must visibly format the selected real cell');
+      await evaluate(`[...document.querySelectorAll('.zenit-sheet__tool-highlight')][0]?.click();true`);
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.dataset.highlight==="true"',
+        'Highlight command must visibly format the selected cell');
+      await evaluate(`document.querySelector('.zenit-sheet__table tbody tr:first-child td:first-of-type')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Delete',code:'Delete',windowsVirtualKeyCode:46});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Delete',code:'Delete',windowsVirtualKeyCode:46});
+      await waitFor('document.querySelector(".zenit-sheet__table tbody tr:first-child td:first-of-type")?.textContent?.trim()===""',
+        'Delete must clear the selected authorized data cell');
+      await evaluate(`document.querySelector('.zenit-sheet__draft-cell')?.focus();true`);
+      await send('Input.dispatchKeyEvent',{type:'rawKeyDown',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8});
+      await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Backspace',code:'Backspace',windowsVirtualKeyCode:8});
+      assert.equal(await evaluate('document.activeElement?.classList.contains("zenit-sheet__draft-cell")'),true,
+        'Backspace in a blank cell should not trigger browser navigation');
+      process.stdout.write('PASS R8 Delete/Backspace, italic, highlight and viewport resizing\\n');
       process.stdout.write('PASS R7 compact numbered guides and editable blank column labels\\n');
       process.stdout.write('PASS R7 blank cell keyboard editing and number-plus-title row guides\\n');
 
