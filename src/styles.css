@@ -2037,7 +2037,6 @@ button,a,[role="option"],summary {
 .zenit-sheet__picker-list--portal{
   position:fixed!important;
   z-index:30000!important;
-  inset:auto!important;
   margin:0!important;
   box-sizing:border-box;
   overflow-y:auto;
