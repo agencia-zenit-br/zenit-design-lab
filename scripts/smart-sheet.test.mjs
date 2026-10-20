@@ -11,7 +11,7 @@ const rows=[
 ];
 const get=(row,key)=>row[key];
 test('clothing size axis is semantic and case/accent insensitive',()=>{
-  assert.deepEqual(['P','M','G','GG','Tamaño Único'].map(clothingSizeRank),[1,2,3,4,7]);
+  assert.deepEqual(['P','M','G','GG','Tamaño Único'].map(size=>clothingSizeRank(size)),[1,2,3,4,7]);
   assert.equal(clothingSizeRank('XXL'),5);
   assert.equal(clothingSizeRank('???'),null);
   assert.equal(detectColumnKind(rows.map(r=>r.size)),'clothing-size');
@@ -33,4 +33,14 @@ test('normalization is a proposal only and requires approval',()=>{
   const proposal=proposeCanonicalValue('remera','Camiseta',['remera','franela','t-shirt','remera']);
   assert.equal(proposal.requiresApproval,true);
   assert.deepEqual(proposal.aliases,['remera','franela','t-shirt']);
+});
+
+test('XP and L can be garment sizes only in the declared field taxonomy',()=>{
+  assert.equal(clothingSizeRank('XP'),0);
+  assert.equal(clothingSizeRank('L'),3);
+  const definition={ordered:['XP','P','M','G','GG','Única'],aliases:{'l':'G','one size':'Única'}};
+  assert.equal(clothingSizeRank('L',definition),3);
+  assert.equal(clothingSizeRank('one size',definition),5);
+  const mixed=[{id:1,size:'L',name:'L'},{id:2,size:'P',name:'P'}];
+  assert.deepEqual(orderSheet(mixed,[{column:'size',direction:'asc',kind:'auto'}],(r,c)=>r[c],'pt-BR',{size:definition}).map(r=>r.id),[2,1]);
 });

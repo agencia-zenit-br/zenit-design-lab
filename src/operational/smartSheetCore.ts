@@ -9,6 +9,17 @@ export type Clarification=Readonly<{field:string;reason:string;options:readonly 
 export type ProposedNormalization=Readonly<{original:string;canonical:string;aliases:readonly string[];requiresApproval:true}>;
 export type SheetBook=Readonly<{id:string;title:string;activeSheetId:string;sheets:readonly Readonly<{id:string;title:string}>[]}>;
 const normalized=(v:unknown)=>String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLocaleLowerCase();
+/** A tenant/sheet-approved taxonomy, scoped to the declared field — never all text. */
+export type ClothingSizeDefinition=Readonly<{
+  ordered:readonly string[];
+  aliases:Readonly<Record<string,string>>;
+}>;
+export const defaultClothingSizes:ClothingSizeDefinition={
+  ordered:['pp','p','m','g','gg','xgg','xxgg','tamanho unico'],
+  aliases:{'xp':'pp','x-p':'pp','extra pequeno':'pp','xs':'pp','s':'p','l':'g',
+    'xl':'gg','xxl':'xgg','3xl':'xxgg','talla unica':'tamanho unico',
+    'tamano unico':'tamanho unico','talle unico':'tamanho unico','one size':'tamanho unico'},
+};
 const sizeSequence=['pp','p','m','g','gg','xgg','xxgg','tamanho unico'];
 const sizeAliases:Readonly<Record<string,string>>={
   'pp':'pp','extra pequeno':'pp','xs':'pp','p':'p','pequeno':'p','s':'p',
@@ -18,14 +29,17 @@ const sizeAliases:Readonly<Record<string,string>>={
   'tamanho unico':'tamanho unico','tamano unico':'tamanho unico','talla unica':'tamanho unico','talle unico':'tamanho unico',
   'one size':'tamanho unico','unica':'tamanho unico','unico':'tamanho unico',
 };
-export function clothingSizeRank(value:unknown):number|null{
-  const canonical=sizeAliases[normalized(value)];
-  return canonical===undefined?null:sizeSequence.indexOf(canonical);
+export function clothingSizeRank(value:unknown,definition:ClothingSizeDefinition=defaultClothingSizes):number|null{
+  const token=normalized(value);
+  const aliases={...sizeAliases,...definition.aliases};
+  const canonical=aliases[token]??token;
+  const index=definition.ordered.map(normalized).indexOf(normalized(canonical));
+  return index<0?null:index;
 }
-export function detectColumnKind(values:readonly unknown[]):'clothing-size'|'number'|'text'{
+export function detectColumnKind(values:readonly unknown[],definition?:ClothingSizeDefinition):'clothing-size'|'number'|'text'{
   const present=values.filter(v=>String(v??'').trim()!=='');
   if(present.length===0)return 'text';
-  if(present.every(v=>clothingSizeRank(v)!==null))return 'clothing-size';
+  if(present.every(v=>clothingSizeRank(v,definition)!==null))return 'clothing-size';
   if(present.every(v=>typeof v==='number' || /^-?\d+(?:[.,]\d+)?$/.test(String(v).trim())))return 'number';
   return 'text';
 }
@@ -50,16 +64,16 @@ export function filterSheet<Row>(rows:readonly Row[],clauses:readonly FilterClau
 }
 /** Stable hierarchical sorting keeps whole records intact and uses the column order as priority. */
 export function orderSheet<Row>(rows:readonly Row[],sorts:readonly SheetSort[],
-  value:(row:Row,column:string)=>unknown,locale='pt-BR'):Row[]{
+  value:(row:Row,column:string)=>unknown,locale='pt-BR',definitions:Readonly<Record<string,ClothingSizeDefinition>>={}):Row[]{
   const collator=new Intl.Collator(locale,{numeric:true,sensitivity:'base'});
   const keys=sorts.map(sort=>({...sort,kind:sort.kind==='auto'
-    ?detectColumnKind(rows.map(row=>value(row,sort.column))):sort.kind}));
+    ?detectColumnKind(rows.map(row=>value(row,sort.column)),definitions[sort.column]):sort.kind}));
   return rows.map((row,index)=>({row,index})).sort((a,b)=>{
     for(const sort of keys){
       const left=value(a.row,sort.column),right=value(b.row,sort.column);
       let compared=0;
       if(sort.kind==='clothing-size'){
-        const x=clothingSizeRank(left),y=clothingSizeRank(right);
+        const x=clothingSizeRank(left,definitions[sort.column]),y=clothingSizeRank(right,definitions[sort.column]);
         compared=x!==null&&y!==null?x-y:collator.compare(String(left??''),String(right??''));
       }else if(sort.kind==='number'){
         const x=amount(left),y=amount(right);
